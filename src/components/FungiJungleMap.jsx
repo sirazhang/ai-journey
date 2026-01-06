@@ -15,7 +15,7 @@ const npcDialogues = {
     image: '/jungle/npc_a.png',
     name: 'NPC A',
     dialogues: [
-      { text: "System Error... Bzzzt...Ugh... my sensors are spinning... You looking for Ranger Moss? He went... that way...", speaker: 'NPC A' }
+      { text: "System Error... Bzzzt...Ugh... my sensors are spinning... You looking for Ranger Moss? He went... <strong>that way</strong>... ➡️", speaker: 'NPC A' }
     ]
   },
   [POSITIONS.BOTTOM_RIGHT]: {
@@ -23,7 +23,7 @@ const npcDialogues = {
     image: '/jungle/npc_b.gif',
     name: 'NPC B',
     dialogues: [
-      { text: "Welc-come... to... *static noise*...Ranger Moss... is up there...He tried to fix the solar array but... (Powers down)", speaker: 'NPC B' }
+      { text: "Welc-come... to... *static noise*...Ranger Moss... is <strong>up there</strong>... ⬆️ He tried to fix the solar array but... (Powers down)", speaker: 'NPC B' }
     ]
   },
   [POSITIONS.TOP_LEFT]: {
@@ -233,11 +233,11 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
       background: 'none',
       border: 'none',
     },
-    arrowIcon: {
-      fontSize: '40px',
-      color: '#fff',
-      textShadow: '0 2px 10px rgba(0,0,0,0.5)',
-      fontWeight: 'bold',
+    arrowImage: {
+      width: '30px',
+      height: '30px',
+      objectFit: 'contain',
+      filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.5))',
     },
     upArrow: {
       top: '30px',
@@ -457,7 +457,7 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
         <div style={styles.dialogueBox}>
           {!isNpcA && !isNpcB && <p style={styles.speakerName}>{currentDialogue.speaker}:</p>}
           <p style={styles.dialogueText}>
-            {displayedText}
+            <span dangerouslySetInnerHTML={{ __html: displayedText }} />
             {isTyping && <span style={{ opacity: 0.5 }}>|</span>}
           </p>
           {hasNextOption && !isTyping ? (
@@ -590,7 +590,11 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
           onMouseOver={(e) => e.currentTarget.style.transform = 'translateX(-50%) scale(1.2)'}
           onMouseOut={(e) => e.currentTarget.style.transform = 'translateX(-50%) scale(1)'}
         >
-          <span style={styles.arrowIcon}>︿</span>
+          <img 
+            src="/jungle/icon/up.png" 
+            alt="Up" 
+            style={styles.arrowImage}
+          />
         </button>
       )}
       {availableDirections.down !== undefined && (
@@ -600,7 +604,11 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
           onMouseOver={(e) => e.currentTarget.style.transform = 'translateX(-50%) scale(1.2)'}
           onMouseOut={(e) => e.currentTarget.style.transform = 'translateX(-50%) scale(1)'}
         >
-          <span style={styles.arrowIcon}>﹀</span>
+          <img 
+            src="/jungle/icon/down.png" 
+            alt="Down" 
+            style={styles.arrowImage}
+          />
         </button>
       )}
       {availableDirections.left !== undefined && (
@@ -610,7 +618,11 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
           onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1.2)'}
           onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1)'}
         >
-          <span style={styles.arrowIcon}>〈</span>
+          <img 
+            src="/jungle/icon/left.png" 
+            alt="Left" 
+            style={styles.arrowImage}
+          />
         </button>
       )}
       {availableDirections.right !== undefined && (
@@ -620,7 +632,11 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
           onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1.2)'}
           onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1)'}
         >
-          <span style={styles.arrowIcon}>〉</span>
+          <img 
+            src="/jungle/icon/right.png" 
+            alt="Right" 
+            style={styles.arrowImage}
+          />
         </button>
       )}
 

@@ -24,10 +24,19 @@ const GameInterface = ({ onComplete }) => {
   const [displayedText, setDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(true)
   const [showCursor, setShowCursor] = useState(true)
+  const [showNpc, setShowNpc] = useState(false)
+
+  // Show NPC after 2 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowNpc(true)
+    }, 2000)
+    return () => clearTimeout(timer)
+  }, [])
 
   // Typing effect
   useEffect(() => {
-    if (currentDialogue >= dialogues.length) return
+    if (currentDialogue >= dialogues.length || !showNpc) return
     
     const fullText = dialogues[currentDialogue].text
     let charIndex = 0
@@ -45,7 +54,7 @@ const GameInterface = ({ onComplete }) => {
     }, 30)
 
     return () => clearInterval(typingInterval)
-  }, [currentDialogue])
+  }, [currentDialogue, showNpc])
 
   // Cursor blink effect
   useEffect(() => {
@@ -64,6 +73,13 @@ const GameInterface = ({ onComplete }) => {
       setCurrentDialogue(prev => prev + 1)
     } else {
       onComplete()
+    }
+  }
+
+  const handleSkip = () => {
+    if (isTyping) {
+      setDisplayedText(dialogues[currentDialogue].text)
+      setIsTyping(false)
     }
   }
 
@@ -95,17 +111,18 @@ const GameInterface = ({ onComplete }) => {
       height: '100%',
       objectFit: 'cover',
       zIndex: 0,
-      opacity: 0.6,
+      opacity: 0.8,
     },
     npcContainer: {
       position: 'absolute',
       bottom: '50px',
       left: '50px',
       zIndex: 2,
-      animation: 'fadeIn 0.5s ease-out',
+      opacity: showNpc ? 1 : 0,
+      transition: 'opacity 0.5s ease-in-out',
     },
     npcImage: {
-      width: '200px',
+      width: '400px',
       height: 'auto',
       filter: 'drop-shadow(0 0 20px rgba(81, 112, 255, 0.5))',
     },
@@ -115,7 +132,8 @@ const GameInterface = ({ onComplete }) => {
       left: '280px',
       right: '80px',
       zIndex: 3,
-      animation: 'slideInRight 0.5s ease-out',
+      opacity: showNpc ? 1 : 0,
+      transition: 'opacity 0.5s ease-in-out',
     },
     dialogueBox: {
       padding: '30px 40px',
@@ -144,6 +162,11 @@ const GameInterface = ({ onComplete }) => {
       verticalAlign: 'middle',
       opacity: showCursor && isTyping ? 1 : 0,
     },
+    buttonContainer: {
+      display: 'flex',
+      gap: '15px',
+      justifyContent: 'flex-end',
+    },
     continueButton: {
       fontFamily: "'Roboto', sans-serif",
       fontSize: '14px',
@@ -154,7 +177,18 @@ const GameInterface = ({ onComplete }) => {
       padding: '10px 30px',
       borderRadius: '20px',
       cursor: 'pointer',
-      float: 'right',
+      transition: 'all 0.2s',
+    },
+    skipButton: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      fontWeight: 500,
+      color: '#fff',
+      background: 'rgba(255, 255, 255, 0.1)',
+      border: '1px solid rgba(255, 255, 255, 0.3)',
+      padding: '10px 30px',
+      borderRadius: '20px',
+      cursor: 'pointer',
       transition: 'all 0.2s',
     },
     progressIndicator: {
@@ -165,60 +199,71 @@ const GameInterface = ({ onComplete }) => {
       fontSize: '12px',
       color: 'rgba(255, 255, 255, 0.5)',
     },
-    trianglePointer: {
-      position: 'absolute',
-      left: '-20px',
-      top: '30px',
-      width: 0,
-      height: 0,
-      borderTop: '15px solid transparent',
-      borderBottom: '15px solid transparent',
-      borderRight: '20px solid rgba(20, 20, 35, 0.95)',
-    },
   }
 
   return (
     <div style={styles.container}>
       <img 
-        src="/background/home.gif" 
+        src="/background/story.gif" 
         alt="Background" 
         style={styles.backgroundGif}
       />
       
-      <div style={styles.npcContainer}>
-        <img 
-          src="/npc/npc1.png" 
-          alt="Glitch NPC" 
-          style={styles.npcImage}
-        />
-      </div>
-      
-      <div style={styles.dialogueContainer}>
-        <div style={styles.dialogueBox}>
-          <div style={styles.trianglePointer}></div>
-          <span style={styles.progressIndicator}>
-            {currentDialogue + 1} / {dialogues.length}
-          </span>
-          <p style={styles.dialogueText}>
-            {renderHighlightedText(displayedText, dialogues[currentDialogue]?.highlights || [])}
-            <span style={styles.cursor}></span>
-          </p>
-          <button 
-            style={styles.continueButton}
-            onClick={handleContinue}
-            onMouseOver={(e) => {
-              e.target.style.background = 'rgba(81, 112, 255, 0.5)'
-              e.target.style.borderColor = '#5170FF'
-            }}
-            onMouseOut={(e) => {
-              e.target.style.background = 'rgba(81, 112, 255, 0.3)'
-              e.target.style.borderColor = 'rgba(81, 112, 255, 0.5)'
-            }}
-          >
-            {isTyping ? 'Skip' : (currentDialogue < dialogues.length - 1 ? 'Continue' : 'Enter Map')}
-          </button>
+      {showNpc && (
+        <div style={styles.npcContainer}>
+          <img 
+            src="/npc/npc.gif" 
+            alt="Glitch NPC" 
+            style={styles.npcImage}
+          />
         </div>
-      </div>
+      )}
+      
+      {showNpc && (
+        <div style={styles.dialogueContainer}>
+          <div style={styles.dialogueBox}>
+            <span style={styles.progressIndicator}>
+              {currentDialogue + 1} / {dialogues.length}
+            </span>
+            <p style={styles.dialogueText}>
+              {renderHighlightedText(displayedText, dialogues[currentDialogue]?.highlights || [])}
+              <span style={styles.cursor}></span>
+            </p>
+            <div style={styles.buttonContainer}>
+              {isTyping && (
+                <button 
+                  style={styles.skipButton}
+                  onClick={handleSkip}
+                  onMouseOver={(e) => {
+                    e.target.style.background = 'rgba(255, 255, 255, 0.2)'
+                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.background = 'rgba(255, 255, 255, 0.1)'
+                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
+                  }}
+                >
+                  Skip
+                </button>
+              )}
+              <button 
+                style={styles.continueButton}
+                onClick={handleContinue}
+                onMouseOver={(e) => {
+                  e.target.style.background = 'rgba(81, 112, 255, 0.5)'
+                  e.target.style.borderColor = '#5170FF'
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = 'rgba(81, 112, 255, 0.3)'
+                  e.target.style.borderColor = 'rgba(81, 112, 255, 0.5)'
+                }}
+              >
+                {currentDialogue < dialogues.length - 1 ? 'Continue' : 'Enter Map'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

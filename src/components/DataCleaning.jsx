@@ -79,7 +79,8 @@ const QUIZ_DATA = [
       { text: "By analyzing patterns in data", correct: true },
       { text: "By just guessing randomly", correct: false },
     ],
-    response: "Correct! AI isn't magic, and it doesn't verify answers by itself. It needs massive amounts of data to find the hidden rules."
+    correctResponse: "Correct! AI isn't magic, and it doesn't verify answers by itself. It needs massive amounts of data to find the hidden rules.",
+    incorrectResponse: "Not quite! AI doesn't just guess randomly. It learns by analyzing patterns in data. It needs massive amounts of data to find the hidden rules and make accurate predictions."
   },
   {
     question: "Now, think about the data you just collected. To help the AI decide if a mushroom is toxic, which features are actually helpful?",
@@ -87,7 +88,8 @@ const QUIZ_DATA = [
       { text: "Color, Shape, and Texture", correct: true },
       { text: "The name of the person who picked it", correct: false },
     ],
-    response: "Precisely! To make accurate predictions, the AI needs data related to the object itself. Irrelevant info—like who picked it—is just Noise. It will only confuse the model!"
+    correctResponse: "Precisely! To make accurate predictions, the AI needs data related to the object itself. Irrelevant info—like who picked it—is just Noise. It will only confuse the model!",
+    incorrectResponse: "Actually, the name of the person who picked it is irrelevant! To make accurate predictions, the AI needs data related to the object itself - like Color, Shape, and Texture. Irrelevant info is just Noise and will confuse the model!"
   },
 ]
 
@@ -136,8 +138,94 @@ const TRAINING_PHOTOS = [
   { id: '21', isGood: false, duplicateOf: '11' },
 ]
 
+// Color Map positions and data
+const MAP_POSITIONS = {
+  BOTTOM_LEFT: 0,
+  BOTTOM_RIGHT: 1,
+  TOP_LEFT: 2,
+  TOP_RIGHT: 3,
+}
+
+// Navigation directions available from each position
+const colorMapNavigation = {
+  [MAP_POSITIONS.BOTTOM_LEFT]: { up: MAP_POSITIONS.TOP_LEFT, right: MAP_POSITIONS.BOTTOM_RIGHT },
+  [MAP_POSITIONS.BOTTOM_RIGHT]: { up: MAP_POSITIONS.TOP_RIGHT, left: MAP_POSITIONS.BOTTOM_LEFT },
+  [MAP_POSITIONS.TOP_LEFT]: { down: MAP_POSITIONS.BOTTOM_LEFT, right: MAP_POSITIONS.TOP_RIGHT },
+  [MAP_POSITIONS.TOP_RIGHT]: { down: MAP_POSITIONS.BOTTOM_RIGHT, left: MAP_POSITIONS.TOP_LEFT },
+}
+
+// CSS transform values for each position
+const mapPositionTransforms = {
+  [MAP_POSITIONS.BOTTOM_LEFT]: 'translate(0%, -50%)',
+  [MAP_POSITIONS.BOTTOM_RIGHT]: 'translate(-50%, -50%)',
+  [MAP_POSITIONS.TOP_LEFT]: 'translate(0%, 0%)',
+  [MAP_POSITIONS.TOP_RIGHT]: 'translate(-50%, 0%)',
+}
+
+// Mushroom positions in color map
+const colorMapMushrooms = {
+  [MAP_POSITIONS.TOP_RIGHT]: [
+    { id: '17', size: 500, left: '2%', bottom: '0%', status: 'DANGER', toxicity: '99% Toxic' },
+  ],
+  [MAP_POSITIONS.BOTTOM_LEFT]: [
+    { id: '26', size: 700, right: '0%', bottom: '0%', status: 'DANGER', toxicity: '98% Toxic' },
+    { id: '14', size: 450, left: '0%', top: '0%', status: 'DANGER', toxicity: '94% Toxic' },
+    { id: '24', size: 350, left: '50%', top: '0%', status: 'EDIBLE', toxicity: '90% Safe' },
+  ],
+  [MAP_POSITIONS.BOTTOM_RIGHT]: [
+    { id: '21', size: 360, right: '30%', bottom: '0%', status: 'DANGER', toxicity: '99% Toxic' },
+    { id: '22', size: 250, right: '45%', bottom: '5%', status: 'EDIBLE', toxicity: '92% Safe' },
+    { id: '15', size: 250, left: '0%', top: '35%', status: 'DANGER', toxicity: '90% Toxic' },
+  ],
+  [MAP_POSITIONS.TOP_LEFT]: [
+    { id: '25', size: 600, left: '0%', bottom: '10%', status: 'DANGER', toxicity: '99% Toxic' },
+    { id: '18', size: 380, right: '30%', top: '30%', status: 'DANGER', toxicity: '95% Toxic' },
+    { id: '23', size: 260, right: '50%', bottom: '0%', status: 'EDIBLE', toxicity: '95% Safe' },
+    { id: '19', size: 350, left: '30%', top: '5%', status: 'DANGER', toxicity: '91% Toxic' },
+  ],
+}
+
+// NPC positions in color map
+const colorMapNpcs = {
+  [MAP_POSITIONS.TOP_RIGHT]: {
+    npc: 'npc_c',
+    image: '/jungle/npc_c2.gif',
+    right: '20%',
+    top: '5%',
+    height: '66.67vh',
+    width: 'auto',
+    dialogues: [
+      [
+        "We're back online! And the system is running smoothly.",
+        "The workers have their lunch, and everyone is safe thanks to you.",
+        "But the forest is huge and full of surprises. Since you have the scanner... why not take a look around?",
+        "Go ahead, try to see which other mushrooms are EDIBLE. Who knows? You might find something rare!"
+      ],
+      ["Production is up! No more sick days!"]
+    ]
+  },
+  [MAP_POSITIONS.BOTTOM_LEFT]: {
+    npc: 'npc_a',
+    image: '/jungle/npc_a2.gif',
+    right: '40%',
+    bottom: '5%',
+    height: '540px',
+    width: 'auto',
+    hoverText: "Yay! No stomach ache today."
+  },
+  [MAP_POSITIONS.BOTTOM_RIGHT]: {
+    npc: 'npc_b',
+    image: '/jungle/npc_b2.gif',
+    left: '5%',
+    bottom: '0%',
+    height: '540px',
+    width: 'auto',
+    hoverText: "This new scanner is like magic. It knows everything!"
+  },
+}
+
 const DataCleaning = ({ onComplete, onExit }) => {
-  const [phase, setPhase] = useState('INTRO') // INTRO, NOISE_REMOVAL, LABEL_CORRECTION, FILL_MISSING_INTRO, FILL_MISSING, QUIZ, TRAINING, VALIDATION_INTRO, VALIDATION_DATA, ADJUST_MODEL_INTRO, ADJUST_MODEL_DATA, ADJUST_MODEL_TRAINING, COMPLETE
+  const [phase, setPhase] = useState('INTRO') // INTRO, NOISE_REMOVAL, LABEL_CORRECTION, FILL_MISSING_INTRO, FILL_MISSING, QUIZ, TRAINING, VALIDATION_INTRO, VALIDATION_DATA, ADJUST_MODEL_INTRO, ADJUST_MODEL_DATA, ADJUST_MODEL_TRAINING, LOADING, COLOR_MAP_EXPLORATION, COMPLETE
   const [noiseBatch, setNoiseBatch] = useState(0)
   const [removedItems, setRemovedItems] = useState([])
   const [labelBatch, setLabelBatch] = useState(1)
@@ -187,6 +275,18 @@ const DataCleaning = ({ onComplete, onExit }) => {
   const [adjustDialogueHistory, setAdjustDialogueHistory] = useState([])
   const [selectedWrongOption, setSelectedWrongOption] = useState(null) // Track which wrong option was selected
   const [showFeedbackPanel, setShowFeedbackPanel] = useState(false) // Only show when clicking wrong photo
+
+  // Color Map Exploration state
+  const [mapPosition, setMapPosition] = useState(3) // 0: bottom-left, 1: bottom-right, 2: top-left, 3: top-right (start from top-right)
+  const [isMapTransitioning, setIsMapTransitioning] = useState(false)
+  const [showNpcDialogue, setShowNpcDialogue] = useState(false)
+  const [npcDialogueText, setNpcDialogueText] = useState('')
+  const [currentNpc, setCurrentNpc] = useState(null)
+  const [npcClickCount, setNpcClickCount] = useState({ npc_c: 0 })
+  const [loadingProgress, setLoadingProgress] = useState(0)
+  const [clickedMushroom, setClickedMushroom] = useState(null) // Track which mushroom is clicked
+  const [currentDialogueSet, setCurrentDialogueSet] = useState(0) // Track which dialogue set (first click, second click, etc.)
+  const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0) // Track current sentence in dialogue set
 
   const rangerDialogues = [
     "Outstanding work, Human! You've gathered enough raw data. But... we can't feed this directly to the AI. Not yet.",
@@ -378,26 +478,27 @@ const DataCleaning = ({ onComplete, onExit }) => {
       [quizStep]: { optionIndex, isCorrect }
     }))
 
-    if (isCorrect) {
-      // Add response and next question or move to training
-      const newMessages = [
-        ...chatMessages,
-        { type: 'user', text: selectedOption.text },
-        { type: 'ranger', text: currentQuestion.response }
-      ]
-      
-      if (quizStep < QUIZ_DATA.length - 1) {
-        // Add next question
-        newMessages.push({ type: 'ranger', text: QUIZ_DATA[quizStep + 1].question })
-        setChatMessages(newMessages)
-        setQuizStep(prev => prev + 1)
-      } else {
-        // Quiz complete, add training intro
-        newMessages.push({ type: 'ranger', text: TRAINING_INTRO })
-        newMessages.push({ type: 'button', text: "Ready, Let's GO!" })
-        setChatMessages(newMessages)
-        setQuizStep(prev => prev + 1)
-      }
+    // Choose response based on whether answer is correct or not
+    const response = isCorrect ? currentQuestion.correctResponse : currentQuestion.incorrectResponse
+    
+    // Add user's answer and ranger's response
+    const newMessages = [
+      ...chatMessages,
+      { type: 'user', text: selectedOption.text },
+      { type: 'ranger', text: response }
+    ]
+    
+    if (quizStep < QUIZ_DATA.length - 1) {
+      // Add next question
+      newMessages.push({ type: 'ranger', text: QUIZ_DATA[quizStep + 1].question })
+      setChatMessages(newMessages)
+      setQuizStep(prev => prev + 1)
+    } else {
+      // Quiz complete, add training intro
+      newMessages.push({ type: 'ranger', text: TRAINING_INTRO })
+      newMessages.push({ type: 'button', text: "Ready, Let's GO!" })
+      setChatMessages(newMessages)
+      setQuizStep(prev => prev + 1)
     }
   }
 
@@ -652,7 +753,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }
 
   const handleAdjustComplete = () => {
-    setPhase('COMPLETE')
+    setPhase('LOADING')
   }
 
   // Adjust slider drag handlers
@@ -694,6 +795,101 @@ const DataCleaning = ({ onComplete, onExit }) => {
       window.removeEventListener('mouseup', handleAdjustSliderMouseUp)
     }
   }, [isAdjustDragging, adjustSliderPos])
+
+  // Loading effect
+  useEffect(() => {
+    if (phase === 'LOADING') {
+      let progress = 0
+      const interval = setInterval(() => {
+        progress += 2
+        setLoadingProgress(progress)
+        if (progress >= 100) {
+          clearInterval(interval)
+          setTimeout(() => {
+            setPhase('COLOR_MAP_EXPLORATION')
+          }, 500)
+        }
+      }, 50)
+      return () => clearInterval(interval)
+    }
+  }, [phase])
+
+  // Color map navigation handlers
+  const handleMapNavigate = (direction) => {
+    const nextPosition = colorMapNavigation[mapPosition]?.[direction]
+    if (nextPosition !== undefined && !isMapTransitioning) {
+      setIsMapTransitioning(true)
+      setClickedMushroom(null) // Reset clicked mushroom when navigating
+      setShowNpcDialogue(false) // Hide any open dialogue
+      setCurrentNpc(null) // Reset current NPC
+      setTimeout(() => {
+        setMapPosition(nextPosition)
+        setIsMapTransitioning(false)
+      }, 500)
+    }
+  }
+
+  const handleColorMapNpcClick = (npcType) => {
+    const npc = colorMapNpcs[mapPosition]
+    if (npc && npc.npc === npcType) {
+      if (npcType === 'npc_c') {
+        const clickCount = npcClickCount.npc_c
+        if (clickCount < npc.dialogues.length) {
+          // Start new dialogue set
+          setCurrentDialogueSet(clickCount)
+          setCurrentDialogueIndex(0)
+          setNpcDialogueText(npc.dialogues[clickCount][0])
+          setShowNpcDialogue(true)
+          setCurrentNpc(npcType)
+        }
+      }
+    }
+  }
+
+  const handleDialogueContinue = () => {
+    const npc = colorMapNpcs[mapPosition]
+    if (npc && currentNpc === 'npc_c') {
+      const currentDialogueArray = npc.dialogues[currentDialogueSet]
+      if (currentDialogueIndex < currentDialogueArray.length - 1) {
+        // Show next sentence in current dialogue set
+        setCurrentDialogueIndex(prev => prev + 1)
+        setNpcDialogueText(currentDialogueArray[currentDialogueIndex + 1])
+      } else {
+        // End of current dialogue set
+        setShowNpcDialogue(false)
+        setNpcClickCount(prev => ({ ...prev, npc_c: prev.npc_c + 1 }))
+        setCurrentNpc(null)
+      }
+    } else {
+      // For other NPCs or simple dialogues
+      setShowNpcDialogue(false)
+      setCurrentNpc(null)
+    }
+  }
+
+  const handleColorMapNpcHover = (npcType, isEntering) => {
+    const npc = colorMapNpcs[mapPosition]
+    if (npc && npc.npc === npcType && npc.hoverText) {
+      if (isEntering) {
+        setNpcDialogueText(npc.hoverText)
+        setShowNpcDialogue(true)
+        setCurrentNpc(npcType)
+      } else {
+        setShowNpcDialogue(false)
+        setCurrentNpc(null)
+      }
+    }
+  }
+
+  const handleGlitchClickColorMap = () => {
+    setNpcDialogueText("You know, technology didn't save the day—YOU did. An AI is just a tool. It was your careful choices as a 'Data Detective' that taught it to see the truth.")
+    setShowNpcDialogue(true)
+    setCurrentNpc('glitch')
+  }
+
+  const handleMushroomClick = (mushroomId) => {
+    setClickedMushroom(clickedMushroom === mushroomId ? null : mushroomId)
+  }
 
   const isCellSelected = (rowId, field) => {
     return selectedCells.includes(`${rowId}-${field}`)
@@ -737,8 +933,8 @@ const DataCleaning = ({ onComplete, onExit }) => {
       position: 'absolute',
       top: '15px',
       right: '15px',
-      width: '70px',
-      height: '70px',
+      width: '120px',
+      height: '120px',
       zIndex: 100,
       cursor: 'pointer',
       borderRadius: '50%',
@@ -1723,6 +1919,162 @@ const DataCleaning = ({ onComplete, onExit }) => {
       color: '#666',
       marginTop: '5px',
     },
+    // Loading styles
+    loadingContainer: {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      textAlign: 'center',
+      zIndex: 50,
+    },
+    loadingTitle: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '32px',
+      fontWeight: 700,
+      color: '#fff',
+      marginBottom: '30px',
+      textShadow: '0 2px 10px rgba(0,0,0,0.5)',
+    },
+    loadingBar: {
+      width: '400px',
+      height: '20px',
+      background: 'rgba(255,255,255,0.3)',
+      borderRadius: '10px',
+      overflow: 'hidden',
+      margin: '0 auto',
+    },
+    loadingFill: {
+      height: '100%',
+      background: 'linear-gradient(90deg, #5170FF, #7B68EE)',
+      borderRadius: '10px',
+      transition: 'width 0.1s linear',
+    },
+    // Color Map styles
+    colorMapContainer: {
+      width: '100%',
+      height: '100vh',
+      position: 'relative',
+      overflow: 'hidden',
+    },
+    colorMapWrapper: {
+      width: '200%',
+      height: '200%',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      transition: 'transform 0.5s ease-in-out',
+    },
+    colorMapImage: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover',
+    },
+    colorMapNavArrow: {
+      position: 'absolute',
+      width: '60px',
+      height: '60px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      zIndex: 50,
+      transition: 'transform 0.2s',
+      background: 'rgba(255, 255, 255, 0.2)',
+      borderRadius: '50%',
+      backdropFilter: 'blur(10px)',
+    },
+    colorMapArrowImage: {
+      width: '30px',
+      height: '30px',
+      objectFit: 'contain',
+      filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.3))',
+    },
+    colorMapUpArrow: { top: '20px', left: '50%', transform: 'translateX(-50%)' },
+    colorMapDownArrow: { bottom: '20px', left: '50%', transform: 'translateX(-50%)' },
+    colorMapLeftArrow: { left: '20px', top: '50%', transform: 'translateY(-50%)' },
+    colorMapRightArrow: { right: '20px', top: '50%', transform: 'translateY(-50%)' },
+    colorMapMushroom: {
+      position: 'absolute',
+      cursor: 'pointer',
+      transition: 'transform 0.2s',
+      zIndex: 20,
+    },
+    colorMapMushroomImage: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'contain',
+      filter: 'drop-shadow(0 5px 15px rgba(0,0,0,0.3))',
+    },
+    colorMapNpc: {
+      position: 'absolute',
+      cursor: 'pointer',
+      zIndex: 25,
+      transition: 'transform 0.2s',
+    },
+    colorMapNpcImage: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'contain',
+    },
+    mushroomStatusBadge: {
+      position: 'absolute',
+      top: '-10px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      padding: '8px 16px',
+      borderRadius: '20px',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      fontWeight: 700,
+      textTransform: 'uppercase',
+      letterSpacing: '1px',
+      boxShadow: '0 3px 10px rgba(0,0,0,0.3)',
+      zIndex: 30,
+    },
+    dangerBadge: {
+      background: 'linear-gradient(135deg, #FF4444, #CC0000)',
+      color: '#fff',
+    },
+    edibleBadge: {
+      background: 'linear-gradient(135deg, #44FF44, #00CC00)',
+      color: '#fff',
+    },
+    colorMapDialogue: {
+      position: 'absolute',
+      top: '10%',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      maxWidth: '600px',
+      padding: '25px 30px',
+      borderRadius: '20px',
+      background: 'rgba(255, 255, 255, 0.98)',
+      border: '3px solid transparent',
+      backgroundImage: 'linear-gradient(rgba(255,255,255,0.98), rgba(255,255,255,0.98)), linear-gradient(90deg, #5170FF, #FFBBC4)',
+      backgroundOrigin: 'border-box',
+      backgroundClip: 'padding-box, border-box',
+      textAlign: 'center',
+      zIndex: 100,
+    },
+    colorMapDialogueText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '16px',
+      color: '#333',
+      lineHeight: 1.6,
+      marginBottom: '20px',
+    },
+    colorMapOkButton: {
+      padding: '12px 30px',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      fontWeight: 600,
+      color: '#5170FF',
+      background: 'transparent',
+      border: '2px solid #5170FF',
+      borderRadius: '10px',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+    },
   }
 
   const currentBatchItems = NOISE_BATCHES[noiseBatch] || []
@@ -1730,28 +2082,243 @@ const DataCleaning = ({ onComplete, onExit }) => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.overlay}></div>
+      {/* Only show overlay for non-color-map phases */}
+      {phase !== 'COLOR_MAP_EXPLORATION' && phase !== 'LOADING' && (
+        <div style={styles.overlay}></div>
+      )}
 
-      {/* Exit Button */}
-      <button style={styles.exitButton} onClick={onExit}>Exit</button>
+      {/* Loading Phase - Full black background */}
+      {phase === 'LOADING' && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: '#000',
+          zIndex: 200,
+        }}>
+          <div style={styles.loadingContainer}>
+            <h2 style={styles.loadingTitle}>Loading...</h2>
+            <div style={styles.loadingBar}>
+              <div style={{...styles.loadingFill, width: `${loadingProgress}%`}} />
+            </div>
+          </div>
+        </div>
+      )}
 
-      {/* Glitch NPC */}
-      <div 
-        style={styles.glitchNpc}
-        onClick={() => {
-          if (phase === 'NOISE_REMOVAL') {
-            setGlitchHintText("First, look at what you collected. Some of these aren't mushrooms at all! These are what we call 'Noise'.")
-          } else if (phase === 'LABEL_CORRECTION') {
-            setGlitchHintText(BATCH_HINTS[labelBatch])
-          }
-          setShowGlitchHint(true)
-        }}
-      >
-        <img src="/npc/npc1.png" alt="Glitch" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-      </div>
+      {/* Color Map Exploration Phase - Replace everything */}
+      {phase === 'COLOR_MAP_EXPLORATION' && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: '#000',
+          zIndex: 100,
+        }}>
+          <div style={styles.colorMapContainer}>
+            {/* Color Map Background */}
+            <div 
+              style={{
+                ...styles.colorMapWrapper,
+                transform: mapPositionTransforms[mapPosition],
+              }}
+            >
+              <img 
+                src="/jungle/map_color.png"
+                alt="Fungi Jungle Color Map"
+                style={styles.colorMapImage}
+              />
+            </div>
 
-      {/* Ranger Moss NPC */}
-      <img src="/jungle/npc_c.png" alt="Ranger Moss" style={styles.rangerNpc} />
+            {/* Exit Button */}
+            <button style={styles.exitButton} onClick={onExit}>Exit</button>
+
+            {/* Glitch NPC */}
+            <div 
+              style={{
+                ...styles.glitchNpc,
+                width: '120px',
+                height: '120px',
+              }}
+              onClick={handleGlitchClickColorMap}
+            >
+              <img src="/npc/npc1.png" alt="Glitch" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            </div>
+
+            {/* Navigation Arrows */}
+            {colorMapNavigation[mapPosition]?.up !== undefined && (
+              <button 
+                style={{ ...styles.colorMapNavArrow, ...styles.colorMapUpArrow }}
+                onClick={() => handleMapNavigate('up')}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'translateX(-50%) scale(1.1)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'translateX(-50%) scale(1)'}
+              >
+                <img 
+                  src="/jungle/icon/up.png" 
+                  alt="Up" 
+                  style={styles.colorMapArrowImage}
+                />
+              </button>
+            )}
+            {colorMapNavigation[mapPosition]?.down !== undefined && (
+              <button 
+                style={{ ...styles.colorMapNavArrow, ...styles.colorMapDownArrow }}
+                onClick={() => handleMapNavigate('down')}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'translateX(-50%) scale(1.1)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'translateX(-50%) scale(1)'}
+              >
+                <img 
+                  src="/jungle/icon/down.png" 
+                  alt="Down" 
+                  style={styles.colorMapArrowImage}
+                />
+              </button>
+            )}
+            {colorMapNavigation[mapPosition]?.left !== undefined && (
+              <button 
+                style={{ ...styles.colorMapNavArrow, ...styles.colorMapLeftArrow }}
+                onClick={() => handleMapNavigate('left')}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1)'}
+              >
+                <img 
+                  src="/jungle/icon/left.png" 
+                  alt="Left" 
+                  style={styles.colorMapArrowImage}
+                />
+              </button>
+            )}
+            {colorMapNavigation[mapPosition]?.right !== undefined && (
+              <button 
+                style={{ ...styles.colorMapNavArrow, ...styles.colorMapRightArrow }}
+                onClick={() => handleMapNavigate('right')}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1.1)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1)'}
+              >
+                <img 
+                  src="/jungle/icon/right.png" 
+                  alt="Right" 
+                  style={styles.colorMapArrowImage}
+                />
+              </button>
+            )}
+
+            {/* Mushrooms in current area */}
+            {colorMapMushrooms[mapPosition]?.map((mushroom) => (
+              <div
+                key={mushroom.id}
+                style={{
+                  ...styles.colorMapMushroom,
+                  width: `${mushroom.size}px`,
+                  height: `${mushroom.size}px`,
+                  top: mushroom.top,
+                  bottom: mushroom.bottom,
+                  left: mushroom.left,
+                  right: mushroom.right,
+                }}
+                onClick={() => handleMushroomClick(mushroom.id)}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <img 
+                  src={`/jungle/object/${mushroom.id}.png`}
+                  alt={`Mushroom ${mushroom.id}`}
+                  style={styles.colorMapMushroomImage}
+                />
+                {/* Only show status badge when mushroom is clicked */}
+                {clickedMushroom === mushroom.id && (
+                  <div 
+                    style={{
+                      ...styles.mushroomStatusBadge,
+                      ...(mushroom.status === 'DANGER' ? styles.dangerBadge : styles.edibleBadge),
+                    }}
+                  >
+                    {mushroom.status === 'DANGER' ? '❌' : '✅'} {mushroom.status} ({mushroom.toxicity})
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* NPC in current area */}
+            {colorMapNpcs[mapPosition] && (
+              <div
+                style={{
+                  ...styles.colorMapNpc,
+                  top: colorMapNpcs[mapPosition].top,
+                  bottom: colorMapNpcs[mapPosition].bottom,
+                  left: colorMapNpcs[mapPosition].left,
+                  right: colorMapNpcs[mapPosition].right,
+                  width: colorMapNpcs[mapPosition].width,
+                  height: colorMapNpcs[mapPosition].height,
+                }}
+                onClick={() => handleColorMapNpcClick(colorMapNpcs[mapPosition].npc)}
+                onMouseEnter={() => handleColorMapNpcHover(colorMapNpcs[mapPosition].npc, true)}
+                onMouseLeave={() => handleColorMapNpcHover(colorMapNpcs[mapPosition].npc, false)}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <img 
+                  src={colorMapNpcs[mapPosition].image}
+                  alt={colorMapNpcs[mapPosition].npc}
+                  style={styles.colorMapNpcImage}
+                />
+              </div>
+            )}
+
+            {/* NPC Dialogue */}
+            {showNpcDialogue && (
+              <div style={styles.colorMapDialogue}>
+                <p style={styles.colorMapDialogueText}>{npcDialogueText}</p>
+                <button
+                  style={styles.colorMapOkButton}
+                  onClick={currentNpc === 'npc_c' ? handleDialogueContinue : () => setShowNpcDialogue(false)}
+                  onMouseOver={(e) => {
+                    e.target.style.backgroundColor = '#5170FF'
+                    e.target.style.color = '#fff'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.backgroundColor = 'transparent'
+                    e.target.style.color = '#5170FF'
+                  }}
+                >
+                  {currentNpc === 'npc_c' && colorMapNpcs[mapPosition]?.dialogues[currentDialogueSet] && 
+                   currentDialogueIndex < colorMapNpcs[mapPosition].dialogues[currentDialogueSet].length - 1 
+                   ? 'Continue' : 'OK'}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* All other phases - only show when not in LOADING or COLOR_MAP_EXPLORATION */}
+      {phase !== 'LOADING' && phase !== 'COLOR_MAP_EXPLORATION' && (
+        <>
+          {/* Exit Button */}
+          <button style={styles.exitButton} onClick={onExit}>Exit</button>
+
+          {/* Glitch NPC */}
+          <div 
+            style={styles.glitchNpc}
+            onClick={() => {
+              if (phase === 'NOISE_REMOVAL') {
+                setGlitchHintText("First, look at what you collected. Some of these aren't mushrooms at all! These are what we call 'Noise'.")
+              } else if (phase === 'LABEL_CORRECTION') {
+                setGlitchHintText(BATCH_HINTS[labelBatch])
+              }
+              setShowGlitchHint(true)
+            }}
+          >
+            <img src="/npc/npc1.png" alt="Glitch" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          </div>
+
+          {/* Ranger Moss NPC */}
+          <img src="/jungle/npc_c.png" alt="Ranger Moss" style={styles.rangerNpc} />
+        </>
+      )}
 
       {/* Noise Removal Phase */}
       {phase === 'NOISE_REMOVAL' && (
@@ -1788,7 +2355,14 @@ const DataCleaning = ({ onComplete, onExit }) => {
                 // Show ALL removed items across all batches, not just current batch
                 const item = removedItems[i]
                 return (
-                  <div key={i} style={styles.trashSlot}>
+                  <div 
+                    key={i} 
+                    style={{
+                      ...styles.trashSlot,
+                      cursor: item ? 'pointer' : 'default',
+                    }}
+                    onClick={() => item && handleItemClick(item)}
+                  >
                     {item && (
                       <img 
                         src={`/jungle/object/${item}.png`}
@@ -2048,7 +2622,6 @@ const DataCleaning = ({ onComplete, onExit }) => {
                           {QUIZ_DATA[quizStep].options.map((opt, optIndex) => {
                             const answered = selectedAnswers[quizStep] !== undefined
                             const isSelected = selectedAnswers[quizStep]?.optionIndex === optIndex
-                            const isWrong = answered && !opt.correct
                             
                             return (
                               <button
@@ -2056,10 +2629,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
                                 style={{
                                   ...styles.quizOptionButton,
                                   ...(isSelected ? styles.quizOptionSelected : {}),
-                                  ...(isWrong ? styles.quizOptionDisabled : {}),
                                 }}
                                 onClick={() => !answered && handleQuizAnswer(optIndex, opt.correct)}
-                                disabled={answered && !opt.correct}
+                                disabled={answered}
                               >
                                 {opt.text}
                               </button>
@@ -2198,7 +2770,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
                   />
                   {selectedTestMushrooms.includes(mushroom.id) && mushroom.isNew && (
                     <img 
-                      src="/jungle/icon/right.png"
+                      src="/jungle/icon/correct.png"
                       alt="Correct"
                       style={styles.correctIcon}
                     />
@@ -2353,7 +2925,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
                     />
                     {selectedTrainingPhotos.includes(photo.id) && photo.isGood && (
                       <img 
-                        src="/jungle/icon/right.png"
+                        src="/jungle/icon/correct.png"
                         alt="Correct"
                         style={styles.trainingPhotoCheck}
                       />
@@ -2437,7 +3009,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
                 onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
                 onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
               >
-                Continue →
+                Done
               </button>
             </div>
           )}
@@ -2494,7 +3066,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
       )}
 
       {/* Dialogue History - Show until user enters card selection */}
-      {!showRangerDialogue && dialogueHistory.length > 0 && phase !== 'NOISE_REMOVAL' && phase !== 'LABEL_CORRECTION' && phase !== 'FILL_MISSING' && phase !== 'QUIZ' && phase !== 'TRAINING' && phase !== 'VALIDATION_INTRO' && phase !== 'VALIDATION_DATA' && phase !== 'ADJUST_MODEL_INTRO' && phase !== 'ADJUST_MODEL_DATA' && phase !== 'ADJUST_MODEL_TRAINING' && phase !== 'COMPLETE' && (
+      {!showRangerDialogue && dialogueHistory.length > 0 && phase !== 'NOISE_REMOVAL' && phase !== 'LABEL_CORRECTION' && phase !== 'FILL_MISSING' && phase !== 'QUIZ' && phase !== 'TRAINING' && phase !== 'VALIDATION_INTRO' && phase !== 'VALIDATION_DATA' && phase !== 'ADJUST_MODEL_INTRO' && phase !== 'ADJUST_MODEL_DATA' && phase !== 'ADJUST_MODEL_TRAINING' && phase !== 'LOADING' && phase !== 'COLOR_MAP_EXPLORATION' && phase !== 'COMPLETE' && (
         <div style={styles.leftDialogueContainer}>
           <div style={styles.dialogueHistoryBox}>
             <p style={styles.speakerName}>Ranger Moss:</p>
@@ -2511,7 +3083,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
       )}
 
       {/* Glitch Hint - Inline near avatar */}
-      {showGlitchHint && (
+      {showGlitchHint && phase !== 'LOADING' && phase !== 'COLOR_MAP_EXPLORATION' && (
         <div style={styles.glitchHintInline}>
           <button style={styles.glitchHintCloseBtn} onClick={() => setShowGlitchHint(false)}>×</button>
           <p style={styles.glitchHintInlineText}>💡 {glitchHintText}</p>

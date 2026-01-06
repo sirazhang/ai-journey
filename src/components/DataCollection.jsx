@@ -27,10 +27,10 @@ const positionTransforms = {
 // Mushroom positions in each quadrant (based on design images)
 const mushroomPositions = {
   [POSITIONS.TOP_LEFT]: [
-    { id: '02', size: 240, right: '5%', bottom: '30%' },
+    { id: '02', size: 250, right: '35%', bottom: '25%' },
     { id: '04', size: 320, left: '0%', top: '50%' },
-    { id: '05', size: 240, right: '0%', bottom: '30%' },
-    { id: '10', size: 200, left: '50%', top: '0%' },
+    { id: '05', size: 240, right: '0%', top: '25%' },
+    { id: '10', size: 200, left: '40%', top: '5%' },
   ],
   [POSITIONS.BOTTOM_LEFT]: [
     { id: '01', size: 330, right: '0%', bottom: '15%' },
@@ -42,7 +42,7 @@ const mushroomPositions = {
     { id: '06', size: 400, right: '20%', bottom: '0%' },
     { id: '03', size: 200, right: '25%', top: '0%' },
     { id: '09', size: 220, left: '10%', top: '5%' },
-    { id: '12', size: 150, right: '5%', bottom: '30%' },
+    { id: '12', size: 150, right: '5%', bottom: '35%' },
   ],
   [POSITIONS.TOP_RIGHT]: [], // Ranger Moss area - no mushrooms
 }
@@ -54,8 +54,8 @@ const npcPositions = {
     image: '/jungle/npc_a.png', 
     top: '5%',
     right: '50%',
-    width: 240,
-    height: 240,
+    width: 'auto',
+    height: '25vh',
     dialogueTop: '33.33%',
     dialogueLeft: '80px',
   },
@@ -64,8 +64,8 @@ const npcPositions = {
     image: '/jungle/npc_b.gif', 
     left: '0%', 
     bottom: '0%',
-    width: 280,
-    height: 280,
+    width: 'auto',
+    height: '25vh',
     dialogueTop: '33.33%',
     dialogueRight: '80px',
   },
@@ -230,8 +230,8 @@ const DataCollection = ({ onComplete, onExit }) => {
       position: 'absolute',
       top: '10px',
       right: '10px',
-      width: '80px',
-      height: '80px',
+      width: '120px',
+      height: '120px',
       zIndex: 100,
       cursor: 'pointer',
       transition: 'transform 0.2s',
