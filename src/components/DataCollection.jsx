@@ -27,31 +27,58 @@ const positionTransforms = {
 // Mushroom positions in each quadrant (based on design images)
 const mushroomPositions = {
   [POSITIONS.TOP_LEFT]: [
-    { id: '11', top: '25%', left: '15%' },
-    { id: '09', top: '15%', left: '40%' },
-    { id: '02', top: '45%', left: '55%' },
-    { id: '04', top: '55%', left: '20%' },
+    { id: '02', size: 240, right: '5%', bottom: '30%' },
+    { id: '04', size: 320, left: '0%', top: '50%' },
+    { id: '05', size: 240, right: '0%', bottom: '30%' },
+    { id: '10', size: 200, left: '50%', top: '0%' },
   ],
   [POSITIONS.BOTTOM_LEFT]: [
-    { id: '10', top: '20%', left: '10%' },
-    { id: '06', top: '50%', left: '60%' },
-    { id: '12', top: '30%', left: '75%' },
-    { id: '03', top: '15%', left: '55%' },
+    { id: '01', size: 330, right: '0%', bottom: '15%' },
+    { id: '07', size: 200, left: '0%', top: '5%' },
+    { id: '08', size: 310, left: '0%', bottom: '10%' },
+    { id: '11', size: 300, left: '50%', bottom: '15%' },
   ],
   [POSITIONS.BOTTOM_RIGHT]: [
-    { id: '07', top: '15%', left: '15%' },
-    { id: '08', top: '45%', left: '10%' },
-    { id: '01', top: '55%', left: '70%' },
-    { id: '05', top: '25%', left: '55%' },
+    { id: '06', size: 400, right: '20%', bottom: '0%' },
+    { id: '03', size: 200, right: '25%', top: '0%' },
+    { id: '09', size: 220, left: '10%', top: '5%' },
+    { id: '12', size: 150, right: '5%', bottom: '30%' },
   ],
   [POSITIONS.TOP_RIGHT]: [], // Ranger Moss area - no mushrooms
 }
 
 // NPC positions
 const npcPositions = {
-  [POSITIONS.BOTTOM_LEFT]: { npc: 'npc_a', image: '/jungle/npc_a.png', top: '50%', left: '35%' },
-  [POSITIONS.BOTTOM_RIGHT]: { npc: 'npc_b', image: '/jungle/npc_b.gif', top: '45%', left: '55%' },
-  [POSITIONS.TOP_RIGHT]: { npc: 'npc_c', image: '/jungle/npc_c.png', top: '50%', left: '50%' },
+  [POSITIONS.BOTTOM_LEFT]: { 
+    npc: 'npc_a', 
+    image: '/jungle/npc_a.png', 
+    top: '5%',
+    right: '50%',
+    width: 240,
+    height: 240,
+    dialogueTop: '33.33%',
+    dialogueLeft: '80px',
+  },
+  [POSITIONS.BOTTOM_RIGHT]: { 
+    npc: 'npc_b', 
+    image: '/jungle/npc_b.gif', 
+    left: '0%', 
+    bottom: '0%',
+    width: 280,
+    height: 280,
+    dialogueTop: '33.33%',
+    dialogueRight: '80px',
+  },
+  [POSITIONS.TOP_RIGHT]: { 
+    npc: 'npc_c', 
+    image: '/jungle/npc_c.png', 
+    bottom: '10%', 
+    right: '15%',
+    width: 'auto',
+    height: '66.67vh',
+    dialogueTop: '25%',
+    dialogueLeft: '80px',
+  },
 }
 
 // Mushroom data from object_info.json
@@ -80,6 +107,7 @@ const DataCollection = ({ onComplete, onExit }) => {
   const [showNpcDialogue, setShowNpcDialogue] = useState(false)
   const [npcDialogueText, setNpcDialogueText] = useState('')
   const [allCollected, setAllCollected] = useState(false)
+  const [hoveredNpc, setHoveredNpc] = useState(null) // Track which NPC is hovered ('npc_a', 'npc_b', 'npc_c', 'glitch')
 
   const handleNavigate = (direction) => {
     const nextPosition = navigationMap[currentPosition]?.[direction]
@@ -114,26 +142,46 @@ const DataCollection = ({ onComplete, onExit }) => {
   }
 
   const handleNpcClick = (npcType) => {
-    if (collectedIds.length < 12) {
-      setNpcDialogueText("Not finished yet! You're still missing some data!")
-      setShowNpcDialogue(true)
-    } else if (npcType === 'npc_c') {
+    if (npcType === 'npc_c' && collectedIds.length === 12) {
       // Ranger Moss - proceed to data cleaning
       onComplete(collectedIds)
+    }
+  }
+
+  const handleNpcHover = (npcType, isEntering) => {
+    if (isEntering) {
+      setHoveredNpc(npcType)
+      if (collectedIds.length < 12) {
+        setNpcDialogueText("Not finished yet! You're still missing some data!")
+        setShowNpcDialogue(true)
+      } else {
+        setNpcDialogueText("Give ALL these to Ranger Moss!")
+        setShowNpcDialogue(true)
+      }
     } else {
-      // Other NPCs remind to give to Ranger Moss
-      setNpcDialogueText("Give ALL these to Ranger Moss!")
-      setShowNpcDialogue(true)
+      setHoveredNpc(null)
+      setShowNpcDialogue(false)
+    }
+  }
+
+  const handleGlitchHover = (isEntering) => {
+    if (isEntering) {
+      setHoveredNpc('glitch')
+      if (collectedIds.length < 12) {
+        setNpcDialogueText("Not finished yet! You're still missing some data!")
+        setShowNpcDialogue(true)
+      } else {
+        setNpcDialogueText("Give ALL these to Ranger Moss!")
+        setShowNpcDialogue(true)
+      }
+    } else {
+      setHoveredNpc(null)
+      setShowNpcDialogue(false)
     }
   }
 
   const handleGlitchClick = () => {
-    if (allCollected) {
-      setNpcDialogueText("Give ALL these to Ranger Moss!")
-      setShowNpcDialogue(true)
-    } else {
-      setShowTaskHint(true)
-    }
+    setShowTaskHint(true)
   }
 
   const availableDirections = navigationMap[currentPosition] || {}
@@ -218,8 +266,6 @@ const DataCollection = ({ onComplete, onExit }) => {
     rightArrow: { right: '15px', top: '50%', transform: 'translateY(-50%)' },
     mushroomItem: {
       position: 'absolute',
-      width: '120px',
-      height: '120px',
       cursor: 'pointer',
       transition: 'transform 0.2s, filter 0.2s',
       zIndex: 20,
@@ -241,6 +287,23 @@ const DataCollection = ({ onComplete, onExit }) => {
       cursor: 'pointer',
       zIndex: 25,
       transition: 'transform 0.2s',
+    },
+    // NPC dialogue next to NPC (not centered)
+    npcDialogueContainer: {
+      position: 'absolute',
+      zIndex: 150,
+      maxWidth: '400px',
+    },
+    npcDialogueBoxInline: {
+      padding: '20px 25px',
+      borderRadius: '15px',
+      background: 'rgba(255, 255, 255, 0.98)',
+      border: '3px solid transparent',
+      backgroundImage: 'linear-gradient(rgba(255,255,255,0.98), rgba(255,255,255,0.98)), linear-gradient(90deg, #5170FF, #FFBBC4)',
+      backgroundOrigin: 'border-box',
+      backgroundClip: 'padding-box, border-box',
+      textAlign: 'center',
+      boxShadow: '0 5px 25px rgba(0,0,0,0.2)',
     },
     slotsContainer: {
       position: 'absolute',
@@ -430,8 +493,8 @@ const DataCollection = ({ onComplete, onExit }) => {
       <div 
         style={styles.glitchNpc}
         onClick={handleGlitchClick}
-        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        onMouseEnter={() => handleGlitchHover(true)}
+        onMouseLeave={() => handleGlitchHover(false)}
       >
         <img src="/npc/npc1.png" alt="Glitch" style={styles.glitchImage} />
       </div>
@@ -479,32 +542,39 @@ const DataCollection = ({ onComplete, onExit }) => {
       )}
 
       {/* Mushrooms in current quadrant */}
-      {currentMushrooms.map((mushroom) => (
-        <div
-          key={mushroom.id}
-          style={{
-            ...styles.mushroomItem,
-            top: mushroom.top,
-            left: mushroom.left,
-            ...(collectedIds.includes(mushroom.id) ? styles.mushroomCollected : {}),
-          }}
-          onClick={() => handleMushroomClick(mushroom.id)}
-          onMouseOver={(e) => {
-            if (!collectedIds.includes(mushroom.id)) {
-              e.currentTarget.style.transform = 'scale(1.15)'
-            }
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.transform = 'scale(1)'
-          }}
-        >
-          <img 
-            src={`/jungle/object/${mushroom.id}.png`}
-            alt={mushroomData[mushroom.id]?.name}
-            style={styles.mushroomImage}
-          />
-        </div>
-      ))}
+      {currentMushrooms.map((mushroom) => {
+        const mushroomSize = mushroom.size || 120
+        return (
+          <div
+            key={mushroom.id}
+            style={{
+              ...styles.mushroomItem,
+              width: `${mushroomSize}px`,
+              height: `${mushroomSize}px`,
+              top: mushroom.top,
+              bottom: mushroom.bottom,
+              left: mushroom.left,
+              right: mushroom.right,
+              ...(collectedIds.includes(mushroom.id) ? styles.mushroomCollected : {}),
+            }}
+            onClick={() => handleMushroomClick(mushroom.id)}
+            onMouseOver={(e) => {
+              if (!collectedIds.includes(mushroom.id)) {
+                e.currentTarget.style.transform = 'scale(1.15)'
+              }
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'scale(1)'
+            }}
+          >
+            <img 
+              src={`/jungle/object/${mushroom.id}.png`}
+              alt={mushroomData[mushroom.id]?.name}
+              style={styles.mushroomImage}
+            />
+          </div>
+        )
+      })}
 
       {/* NPC in current quadrant */}
       {currentNpc && (
@@ -514,12 +584,51 @@ const DataCollection = ({ onComplete, onExit }) => {
           style={{
             ...styles.npcCharacter,
             top: currentNpc.top,
+            bottom: currentNpc.bottom,
             left: currentNpc.left,
+            right: currentNpc.right,
+            width: currentNpc.width === 'auto' ? 'auto' : `${currentNpc.width}px`,
+            height: currentNpc.height ? (typeof currentNpc.height === 'string' ? currentNpc.height : `${currentNpc.height}px`) : 'auto',
           }}
           onClick={() => handleNpcClick(currentNpc.npc)}
-          onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-          onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          onMouseEnter={() => handleNpcHover(currentNpc.npc, true)}
+          onMouseLeave={() => handleNpcHover(currentNpc.npc, false)}
         />
+      )}
+
+      {/* NPC Dialogue - Next to NPC or Glitch */}
+      {showNpcDialogue && (
+        <div 
+          style={{
+            ...styles.npcDialogueContainer,
+            ...(hoveredNpc === 'glitch' ? {
+              top: '15px',
+              right: '100px',
+            } : currentNpc ? {
+              top: currentNpc.dialogueTop,
+              left: currentNpc.dialogueLeft,
+              right: currentNpc.dialogueRight,
+            } : {}),
+          }}
+        >
+          <div style={styles.npcDialogueBoxInline}>
+            <p style={styles.dialogueText}>{npcDialogueText}</p>
+            <button
+              style={styles.okButton}
+              onClick={() => setShowNpcDialogue(false)}
+              onMouseOver={(e) => {
+                e.target.style.backgroundColor = '#5170FF'
+                e.target.style.color = '#fff'
+              }}
+              onMouseOut={(e) => {
+                e.target.style.backgroundColor = 'transparent'
+                e.target.style.color = '#5170FF'
+              }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
       )}
 
       {/* Collection Slots at Bottom */}
@@ -583,28 +692,7 @@ const DataCollection = ({ onComplete, onExit }) => {
         </div>
       )}
 
-      {/* NPC Dialogue Modal */}
-      {showNpcDialogue && (
-        <div style={styles.cardOverlay} onClick={() => setShowNpcDialogue(false)}>
-          <div style={styles.npcDialogueBox} onClick={(e) => e.stopPropagation()}>
-            <p style={styles.dialogueText}>{npcDialogueText}</p>
-            <button
-              style={styles.okButton}
-              onClick={() => setShowNpcDialogue(false)}
-              onMouseOver={(e) => {
-                e.target.style.backgroundColor = '#5170FF'
-                e.target.style.color = '#fff'
-              }}
-              onMouseOut={(e) => {
-                e.target.style.backgroundColor = 'transparent'
-                e.target.style.color = '#5170FF'
-              }}
-            >
-              OK
-            </button>
-          </div>
-        </div>
-      )}
+
     </div>
   )
 }

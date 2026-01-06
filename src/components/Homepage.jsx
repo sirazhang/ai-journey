@@ -1,6 +1,35 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 
-const Homepage = ({ onStart, onSignIn, isFirstVisit }) => {
+const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
+  const [hasProgress, setHasProgress] = useState(false)
+  const [username, setUsername] = useState('')
+
+  useEffect(() => {
+    // Check if user has previous progress
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (savedUser) {
+      const userData = JSON.parse(savedUser)
+      setUsername(userData.username || '')
+      setHasProgress(userData.hasStarted === true)
+    }
+  }, [])
+
+  const handleStartOver = () => {
+    // Reset progress but keep user info
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (savedUser) {
+      const userData = JSON.parse(savedUser)
+      userData.hasStarted = false
+      userData.currentProgress = null
+      localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+    }
+    if (onStartOver) {
+      onStartOver()
+    } else {
+      onStart()
+    }
+  }
+
   const styles = {
     container: {
       width: '100%',
@@ -21,18 +50,95 @@ const Homepage = ({ onStart, onSignIn, isFirstVisit }) => {
       objectFit: 'cover',
       zIndex: 0,
     },
-    overlay: {
+    welcome: {
       position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      background: 'rgba(0, 0, 0, 0.3)',
-      zIndex: 1,
+      top: '30px',
+      left: '40px',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '18px',
+      fontWeight: 400,
+      color: '#fff',
+      zIndex: 3,
+    },
+    signInButton: {
+      position: 'absolute',
+      top: '25px',
+      right: '40px',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '16px',
+      fontWeight: 400,
+      color: '#fff',
+      background: 'transparent',
+      border: '2px solid rgba(255, 255, 255, 0.5)',
+      borderRadius: '8px',
+      padding: '10px 25px',
+      cursor: 'pointer',
+      zIndex: 3,
+      transition: 'all 0.3s ease',
     },
     content: {
       position: 'relative',
       zIndex: 2,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    title: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '90px',
+      fontWeight: 800,
+      color: '#fff',
+      marginBottom: '10px',
+      textAlign: 'center',
+      letterSpacing: '8px',
+      textShadow: '0 4px 20px rgba(0,0,0,0.5)',
+    },
+    subtitle: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '22px',
+      fontWeight: 300,
+      color: '#fff',
+      marginBottom: '50px',
+      textAlign: 'center',
+      opacity: 0.9,
+      textShadow: '0 2px 10px rgba(0,0,0,0.5)',
+    },
+    // CONTINUE button for returning users
+    continueButton: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '32px',
+      fontWeight: 700,
+      color: '#fff',
+      backgroundColor: '#000',
+      border: '3px solid transparent',
+      backgroundImage: 'linear-gradient(#000, #000), linear-gradient(90deg, #5170FF, #FF6B9D)',
+      backgroundOrigin: 'border-box',
+      backgroundClip: 'padding-box, border-box',
+      padding: '25px 120px',
+      borderRadius: '15px',
+      cursor: 'pointer',
+      letterSpacing: '3px',
+      transition: 'all 0.3s ease',
+      marginBottom: '25px',
+    },
+    // START OVER text button
+    startOverButton: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '22px',
+      fontWeight: 600,
+      color: '#fff',
+      background: 'transparent',
+      border: 'none',
+      padding: '10px 30px',
+      cursor: 'pointer',
+      letterSpacing: '2px',
+      opacity: 0.9,
+      transition: 'opacity 0.3s ease',
+      textShadow: '0 2px 10px rgba(0,0,0,0.5)',
+    },
+    // START button for first-time users (in card)
+    cardWrapper: {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -47,7 +153,7 @@ const Homepage = ({ onStart, onSignIn, isFirstVisit }) => {
       backgroundClip: 'padding-box, border-box',
       animation: 'breathe 3s ease-in-out infinite',
     },
-    title: {
+    cardTitle: {
       fontFamily: "'Montserrat', sans-serif",
       fontSize: '72px',
       fontWeight: 800,
@@ -56,7 +162,7 @@ const Homepage = ({ onStart, onSignIn, isFirstVisit }) => {
       textAlign: 'center',
       letterSpacing: '2px',
     },
-    subtitle: {
+    cardSubtitle: {
       fontFamily: "'Roboto', sans-serif",
       fontSize: '20px',
       fontWeight: 300,
@@ -79,34 +185,6 @@ const Homepage = ({ onStart, onSignIn, isFirstVisit }) => {
       letterSpacing: '2px',
       transition: 'all 0.3s ease',
     },
-    welcome: {
-      position: 'absolute',
-      top: '30px',
-      left: '40px',
-      fontFamily: "'Roboto', sans-serif",
-      fontSize: '16px',
-      fontWeight: 400,
-      color: '#fff',
-      zIndex: 3,
-      letterSpacing: '1px',
-    },
-    signIn: {
-      position: 'absolute',
-      top: '30px',
-      right: '40px',
-      fontFamily: "'Roboto', sans-serif",
-      fontSize: '16px',
-      fontWeight: 500,
-      background: 'linear-gradient(90deg, #CDFFD8, #94B9FF)',
-      WebkitBackgroundClip: 'text',
-      WebkitTextFillColor: 'transparent',
-      backgroundClip: 'text',
-      cursor: 'pointer',
-      zIndex: 3,
-      letterSpacing: '1px',
-      border: 'none',
-      backgroundColor: 'transparent',
-    },
     footer: {
       position: 'absolute',
       bottom: '20px',
@@ -117,46 +195,98 @@ const Homepage = ({ onStart, onSignIn, isFirstVisit }) => {
       color: '#fff',
       opacity: 0.7,
       zIndex: 3,
+      textAlign: 'right',
     },
+    keyframes: `
+      @keyframes breathe {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(81, 112, 255, 0.3); }
+        50% { transform: scale(1.02); box-shadow: 0 0 50px rgba(81, 112, 255, 0.5); }
+      }
+    `,
   }
 
   return (
     <div style={styles.container}>
+      <style>{styles.keyframes}</style>
       <img 
         src="/background/home.gif" 
         alt="Background" 
         style={styles.backgroundGif}
       />
-      <div style={styles.overlay}></div>
       
-      <span style={styles.welcome}>welcome</span>
+      <span style={styles.welcome}>Welcome!</span>
       
-      <button style={styles.signIn} onClick={onSignIn}>
-        sign in
+      <button 
+        style={styles.signInButton} 
+        onClick={onSignIn}
+        onMouseOver={(e) => {
+          e.target.style.borderColor = '#fff'
+          e.target.style.background = 'rgba(255,255,255,0.1)'
+        }}
+        onMouseOut={(e) => {
+          e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)'
+          e.target.style.background = 'transparent'
+        }}
+      >
+        Sign in
       </button>
       
-      <div style={styles.content}>
-        <h1 style={styles.title}>AI Journey</h1>
-        <p style={styles.subtitle}>An interactive journey into AI literacy</p>
-        <button 
-          style={styles.startButton}
-          onClick={onStart}
-          onMouseOver={(e) => {
-            e.target.style.backgroundColor = '#333'
-            e.target.style.transform = 'scale(1.05)'
-          }}
-          onMouseOut={(e) => {
-            e.target.style.backgroundColor = '#000'
-            e.target.style.transform = 'scale(1)'
-          }}
-        >
-          start
-        </button>
-      </div>
+      {hasProgress ? (
+        // Returning user view - CONTINUE / START OVER
+        <div style={styles.content}>
+          <h1 style={styles.title}>AI JOURNEY</h1>
+          <p style={styles.subtitle}>An Interactive Journey into AI Literacy</p>
+          
+          <button 
+            style={styles.continueButton}
+            onClick={onContinue || onStart}
+            onMouseOver={(e) => {
+              e.target.style.transform = 'scale(1.05)'
+              e.target.style.boxShadow = '0 10px 40px rgba(81, 112, 255, 0.4)'
+            }}
+            onMouseOut={(e) => {
+              e.target.style.transform = 'scale(1)'
+              e.target.style.boxShadow = 'none'
+            }}
+          >
+            CONTINUE
+          </button>
+          
+          <button 
+            style={styles.startOverButton}
+            onClick={handleStartOver}
+            onMouseOver={(e) => e.target.style.opacity = '0.6'}
+            onMouseOut={(e) => e.target.style.opacity = '0.9'}
+          >
+            START OVER
+          </button>
+        </div>
+      ) : (
+        // First-time user view - Card with START
+        <div style={styles.cardWrapper}>
+          <h1 style={styles.cardTitle}>AI Journey</h1>
+          <p style={styles.cardSubtitle}>An interactive journey into AI literacy</p>
+          <button 
+            style={styles.startButton}
+            onClick={onStart}
+            onMouseOver={(e) => {
+              e.target.style.backgroundColor = '#333'
+              e.target.style.transform = 'scale(1.05)'
+            }}
+            onMouseOut={(e) => {
+              e.target.style.backgroundColor = '#000'
+              e.target.style.transform = 'scale(1)'
+            }}
+          >
+            start
+          </button>
+        </div>
+      )}
       
-      <span style={styles.footer}>
-        Ver 1.0 Beta © 2026 Zhihui ZHANG All Rights Reserved.
-      </span>
+      <div style={styles.footer}>
+        <div>Ver 0.8.0 Beta</div>
+        <div>© 2026 Zhihui ZHANG All Rights Reserved.</div>
+      </div>
     </div>
   )
 }

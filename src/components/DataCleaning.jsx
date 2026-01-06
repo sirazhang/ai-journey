@@ -95,8 +95,49 @@ const TRAINING_INTRO = "The dataset is clean. The patterns are clear. Are you re
 
 const TRAINING_VOICEOVER = "Watch closely. The AI is taking the mushroom features as Input. But the Output isn't just a simple 'Yes' or 'No'. It gives us a Probability—a percentage score of how likely it is that the mushroom is toxic."
 
+// Validation phase data
+const VALIDATION_INTRO = "Training complete! The AI has learned to identify the 'Toxic Traits'. But wait... we need to verify if it really learned, or if it just memorized our list. How should we test the AI?"
+
+const VALIDATION_OPTIONS = [
+  { text: "Test with NEW mushrooms it hasn't seen", correct: true },
+  { text: "Test with the SAME mushrooms it already studied", correct: false },
+]
+
+const VALIDATION_CORRECT_RESPONSE = "Spot on! If we test with old data, the AI is just cheating—like memorizing the answers to a test. Only by using Unseen Data (New Mushrooms) can we prove it can truly judge and generalize!"
+
+// Test mushrooms for validation - 13, 14, 15 are new (correct), 08 is already collected (wrong)
+const TEST_MUSHROOMS = [
+  { id: '13', isNew: true },
+  { id: '14', isNew: true },
+  { id: '15', isNew: true },
+  { id: '08', isNew: false },
+]
+
+// Model Adjustment phase data
+const ADJUST_MODEL_DIALOGUES = [
+  "Uh oh... 😱 This is bad news! The AI only got 45% correct on the new mushrooms. It's confusing 😵‍💫 the 'Death Cap' with the 'Edible Paddy Straw' mushroom! If we use this AI now, the Elf might get a tummy ache... or worse! We can't give up, but we need to fix this.",
+  "Think like a Data Scientist. Why is the AI failing? It probably hasn't seen enough examples of the tricky mushrooms yet. What should we do to improve the AI's accuracy?"
+]
+
+const ADJUST_MODEL_OPTIONS = [
+  { text: "Feed it MORE varied photos & Retrain", correct: true },
+  { text: "Only test it on mushrooms it knows", correct: false },
+  { text: "Change the code to say 'Safe' for everything", correct: false },
+]
+
+const ADJUST_CORRECT_RESPONSE = "Brilliant! 🌟 Option B is cheating (and dangerous!), and Option C is just lazy code."
+
+const TRAINING_PHOTOS = [
+  { id: '16', isGood: true },
+  { id: '17', isGood: true },
+  { id: '18', isGood: true },
+  { id: '19', isGood: true },
+  { id: '20', isGood: false, duplicateOf: '12' },
+  { id: '21', isGood: false, duplicateOf: '11' },
+]
+
 const DataCleaning = ({ onComplete, onExit }) => {
-  const [phase, setPhase] = useState('INTRO') // INTRO, NOISE_REMOVAL, LABEL_CORRECTION, FILL_MISSING_INTRO, FILL_MISSING, QUIZ, TRAINING, COMPLETE
+  const [phase, setPhase] = useState('INTRO') // INTRO, NOISE_REMOVAL, LABEL_CORRECTION, FILL_MISSING_INTRO, FILL_MISSING, QUIZ, TRAINING, VALIDATION_INTRO, VALIDATION_DATA, ADJUST_MODEL_INTRO, ADJUST_MODEL_DATA, ADJUST_MODEL_TRAINING, COMPLETE
   const [noiseBatch, setNoiseBatch] = useState(0)
   const [removedItems, setRemovedItems] = useState([])
   const [labelBatch, setLabelBatch] = useState(1)
@@ -107,6 +148,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
   const [rangerDialogueIndex, setRangerDialogueIndex] = useState(0)
   const [displayedText, setDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [dialogueHistory, setDialogueHistory] = useState([]) // Keep all dialogue messages
   
   // Fill Missing Values state
   const [currentMissingIndex, setCurrentMissingIndex] = useState(0)
@@ -120,6 +162,31 @@ const DataCleaning = ({ onComplete, onExit }) => {
   const [selectedAnswers, setSelectedAnswers] = useState({})
   const [trainingProgress, setTrainingProgress] = useState(0)
   const [showTrainingVoiceover, setShowTrainingVoiceover] = useState(false)
+  
+  // Validation state
+  const [validationStep, setValidationStep] = useState(0) // 0: question, 1: answered correctly, 2: data selection
+  const [selectedTestMushrooms, setSelectedTestMushrooms] = useState([]) // Selected mushroom IDs for testing
+  const [isScanning, setIsScanning] = useState(false)
+  const [showPrediction, setShowPrediction] = useState(false)
+  const [sliderPosition, setSliderPosition] = useState(0) // Position of slider (0 to maxSlide)
+  const [isDragging, setIsDragging] = useState(false)
+  const sliderContainerRef = React.useRef(null)
+
+  // Model Adjustment state
+  const [adjustDialogueIndex, setAdjustDialogueIndex] = useState(0)
+  const [adjustStep, setAdjustStep] = useState(0) // 0: dialogues, 1: choice, 2: data selection, 3: retraining
+  const [selectedTrainingPhotos, setSelectedTrainingPhotos] = useState([])
+  const [feedbackPhoto, setFeedbackPhoto] = useState(null) // Which photo to show in feedback panel
+  const [adjustProgress, setAdjustProgress] = useState(0)
+  const [showRangerPraise, setShowRangerPraise] = useState(false)
+  const adjustSliderRef = React.useRef(null)
+  const [adjustSliderPos, setAdjustSliderPos] = useState(0)
+  const [isAdjustDragging, setIsAdjustDragging] = useState(false)
+  const [adjustDisplayedText, setAdjustDisplayedText] = useState('')
+  const [isAdjustTyping, setIsAdjustTyping] = useState(false)
+  const [adjustDialogueHistory, setAdjustDialogueHistory] = useState([])
+  const [selectedWrongOption, setSelectedWrongOption] = useState(null) // Track which wrong option was selected
+  const [showFeedbackPanel, setShowFeedbackPanel] = useState(false) // Only show when clicking wrong photo
 
   const rangerDialogues = [
     "Outstanding work, Human! You've gathered enough raw data. But... we can't feed this directly to the AI. Not yet.",
@@ -172,6 +239,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
       setIsTyping(false)
       return
     }
+
+    // Add current dialogue to history
+    setDialogueHistory(prev => [...prev, rangerDialogues[rangerDialogueIndex]])
 
     if (rangerDialogueIndex < rangerDialogues.length - 1) {
       setRangerDialogueIndex(prev => prev + 1)
@@ -349,8 +419,281 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }
 
   const handleTrainingComplete = () => {
+    setPhase('VALIDATION_INTRO')
+    setValidationStep(0)
+  }
+
+  const handleValidationAnswer = (isCorrect) => {
+    if (isCorrect) {
+      setValidationStep(1) // Show correct response
+    }
+  }
+
+  const handleValidationContinue = () => {
+    setPhase('VALIDATION_DATA')
+    setSelectedTestMushrooms([])
+  }
+
+  const handleTestMushroomClick = (id) => {
+    const mushroom = TEST_MUSHROOMS.find(m => m.id === id)
+    
+    // If clicking on a wrong mushroom (08 - already collected)
+    if (!mushroom.isNew) {
+      setGlitchHintText("We should test with New Mushrooms, the yellow one is already collected")
+      setShowGlitchHint(true)
+      return
+    }
+    
+    // Toggle selection for correct mushrooms
+    if (selectedTestMushrooms.includes(id)) {
+      setSelectedTestMushrooms(prev => prev.filter(m => m !== id))
+    } else {
+      setSelectedTestMushrooms(prev => [...prev, id])
+    }
+  }
+
+  const handleSlideTest = () => {
+    // Check if all correct mushrooms are selected
+    const correctMushrooms = TEST_MUSHROOMS.filter(m => m.isNew).map(m => m.id)
+    const allCorrectSelected = correctMushrooms.every(id => selectedTestMushrooms.includes(id))
+    
+    if (allCorrectSelected && selectedTestMushrooms.length === 3) {
+      setIsScanning(true)
+      // Simulate scanning animation
+      setTimeout(() => {
+        setIsScanning(false)
+        setShowPrediction(true)
+      }, 2000)
+    }
+  }
+
+  // Drag handlers for slide button
+  const maxSlideDistance = 225 // Container width (280) - button width (45) - padding (10)
+  
+  const handleSliderMouseDown = (e) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleSliderMouseMove = (e) => {
+    if (!isDragging || !sliderContainerRef.current) return
+    
+    const containerRect = sliderContainerRef.current.getBoundingClientRect()
+    const newPosition = e.clientX - containerRect.left - 25 // 25 = half button width
+    
+    // Clamp position between 0 and maxSlideDistance
+    const clampedPosition = Math.max(0, Math.min(newPosition, maxSlideDistance))
+    setSliderPosition(clampedPosition)
+    
+    // Check if slider reached the end
+    if (clampedPosition >= maxSlideDistance - 10) {
+      setIsDragging(false)
+      handleSlideTest()
+    }
+  }
+
+  const handleSliderMouseUp = () => {
+    if (isDragging) {
+      setIsDragging(false)
+      // Reset slider if not completed
+      if (sliderPosition < maxSlideDistance - 10) {
+        setSliderPosition(0)
+      }
+    }
+  }
+
+  // Touch handlers for mobile
+  const handleSliderTouchStart = (e) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleSliderTouchMove = (e) => {
+    if (!isDragging || !sliderContainerRef.current) return
+    
+    const touch = e.touches[0]
+    const containerRect = sliderContainerRef.current.getBoundingClientRect()
+    const newPosition = touch.clientX - containerRect.left - 25
+    
+    const clampedPosition = Math.max(0, Math.min(newPosition, maxSlideDistance))
+    setSliderPosition(clampedPosition)
+    
+    if (clampedPosition >= maxSlideDistance - 10) {
+      setIsDragging(false)
+      handleSlideTest()
+    }
+  }
+
+  const handleSliderTouchEnd = () => {
+    if (isDragging) {
+      setIsDragging(false)
+      if (sliderPosition < maxSlideDistance - 10) {
+        setSliderPosition(0)
+      }
+    }
+  }
+
+  // Add global mouse/touch event listeners when dragging
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleSliderMouseMove)
+      window.addEventListener('mouseup', handleSliderMouseUp)
+      window.addEventListener('touchmove', handleSliderTouchMove)
+      window.addEventListener('touchend', handleSliderTouchEnd)
+    }
+    
+    return () => {
+      window.removeEventListener('mousemove', handleSliderMouseMove)
+      window.removeEventListener('mouseup', handleSliderMouseUp)
+      window.removeEventListener('touchmove', handleSliderTouchMove)
+      window.removeEventListener('touchend', handleSliderTouchEnd)
+    }
+  }, [isDragging, sliderPosition])
+
+  const handleValidationComplete = () => {
+    // Transition to model adjustment phase instead of complete
+    setPhase('ADJUST_MODEL_INTRO')
+    setAdjustDialogueIndex(0)
+    setAdjustStep(0)
+    setAdjustDialogueHistory([])
+    setAdjustDisplayedText('')
+  }
+
+  // Typing effect for model adjustment dialogues
+  useEffect(() => {
+    if (phase !== 'ADJUST_MODEL_INTRO' || adjustStep !== 0) return
+    
+    const fullText = ADJUST_MODEL_DIALOGUES[adjustDialogueIndex]
+    if (!fullText) return
+    
+    let charIndex = 0
+    setAdjustDisplayedText('')
+    setIsAdjustTyping(true)
+
+    const typingInterval = setInterval(() => {
+      if (charIndex < fullText.length) {
+        setAdjustDisplayedText(fullText.substring(0, charIndex + 1))
+        charIndex++
+      } else {
+        setIsAdjustTyping(false)
+        clearInterval(typingInterval)
+      }
+    }, 25)
+
+    return () => clearInterval(typingInterval)
+  }, [adjustDialogueIndex, phase, adjustStep])
+
+  // Model Adjustment handlers
+  const handleAdjustDialogueContinue = () => {
+    // If typing, skip to full text
+    if (isAdjustTyping) {
+      setAdjustDisplayedText(ADJUST_MODEL_DIALOGUES[adjustDialogueIndex])
+      setIsAdjustTyping(false)
+      return
+    }
+
+    // Add current dialogue to history
+    setAdjustDialogueHistory(prev => [...prev, ADJUST_MODEL_DIALOGUES[adjustDialogueIndex]])
+
+    if (adjustDialogueIndex < ADJUST_MODEL_DIALOGUES.length - 1) {
+      setAdjustDialogueIndex(prev => prev + 1)
+    } else {
+      setAdjustStep(1) // Show choice options
+    }
+  }
+
+  const handleAdjustOptionSelect = (option, index) => {
+    if (option.correct) {
+      setAdjustStep(2) // Move to data selection
+    } else {
+      // Mark wrong option with low opacity
+      setSelectedWrongOption(index)
+      setGlitchHintText("That won't help the AI learn better! Think about what data scientists do.")
+      setShowGlitchHint(true)
+    }
+  }
+
+  const handleTrainingPhotoClick = (photo) => {
+    if (photo.isGood) {
+      // Add to selected if not already selected
+      if (!selectedTrainingPhotos.includes(photo.id)) {
+        setSelectedTrainingPhotos(prev => [...prev, photo.id])
+        setFeedbackPhoto(null)
+        setShowFeedbackPanel(false) // Hide feedback panel on correct selection
+        setShowRangerPraise(true)
+        setTimeout(() => setShowRangerPraise(false), 2000)
+      }
+    } else {
+      // Show feedback panel with duplicate mushroom
+      setFeedbackPhoto(photo)
+      setShowFeedbackPanel(true) // Only show feedback panel when wrong
+      setGlitchHintText("Even though they aren't exactly the same, they don't teach the AI anything new. Try a different one!")
+      setShowGlitchHint(true)
+    }
+  }
+
+  const handleImproveAccuracy = () => {
+    // Check if all correct photos selected (16,17,18,19)
+    const correctPhotos = TRAINING_PHOTOS.filter(p => p.isGood).map(p => p.id)
+    const allCorrectSelected = correctPhotos.every(id => selectedTrainingPhotos.includes(id))
+    
+    if (allCorrectSelected) {
+      setPhase('ADJUST_MODEL_TRAINING') // Move to retraining phase
+      // Animate progress bar
+      let progress = 0
+      const interval = setInterval(() => {
+        progress += 2
+        setAdjustProgress(progress)
+        if (progress >= 100) {
+          clearInterval(interval)
+        }
+      }, 50)
+    }
+  }
+
+  const handleAdjustComplete = () => {
     setPhase('COMPLETE')
   }
+
+  // Adjust slider drag handlers
+  const maxAdjustSlideDistance = 225
+
+  const handleAdjustSliderMouseDown = (e) => {
+    e.preventDefault()
+    setIsAdjustDragging(true)
+  }
+
+  const handleAdjustSliderMouseMove = (e) => {
+    if (!isAdjustDragging || !adjustSliderRef.current) return
+    const containerRect = adjustSliderRef.current.getBoundingClientRect()
+    const newPosition = e.clientX - containerRect.left - 25
+    const clampedPosition = Math.max(0, Math.min(newPosition, maxAdjustSlideDistance))
+    setAdjustSliderPos(clampedPosition)
+    if (clampedPosition >= maxAdjustSlideDistance - 10) {
+      setIsAdjustDragging(false)
+      handleImproveAccuracy()
+    }
+  }
+
+  const handleAdjustSliderMouseUp = () => {
+    if (isAdjustDragging) {
+      setIsAdjustDragging(false)
+      if (adjustSliderPos < maxAdjustSlideDistance - 10) {
+        setAdjustSliderPos(0)
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (isAdjustDragging) {
+      window.addEventListener('mousemove', handleAdjustSliderMouseMove)
+      window.addEventListener('mouseup', handleAdjustSliderMouseUp)
+    }
+    return () => {
+      window.removeEventListener('mousemove', handleAdjustSliderMouseMove)
+      window.removeEventListener('mouseup', handleAdjustSliderMouseUp)
+    }
+  }, [isAdjustDragging, adjustSliderPos])
 
   const isCellSelected = (rowId, field) => {
     return selectedCells.includes(`${rowId}-${field}`)
@@ -392,27 +735,96 @@ const DataCleaning = ({ onComplete, onExit }) => {
     },
     glitchNpc: {
       position: 'absolute',
-      top: '10px',
-      right: '10px',
-      width: '80px',
-      height: '80px',
+      top: '15px',
+      right: '15px',
+      width: '70px',
+      height: '70px',
       zIndex: 100,
       cursor: 'pointer',
+      borderRadius: '50%',
+      background: '#fff',
+      padding: '5px',
+      boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
     },
     rangerNpc: {
       position: 'absolute',
-      right: '50px',
-      bottom: '50px',
-      width: '280px',
-      height: 'auto',
+      right: '30px',
+      bottom: '0',
+      height: '66.67vh',
+      width: 'auto',
+      zIndex: 40,
+    },
+    // Left side dialogue container (2/3 width)
+    leftDialogueContainer: {
+      position: 'absolute',
+      top: '100px',
+      left: '30px',
+      width: '60%',
+      maxWidth: '700px',
       zIndex: 50,
     },
-    // Card styles
+    dialogueHistoryBox: {
+      padding: '25px 30px',
+      borderRadius: '20px',
+      background: 'rgba(255, 255, 255, 0.95)',
+      border: '3px solid transparent',
+      backgroundImage: 'linear-gradient(rgba(255,255,255,0.95), rgba(255,255,255,0.95)), linear-gradient(90deg, #5170FF, #FFBBC4)',
+      backgroundOrigin: 'border-box',
+      backgroundClip: 'padding-box, border-box',
+      maxHeight: '60vh',
+      overflowY: 'auto',
+    },
+    dialogueHistoryItem: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '15px',
+      color: '#333',
+      lineHeight: 1.7,
+      marginBottom: '15px',
+      paddingBottom: '15px',
+      borderBottom: '1px solid #eee',
+    },
+    dialogueHistoryItemLast: {
+      borderBottom: 'none',
+      marginBottom: 0,
+      paddingBottom: 0,
+    },
+    // Glitch hint near avatar (horizontal strip)
+    glitchHintInline: {
+      position: 'absolute',
+      top: '15px',
+      right: '100px',
+      maxWidth: '350px',
+      padding: '12px 20px',
+      borderRadius: '12px',
+      background: 'rgba(255, 255, 255, 0.98)',
+      border: '2px solid #FFB6C1',
+      boxShadow: '0 3px 15px rgba(0,0,0,0.15)',
+      zIndex: 150,
+    },
+    glitchHintInlineText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '13px',
+      color: '#555',
+      lineHeight: 1.5,
+      margin: 0,
+    },
+    glitchHintCloseBtn: {
+      position: 'absolute',
+      top: '5px',
+      right: '8px',
+      background: 'none',
+      border: 'none',
+      fontSize: '16px',
+      color: '#999',
+      cursor: 'pointer',
+    },
+    // Card styles - positioned on left side (2/3 width area)
     cardContainer: {
       position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-60%, -50%)',
+      top: '100px',
+      left: '30px',
+      width: '60%',
+      maxWidth: '700px',
       zIndex: 50,
     },
     card: {
@@ -641,15 +1053,16 @@ const DataCleaning = ({ onComplete, onExit }) => {
       textShadow: '0 2px 10px rgba(0,0,0,0.5)',
       zIndex: 50,
     },
-    // Fill Missing Values styles
+    // Fill Missing Values styles - positioned on left side (2/3 width area)
     fillMissingContainer: {
       position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
+      top: '100px',
+      left: '30px',
+      width: '60%',
+      maxWidth: '900px',
       display: 'flex',
       gap: '20px',
-      zIndex: 50,
+      zIndex: 60,
     },
     fillTableCard: {
       width: '550px',
@@ -673,6 +1086,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
+      zIndex: 60,
     },
     imagePanelTitle: {
       fontFamily: "'Montserrat', sans-serif",
@@ -766,13 +1180,13 @@ const DataCleaning = ({ onComplete, onExit }) => {
       cursor: 'pointer',
       transition: 'transform 0.2s',
     },
-    // Quiz styles
+    // Quiz styles - positioned on left side (2/3 width area)
     quizContainer: {
       position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      width: '700px',
+      top: '100px',
+      left: '30px',
+      width: '60%',
+      maxWidth: '700px',
       maxHeight: '80vh',
       zIndex: 50,
     },
@@ -876,13 +1290,13 @@ const DataCleaning = ({ onComplete, onExit }) => {
       cursor: 'pointer',
       transition: 'transform 0.2s',
     },
-    // Training styles
+    // Training styles - positioned on left side (2/3 width area)
     trainingContainer: {
       position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      width: '700px',
+      top: '100px',
+      left: '30px',
+      width: '60%',
+      maxWidth: '700px',
       zIndex: 50,
       textAlign: 'center',
     },
@@ -936,6 +1350,378 @@ const DataCleaning = ({ onComplete, onExit }) => {
       padding: '20px',
       background: 'rgba(81, 112, 255, 0.2)',
       borderRadius: '10px',
+    },
+    // Validation styles - positioned on left side (2/3 width area)
+    validationContainer: {
+      position: 'absolute',
+      top: '100px',
+      left: '30px',
+      width: '60%',
+      maxWidth: '700px',
+      zIndex: 50,
+    },
+    validationCard: {
+      padding: '30px',
+      borderRadius: '25px',
+      background: 'rgba(255, 255, 255, 0.98)',
+      border: '4px solid transparent',
+      backgroundImage: 'linear-gradient(rgba(255,255,255,0.98), rgba(255,255,255,0.98)), linear-gradient(135deg, #7B68EE, #FFB6C1)',
+      backgroundOrigin: 'border-box',
+      backgroundClip: 'padding-box, border-box',
+    },
+    validationText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '16px',
+      color: '#333',
+      lineHeight: 1.7,
+      marginBottom: '25px',
+    },
+    validationOptions: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '15px',
+    },
+    validationOption: {
+      padding: '15px 25px',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '15px',
+      fontWeight: 500,
+      color: '#5170FF',
+      background: 'rgba(81, 112, 255, 0.1)',
+      border: '2px solid #5170FF',
+      borderRadius: '12px',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      textAlign: 'left',
+    },
+    testMushroomGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(4, 1fr)',
+      gap: '15px',
+      marginBottom: '25px',
+    },
+    testMushroomCard: {
+      position: 'relative',
+      width: '100%',
+      aspectRatio: '1',
+      borderRadius: '15px',
+      background: '#fff',
+      border: '3px solid #eee',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      transition: 'all 0.3s',
+      overflow: 'hidden',
+    },
+    testMushroomCardSelected: {
+      border: '3px solid #7B68EE',
+      boxShadow: '0 4px 15px rgba(123, 104, 238, 0.3)',
+    },
+    testMushroomImage: {
+      width: '85%',
+      height: '85%',
+      objectFit: 'contain',
+    },
+    correctIcon: {
+      position: 'absolute',
+      top: '8px',
+      right: '8px',
+      width: '24px',
+      height: '24px',
+    },
+    scanningOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      background: 'rgba(81, 112, 255, 0.3)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    slideButtonContainer: {
+      position: 'relative',
+      width: '280px',
+      height: '50px',
+      background: '#1a1a2e',
+      borderRadius: '25px',
+      margin: '0 auto 25px',
+      display: 'flex',
+      alignItems: 'center',
+      overflow: 'hidden',
+      cursor: 'pointer',
+    },
+    slideButtonTrack: {
+      position: 'absolute',
+      left: '5px',
+      width: '45px',
+      height: '40px',
+      background: 'linear-gradient(135deg, #5170FF, #7B68EE)',
+      borderRadius: '20px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'left 0.15s ease-out',
+      userSelect: 'none',
+    },
+    slideButtonText: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '14px',
+      fontWeight: 700,
+      color: '#fff',
+      marginLeft: '60px',
+      letterSpacing: '1px',
+    },
+    arrowIcon: {
+      width: '20px',
+      height: '20px',
+    },
+    predictionContainer: {
+      textAlign: 'center',
+      marginTop: '20px',
+    },
+    predictionLabel: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '14px',
+      fontWeight: 600,
+      color: '#666',
+      textTransform: 'uppercase',
+      letterSpacing: '2px',
+      marginBottom: '10px',
+    },
+    predictionValue: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '72px',
+      fontWeight: 700,
+      color: '#333',
+      lineHeight: 1,
+    },
+    predictionUnit: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '16px',
+      fontWeight: 500,
+      color: '#666',
+      marginTop: '5px',
+    },
+    // Model Adjustment Phase Styles
+    adjustContainer: {
+      position: 'absolute',
+      top: '80px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      display: 'flex',
+      gap: '20px',
+      zIndex: 50,
+    },
+    adjustDialogueCard: {
+      width: '500px',
+      padding: '30px',
+      borderRadius: '20px',
+      background: 'rgba(240, 240, 245, 0.98)',
+      border: '4px solid transparent',
+      backgroundImage: 'linear-gradient(rgba(240,240,245,0.98), rgba(240,240,245,0.98)), linear-gradient(135deg, #5170FF, #FFBBC4)',
+      backgroundOrigin: 'border-box',
+      backgroundClip: 'padding-box, border-box',
+    },
+    adjustDialogueText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '15px',
+      color: '#333',
+      lineHeight: 1.8,
+      marginBottom: '20px',
+    },
+    adjustOptionsContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px',
+      marginTop: '20px',
+    },
+    adjustOptionButton: {
+      padding: '15px 20px',
+      borderRadius: '12px',
+      background: '#fff',
+      border: '2px solid #ddd',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      color: '#333',
+      cursor: 'pointer',
+      textAlign: 'left',
+      transition: 'all 0.2s',
+    },
+    trainingPhotosCard: {
+      width: '550px',
+      padding: '25px',
+      borderRadius: '20px',
+      background: 'rgba(240, 240, 245, 0.98)',
+      border: '4px solid transparent',
+      backgroundImage: 'linear-gradient(rgba(240,240,245,0.98), rgba(240,240,245,0.98)), linear-gradient(135deg, #5170FF, #FFBBC4)',
+      backgroundOrigin: 'border-box',
+      backgroundClip: 'padding-box, border-box',
+    },
+    trainingPhotosTitle: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '18px',
+      fontWeight: 700,
+      color: '#333',
+      textAlign: 'center',
+      marginBottom: '20px',
+      textTransform: 'uppercase',
+      letterSpacing: '1px',
+    },
+    trainingPhotosGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(3, 1fr)',
+      gap: '15px',
+      marginBottom: '20px',
+    },
+    trainingPhotoCard: {
+      position: 'relative',
+      aspectRatio: '1',
+      borderRadius: '15px',
+      background: '#fff',
+      border: '3px solid #eee',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      transition: 'all 0.3s',
+      overflow: 'hidden',
+    },
+    trainingPhotoCardSelected: {
+      border: '3px solid #7B68EE',
+      boxShadow: '0 4px 15px rgba(123, 104, 238, 0.3)',
+    },
+    trainingPhotoImage: {
+      width: '90%',
+      height: '90%',
+      objectFit: 'contain',
+    },
+    trainingPhotoCheck: {
+      position: 'absolute',
+      top: '8px',
+      right: '8px',
+      width: '24px',
+      height: '24px',
+    },
+    feedbackPanel: {
+      width: '320px',
+      padding: '25px',
+      borderRadius: '20px',
+      background: '#1a1a2e',
+      border: '4px solid transparent',
+      backgroundImage: 'linear-gradient(#1a1a2e, #1a1a2e), linear-gradient(135deg, #5170FF, #FFBBC4)',
+      backgroundOrigin: 'border-box',
+      backgroundClip: 'padding-box, border-box',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+    },
+    feedbackTitle: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '16px',
+      fontWeight: 700,
+      color: '#fff',
+      textAlign: 'center',
+      marginBottom: '20px',
+      textTransform: 'uppercase',
+      letterSpacing: '1px',
+    },
+    feedbackImage: {
+      width: '200px',
+      height: '200px',
+      objectFit: 'contain',
+      marginBottom: '20px',
+    },
+    feedbackValueText: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '20px',
+      fontWeight: 700,
+      color: '#fff',
+      textTransform: 'uppercase',
+    },
+    feedbackPanelContainer: {
+      position: 'absolute',
+      top: '100px',
+      right: '30px',
+      zIndex: 50,
+    },
+    rangerPraisePopup: {
+      position: 'absolute',
+      bottom: '120px',
+      right: '200px',
+      padding: '15px 25px',
+      borderRadius: '15px',
+      background: 'rgba(255, 255, 255, 0.98)',
+      border: '3px solid #7B68EE',
+      boxShadow: '0 5px 20px rgba(0,0,0,0.2)',
+      zIndex: 200,
+    },
+    rangerPraiseText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      color: '#333',
+      margin: 0,
+    },
+    retrainingContainer: {
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      textAlign: 'center',
+      zIndex: 50,
+    },
+    modelGif: {
+      width: '400px',
+      height: 'auto',
+      marginBottom: '30px',
+    },
+    progressBarContainer: {
+      width: '400px',
+      height: '20px',
+      background: 'rgba(255,255,255,0.3)',
+      borderRadius: '10px',
+      overflow: 'hidden',
+      margin: '0 auto 30px',
+    },
+    progressBarFill: {
+      height: '100%',
+      background: 'linear-gradient(90deg, #5170FF, #7B68EE)',
+      borderRadius: '10px',
+      transition: 'width 0.1s linear',
+    },
+    finalAccuracyContainer: {
+      padding: '40px',
+      borderRadius: '25px',
+      background: 'rgba(255, 255, 255, 0.98)',
+      border: '4px solid transparent',
+      backgroundImage: 'linear-gradient(rgba(255,255,255,0.98), rgba(255,255,255,0.98)), linear-gradient(135deg, #5170FF, #7B68EE)',
+      backgroundOrigin: 'border-box',
+      backgroundClip: 'padding-box, border-box',
+    },
+    finalAccuracyLabel: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '14px',
+      fontWeight: 600,
+      color: '#666',
+      textTransform: 'uppercase',
+      letterSpacing: '2px',
+      marginBottom: '10px',
+    },
+    finalAccuracyValue: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '80px',
+      fontWeight: 700,
+      color: '#4CAF50',
+      lineHeight: 1,
+    },
+    finalAccuracyUnit: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '18px',
+      fontWeight: 500,
+      color: '#666',
+      marginTop: '5px',
     },
   }
 
@@ -1345,6 +2131,319 @@ const DataCleaning = ({ onComplete, onExit }) => {
         </div>
       )}
 
+      {/* Validation Intro Phase */}
+      {phase === 'VALIDATION_INTRO' && (
+        <div style={styles.validationContainer}>
+          <div style={styles.validationCard}>
+            <p style={styles.speakerName}>Ranger Moss:</p>
+            <p style={styles.validationText}>{VALIDATION_INTRO}</p>
+            
+            {validationStep === 0 && (
+              <div style={styles.validationOptions}>
+                {VALIDATION_OPTIONS.map((option, index) => (
+                  <button
+                    key={index}
+                    style={styles.validationOption}
+                    onClick={() => handleValidationAnswer(option.correct)}
+                    onMouseOver={(e) => e.target.style.background = 'rgba(81, 112, 255, 0.2)'}
+                    onMouseOut={(e) => e.target.style.background = 'rgba(81, 112, 255, 0.1)'}
+                  >
+                    {option.text}
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {validationStep === 1 && (
+              <>
+                <p style={{ ...styles.validationText, marginTop: '20px', color: '#5170FF' }}>
+                  {VALIDATION_CORRECT_RESPONSE}
+                </p>
+                <button 
+                  style={{ ...styles.goButton, marginTop: '20px' }}
+                  onClick={handleValidationContinue}
+                  onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+                  onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                >
+                  Continue →
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Validation Data Selection Phase */}
+      {phase === 'VALIDATION_DATA' && (
+        <div style={styles.validationContainer}>
+          <div style={styles.validationCard}>
+            <p style={styles.validationText}>
+              Select the mushrooms you want to test the AI with. Choose the NEW mushrooms that the AI hasn't seen before!
+            </p>
+            
+            <div style={styles.testMushroomGrid}>
+              {TEST_MUSHROOMS.map((mushroom) => (
+                <div
+                  key={mushroom.id}
+                  style={{
+                    ...styles.testMushroomCard,
+                    ...(selectedTestMushrooms.includes(mushroom.id) ? styles.testMushroomCardSelected : {}),
+                  }}
+                  onClick={() => handleTestMushroomClick(mushroom.id)}
+                >
+                  <img 
+                    src={`/jungle/object/${mushroom.id}.png`}
+                    alt={`Mushroom ${mushroom.id}`}
+                    style={styles.testMushroomImage}
+                  />
+                  {selectedTestMushrooms.includes(mushroom.id) && mushroom.isNew && (
+                    <img 
+                      src="/jungle/icon/right.png"
+                      alt="Correct"
+                      style={styles.correctIcon}
+                    />
+                  )}
+                  {isScanning && selectedTestMushrooms.includes(mushroom.id) && (
+                    <div style={styles.scanningOverlay}>
+                      <span style={{ color: '#fff', fontWeight: 'bold' }}>Scanning...</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            
+            {!showPrediction && (
+              <div 
+                ref={sliderContainerRef}
+                style={styles.slideButtonContainer}
+              >
+                <div 
+                  style={{
+                    ...styles.slideButtonTrack,
+                    left: `${5 + sliderPosition}px`,
+                    cursor: 'grab',
+                    ...(isDragging ? { cursor: 'grabbing' } : {}),
+                  }}
+                  onMouseDown={handleSliderMouseDown}
+                  onTouchStart={handleSliderTouchStart}
+                >
+                  <img 
+                    src="/jungle/icon/arrow.png"
+                    alt="Arrow"
+                    style={styles.arrowIcon}
+                  />
+                </div>
+                <span style={styles.slideButtonText}>TEST THE MODEL</span>
+              </div>
+            )}
+            
+            {showPrediction && (
+              <div style={styles.predictionContainer}>
+                <p style={styles.predictionLabel}>YOUR AI PREDICTION</p>
+                <p style={styles.predictionValue}>45%</p>
+                <p style={styles.predictionUnit}>ACCURACY</p>
+                <button 
+                  style={{ ...styles.goButton, marginTop: '30px' }}
+                  onClick={handleValidationComplete}
+                  onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+                  onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                >
+                  Continue →
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Model Adjustment Intro Phase - Dialogue and Choice */}
+      {phase === 'ADJUST_MODEL_INTRO' && (
+        <div style={styles.leftDialogueContainer}>
+          <div style={styles.dialogueHistoryBox}>
+            <p style={styles.speakerName}>Ranger Moss:</p>
+            
+            {/* Show dialogue history */}
+            {adjustDialogueHistory.map((text, index) => (
+              <p key={index} style={{
+                ...styles.dialogueHistoryItem,
+                ...(index === adjustDialogueHistory.length - 1 && !adjustDisplayedText && adjustStep !== 1 ? styles.dialogueHistoryItemLast : {}),
+              }}>
+                {text}
+              </p>
+            ))}
+            
+            {/* Current dialogue with typing effect */}
+            {adjustStep === 0 && adjustDisplayedText && (
+              <p style={{...styles.dialogueHistoryItem, ...styles.dialogueHistoryItemLast}}>
+                {adjustDisplayedText}
+                {isAdjustTyping && <span style={{ opacity: 0.5 }}>|</span>}
+              </p>
+            )}
+            
+            {/* Continue/Skip button during dialogue */}
+            {adjustStep === 0 && (
+              <button 
+                style={styles.continueButton} 
+                onClick={handleAdjustDialogueContinue}
+              >
+                {isAdjustTyping ? 'Skip' : 'Continue →'}
+              </button>
+            )}
+            
+            {/* Choice options after dialogues */}
+            {adjustStep === 1 && (
+              <div style={styles.adjustOptionsContainer}>
+                {ADJUST_MODEL_OPTIONS.map((option, index) => (
+                  <button
+                    key={index}
+                    style={{
+                      ...styles.adjustOptionButton,
+                      ...(selectedWrongOption === index ? { opacity: 0.1 } : {}),
+                    }}
+                    onClick={() => handleAdjustOptionSelect(option, index)}
+                    onMouseOver={(e) => { if (selectedWrongOption !== index) e.target.style.borderColor = '#7B68EE' }}
+                    onMouseOut={(e) => { if (selectedWrongOption !== index) e.target.style.borderColor = '#ddd' }}
+                    disabled={selectedWrongOption === index}
+                  >
+                    {String.fromCharCode(65 + index)}. {option.text}
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            {/* Success response after correct selection */}
+            {adjustStep === 2 && (
+              <>
+                <p style={{...styles.dialogueHistoryItem, marginTop: '15px', color: '#4CAF50', borderBottom: 'none'}}>
+                  {ADJUST_CORRECT_RESPONSE}
+                </p>
+                <button 
+                  style={styles.continueButton} 
+                  onClick={() => setPhase('ADJUST_MODEL_DATA')}
+                >
+                  Select Training Data →
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Model Adjustment Data Selection Phase */}
+      {phase === 'ADJUST_MODEL_DATA' && (
+        <>
+          {/* Training Photos Grid - Left side */}
+          <div style={styles.leftDialogueContainer}>
+            <div style={styles.trainingPhotosCard}>
+              <h3 style={styles.trainingPhotosTitle}>Potential Training Photos</h3>
+              <div style={styles.trainingPhotosGrid}>
+                {TRAINING_PHOTOS.map((photo) => (
+                  <div
+                    key={photo.id}
+                    style={{
+                      ...styles.trainingPhotoCard,
+                      ...(selectedTrainingPhotos.includes(photo.id) ? styles.trainingPhotoCardSelected : {}),
+                    }}
+                    onClick={() => handleTrainingPhotoClick(photo)}
+                  >
+                    <img 
+                      src={`/jungle/object/${photo.id}.png`}
+                      alt={`Training photo ${photo.id}`}
+                      style={styles.trainingPhotoImage}
+                    />
+                    {selectedTrainingPhotos.includes(photo.id) && photo.isGood && (
+                      <img 
+                        src="/jungle/icon/right.png"
+                        alt="Correct"
+                        style={styles.trainingPhotoCheck}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+              
+              {/* Improve Prediction Accuracy Button */}
+              {selectedTrainingPhotos.length >= 4 && (
+                <div 
+                  ref={adjustSliderRef}
+                  style={styles.slideButtonContainer}
+                >
+                  <div 
+                    style={{
+                      ...styles.slideButtonTrack,
+                      left: `${5 + adjustSliderPos}px`,
+                      cursor: 'grab',
+                      ...(isAdjustDragging ? { cursor: 'grabbing' } : {}),
+                    }}
+                    onMouseDown={handleAdjustSliderMouseDown}
+                  >
+                    <img 
+                      src="/jungle/icon/arrow.png"
+                      alt="Arrow"
+                      style={styles.arrowIcon}
+                    />
+                  </div>
+                  <span style={styles.slideButtonText}>IMPROVE ACCURACY</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Feedback Panel - Only show when clicking wrong photo */}
+          {showFeedbackPanel && feedbackPhoto && (
+            <div style={styles.feedbackPanelContainer}>
+              <div style={styles.feedbackPanel}>
+                <h3 style={styles.feedbackTitle}>Feedback Panel</h3>
+                <img 
+                  src={`/jungle/object/${feedbackPhoto.duplicateOf}.png`}
+                  alt="Duplicate"
+                  style={styles.feedbackImage}
+                />
+                <p style={styles.feedbackValueText}>LOW VALUE</p>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Ranger Moss Praise Popup */}
+      {showRangerPraise && (
+        <div style={styles.rangerPraisePopup}>
+          <p style={styles.rangerPraiseText}>
+            🌟 Excellent choice! A new angle/condition. That will help it generalize!
+          </p>
+        </div>
+      )}
+
+      {/* Model Adjustment Retraining Phase */}
+      {phase === 'ADJUST_MODEL_TRAINING' && (
+        <div style={styles.retrainingContainer}>
+          <img src="/jungle/model.GIF" alt="Model Training" style={styles.modelGif} />
+          
+          {adjustProgress < 100 && (
+            <div style={styles.progressBarContainer}>
+              <div style={{...styles.progressBarFill, width: `${adjustProgress}%`}} />
+            </div>
+          )}
+          
+          {adjustProgress >= 100 && (
+            <div style={styles.finalAccuracyContainer}>
+              <p style={styles.finalAccuracyLabel}>Your AI Prediction</p>
+              <p style={styles.finalAccuracyValue}>95%</p>
+              <p style={styles.finalAccuracyUnit}>ACCURACY</p>
+              <button 
+                style={{...styles.goButton, marginTop: '30px'}}
+                onClick={handleAdjustComplete}
+                onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+                onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+              >
+                Continue →
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Complete Phase */}
       {phase === 'COMPLETE' && (
         <div style={styles.cardContainer}>
@@ -1366,15 +2465,27 @@ const DataCleaning = ({ onComplete, onExit }) => {
         </div>
       )}
 
-      {/* Ranger Moss Dialogue */}
+      {/* Ranger Moss Dialogue - Left Side Panel */}
       {showRangerDialogue && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.dialogueBox}>
+        <div style={styles.leftDialogueContainer}>
+          <div style={styles.dialogueHistoryBox}>
             <p style={styles.speakerName}>Ranger Moss:</p>
-            <p style={styles.dialogueText}>
-              {displayedText}
-              {isTyping && <span style={{ opacity: 0.5 }}>|</span>}
-            </p>
+            {/* Show dialogue history */}
+            {dialogueHistory.map((text, index) => (
+              <p key={index} style={{
+                ...styles.dialogueHistoryItem,
+                ...(index === dialogueHistory.length - 1 && !displayedText ? styles.dialogueHistoryItemLast : {}),
+              }}>
+                {text}
+              </p>
+            ))}
+            {/* Show current dialogue with typing effect */}
+            {displayedText && (
+              <p style={{...styles.dialogueHistoryItem, ...styles.dialogueHistoryItemLast}}>
+                {displayedText}
+                {isTyping && <span style={{ opacity: 0.5 }}>|</span>}
+              </p>
+            )}
             <button style={styles.continueButton} onClick={handleRangerContinue}>
               {isTyping ? 'Skip' : 'Continue →'}
             </button>
@@ -1382,16 +2493,28 @@ const DataCleaning = ({ onComplete, onExit }) => {
         </div>
       )}
 
-      {/* Glitch Hint Modal */}
-      {showGlitchHint && (
-        <div style={styles.modalOverlay} onClick={() => setShowGlitchHint(false)}>
-          <div style={styles.hintBox} onClick={e => e.stopPropagation()}>
-            <h3 style={styles.hintTitle}>💡 Glitch says:</h3>
-            <p style={styles.hintText}>{glitchHintText}</p>
-            <button style={styles.okButton} onClick={() => setShowGlitchHint(false)}>
-              Got it!
-            </button>
+      {/* Dialogue History - Show until user enters card selection */}
+      {!showRangerDialogue && dialogueHistory.length > 0 && phase !== 'NOISE_REMOVAL' && phase !== 'LABEL_CORRECTION' && phase !== 'FILL_MISSING' && phase !== 'QUIZ' && phase !== 'TRAINING' && phase !== 'VALIDATION_INTRO' && phase !== 'VALIDATION_DATA' && phase !== 'ADJUST_MODEL_INTRO' && phase !== 'ADJUST_MODEL_DATA' && phase !== 'ADJUST_MODEL_TRAINING' && phase !== 'COMPLETE' && (
+        <div style={styles.leftDialogueContainer}>
+          <div style={styles.dialogueHistoryBox}>
+            <p style={styles.speakerName}>Ranger Moss:</p>
+            {dialogueHistory.map((text, index) => (
+              <p key={index} style={{
+                ...styles.dialogueHistoryItem,
+                ...(index === dialogueHistory.length - 1 ? styles.dialogueHistoryItemLast : {}),
+              }}>
+                {text}
+              </p>
+            ))}
           </div>
+        </div>
+      )}
+
+      {/* Glitch Hint - Inline near avatar */}
+      {showGlitchHint && (
+        <div style={styles.glitchHintInline}>
+          <button style={styles.glitchHintCloseBtn} onClick={() => setShowGlitchHint(false)}>×</button>
+          <p style={styles.glitchHintInlineText}>💡 {glitchHintText}</p>
         </div>
       )}
 

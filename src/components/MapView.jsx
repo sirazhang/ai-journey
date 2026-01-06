@@ -1,27 +1,67 @@
 import React, { useState, useEffect } from 'react'
 
+// Region data with positions and info cards
 const regions = [
-  { id: 'fungi', name: 'Fungi Jungle', color: '#4CAF50', position: { top: '25%', left: '20%' } },
-  { id: 'crystal', name: 'Crystal Caves', color: '#9C27B0', position: { top: '35%', right: '25%' } },
-  { id: 'volcano', name: 'Volcano Peak', color: '#FF5722', position: { bottom: '30%', left: '30%' } },
-  { id: 'ocean', name: 'Deep Ocean', color: '#2196F3', position: { bottom: '25%', right: '20%' } },
+  { 
+    id: 'fungi', 
+    name: 'FUNGI JUNGLE', 
+    position: { top: '52%', left: '5%' },
+    cardPosition: { top: '62%', left: '5%' },
+    description: 'Welcome to the Fungi Jungle! The guardian here is a green robot named Ranger Moss. He usually keeps everything running smoothly. Let\'s look for him first!',
+    difficulty: '⭐ (Easy / Introductory)',
+    available: true,
+  },
+  { 
+    id: 'desert', 
+    name: 'AETHER DESERT', 
+    position: { top: '5%', left: '30%' },
+    cardPosition: { top: '15%', left: '30%' },
+    description: 'The Aether Desert is a vast expanse of golden sands and ancient ruins. Strange energy patterns have been detected here.',
+    difficulty: '⭐⭐ (Medium)',
+    available: false,
+  },
+  { 
+    id: 'glacier', 
+    name: 'CORE GLACIER', 
+    position: { bottom: '8%', left: '45%' },
+    cardPosition: { bottom: '22%', left: '45%' },
+    description: 'The Core Glacier holds frozen data from ancient times. Careful navigation is required through the icy terrain.',
+    difficulty: '⭐⭐⭐ (Hard)',
+    available: false,
+  },
+  { 
+    id: 'island', 
+    name: 'NEXUS ISLAND', 
+    position: { top: '35%', right: '5%' },
+    cardPosition: { top: '48%', right: '5%' },
+    description: 'Nexus Island floats above the ocean, connected by data streams. It\'s the hub of all AI operations in this world.',
+    difficulty: '⭐⭐⭐⭐ (Expert)',
+    available: false,
+  },
 ]
 
 const MapView = ({ onRegionClick }) => {
-  const [showNpcDialogue, setShowNpcDialogue] = useState(false)
-  const [hoveredRegion, setHoveredRegion] = useState(null)
+  const [hoveredNpc, setHoveredNpc] = useState(false)
+  const [selectedRegion, setSelectedRegion] = useState(null)  // Changed from hoveredRegion to selectedRegion (click-based)
   const [regionsVisible, setRegionsVisible] = useState(false)
 
   useEffect(() => {
-    // Delay showing regions for animation effect
     const timer = setTimeout(() => {
       setRegionsVisible(true)
-    }, 500)
+    }, 300)
     return () => clearTimeout(timer)
   }, [])
 
-  const handleNpcClick = () => {
-    setShowNpcDialogue(!showNpcDialogue)
+  // Check if any region card is showing
+  const isCardShowing = selectedRegion !== null
+
+  const handleRegionClick = (regionId) => {
+    // Toggle: if clicking same region, keep it open; otherwise switch to new region
+    if (selectedRegion === regionId) {
+      // Keep open, do nothing (user can click GO to proceed)
+    } else {
+      setSelectedRegion(regionId)
+    }
   }
 
   const styles = {
@@ -40,179 +80,249 @@ const MapView = ({ onRegionClick }) => {
       objectFit: 'cover',
       zIndex: 0,
     },
-    overlay: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      background: 'rgba(0, 0, 0, 0.2)',
-      zIndex: 1,
-    },
-    miniNpc: {
+    // NPC in top-right corner (no background card)
+    npcContainer: {
       position: 'absolute',
       top: '20px',
       right: '20px',
-      width: '80px',
-      height: '80px',
-      borderRadius: '50%',
-      overflow: 'hidden',
-      border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(30,30,40,1), rgba(30,30,40,1)), linear-gradient(90deg, #5170FF, #FFBBC4)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
       cursor: 'pointer',
       zIndex: 10,
-      transition: 'transform 0.3s, box-shadow 0.3s',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
+      transition: 'opacity 0.3s ease',
+      opacity: isCardShowing ? 0 : 1,
+      pointerEvents: isCardShowing ? 'none' : 'auto',
     },
-    miniNpcImage: {
-      width: '70px',
-      height: '70px',
-      objectFit: 'contain',
+    npcImage: {
+      width: '120px',
+      height: 'auto',
+      transition: 'transform 0.3s ease',
+      animation: hoveredNpc ? 'breathe 1s ease-in-out infinite' : 'none',
     },
+    // NPC dialogue bubble (top-right)
     npcDialogue: {
       position: 'absolute',
-      top: '110px',
-      right: '20px',
-      width: '300px',
-      padding: '20px',
+      top: '20px',
+      right: '150px',
+      padding: '12px 20px',
       borderRadius: '15px',
-      background: 'rgba(20, 20, 35, 0.95)',
-      border: '2px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(20,20,35,0.95), rgba(20,20,35,0.95)), linear-gradient(90deg, #5170FF, #FFBBC4)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
+      background: 'rgba(255, 255, 255, 0.95)',
+      border: '3px solid',
+      borderImage: 'linear-gradient(90deg, #5170FF, #FF6B9D) 1',
       zIndex: 10,
-      animation: 'fadeIn 0.3s ease-out',
+      maxWidth: '200px',
+      boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
     },
     npcDialogueText: {
       fontFamily: "'Roboto', sans-serif",
       fontSize: '14px',
-      color: '#fff',
-      lineHeight: 1.6,
+      color: '#333',
+      lineHeight: 1.5,
+      margin: 0,
     },
-    regionButton: {
+    // Region label button
+    regionLabel: {
       position: 'absolute',
-      width: '180px',
-      height: '60px',
-      borderRadius: '15px',
-      border: 'none',
-      fontFamily: "'Roboto', sans-serif",
-      fontSize: '16px',
-      fontWeight: 500,
-      color: '#fff',
+      padding: '12px 30px',
+      borderRadius: '30px',
+      border: '3px solid transparent',
+      background: 'rgba(255, 255, 255, 0.9)',
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '20px',
+      fontWeight: 800,
+      color: '#000',
       cursor: 'pointer',
       zIndex: 5,
       transition: 'all 0.3s ease',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backdropFilter: 'blur(5px)',
-      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+      backgroundImage: 'linear-gradient(white, white), linear-gradient(90deg, #5170FF, #FF6B9D)',
+      backgroundOrigin: 'border-box',
+      backgroundClip: 'padding-box, border-box',
     },
-    regionGlow: {
+    // Region info card
+    regionCard: {
       position: 'absolute',
-      width: '200px',
-      height: '200px',
-      borderRadius: '50%',
-      background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
-      pointerEvents: 'none',
-      zIndex: 4,
+      width: '350px',
+      padding: '20px',
+      paddingBottom: '70px',
+      borderRadius: '20px',
+      background: 'rgba(255, 255, 255, 0.95)',
+      border: '3px solid transparent',
+      backgroundImage: 'linear-gradient(white, white), linear-gradient(90deg, #5170FF, #FF6B9D)',
+      backgroundOrigin: 'border-box',
+      backgroundClip: 'padding-box, border-box',
+      zIndex: 20,
+      boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+      animation: 'fadeInUp 0.3s ease-out',
     },
-    title: {
-      position: 'absolute',
-      top: '30px',
-      left: '40px',
-      fontFamily: "'Montserrat', sans-serif",
-      fontSize: '32px',
-      fontWeight: 700,
-      color: '#fff',
-      zIndex: 10,
-      textShadow: '0 2px 10px rgba(0,0,0,0.5)',
+    cardDescription: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '15px',
+      color: '#333',
+      lineHeight: 1.6,
+      marginBottom: '12px',
+      textAlign: 'center',
     },
-    subtitle: {
-      position: 'absolute',
-      top: '70px',
-      left: '40px',
+    cardDifficulty: {
       fontFamily: "'Roboto', sans-serif",
       fontSize: '14px',
-      fontWeight: 300,
-      color: 'rgba(255,255,255,0.7)',
-      zIndex: 10,
+      color: '#666',
+      marginBottom: '15px',
+      textAlign: 'center',
     },
+    goButton: {
+      display: 'block',
+      width: '80%',
+      margin: '0 auto',
+      padding: '12px 0',
+      borderRadius: '8px',
+      border: 'none',
+      background: '#000',
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '18px',
+      fontWeight: 700,
+      color: '#fff',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+    },
+    lockedButton: {
+      display: 'block',
+      width: '80%',
+      margin: '0 auto',
+      padding: '12px 0',
+      borderRadius: '8px',
+      border: 'none',
+      background: '#999',
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '16px',
+      fontWeight: 600,
+      color: '#fff',
+      cursor: 'not-allowed',
+    },
+    // NPC state 2 at bottom-left of card
+    cardNpc: {
+      position: 'absolute',
+      bottom: '-30px',
+      left: '-30px',
+      width: '100px',
+      height: 'auto',
+      zIndex: 21,
+    },
+    // Keyframes style tag
+    keyframes: `
+      @keyframes breathe {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.08); }
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    `,
+  }
+
+  const getHoveredRegionData = () => {
+    return regions.find(r => r.id === selectedRegion)
   }
 
   return (
     <div style={styles.container}>
+      <style>{styles.keyframes}</style>
+      
       <img 
         src="/background/map.gif" 
         alt="Map Background" 
         style={styles.backgroundGif}
       />
-      <div style={styles.overlay}></div>
       
-      <h1 style={styles.title}>Energy Regions</h1>
-      <p style={styles.subtitle}>Select a region to explore</p>
-      
-      {/* Mini NPC */}
+      {/* NPC Glitch in top-right (disappears when card shows) */}
       <div 
-        style={styles.miniNpc}
-        onClick={handleNpcClick}
-        onMouseOver={(e) => {
-          e.currentTarget.style.transform = 'scale(1.1)'
-          e.currentTarget.style.boxShadow = '0 0 20px rgba(81, 112, 255, 0.5)'
-        }}
-        onMouseOut={(e) => {
-          e.currentTarget.style.transform = 'scale(1)'
-          e.currentTarget.style.boxShadow = 'none'
-        }}
+        style={styles.npcContainer}
+        onMouseEnter={() => setHoveredNpc(true)}
+        onMouseLeave={() => setHoveredNpc(false)}
       >
         <img 
           src="/npc/npc1.png" 
           alt="Glitch" 
-          style={styles.miniNpcImage}
+          style={styles.npcImage}
         />
       </div>
       
-      {/* NPC Dialogue popup */}
-      {showNpcDialogue && (
+      {/* NPC Dialogue (shows on hover) */}
+      {hoveredNpc && !isCardShowing && (
         <div style={styles.npcDialogue}>
           <p style={styles.npcDialogueText}>
-            I suggest we start by checking the <span style={{ color: '#4CAF50', fontWeight: 500 }}>Fungi Jungle</span>.
+            I suggest go to the Fungi Jungle first.
           </p>
         </div>
       )}
       
-      {/* Region Buttons */}
+      {/* Region Labels */}
       {regions.map((region, index) => (
-        <button
+        <div
           key={region.id}
           style={{
-            ...styles.regionButton,
+            ...styles.regionLabel,
             ...region.position,
-            background: `linear-gradient(135deg, ${region.color}dd, ${region.color}88)`,
             opacity: regionsVisible ? 1 : 0,
-            transform: regionsVisible ? 'translateY(0)' : 'translateY(30px)',
+            transform: regionsVisible ? 'translateY(0)' : 'translateY(20px)',
             transitionDelay: `${index * 0.1}s`,
+            ...(selectedRegion === region.id ? { background: 'rgba(81, 112, 255, 0.2)' } : {}),
           }}
-          onClick={() => onRegionClick(region.id)}
-          onMouseOver={(e) => {
-            e.target.style.transform = 'scale(1.1) translateY(-5px)'
-            e.target.style.boxShadow = `0 8px 30px ${region.color}66`
-            setHoveredRegion(region.id)
-          }}
-          onMouseOut={(e) => {
-            e.target.style.transform = 'scale(1) translateY(0)'
-            e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)'
-            setHoveredRegion(null)
-          }}
+          onClick={() => handleRegionClick(region.id)}
         >
           {region.name}
-        </button>
+        </div>
       ))}
+      
+      {/* Region Info Card (shows on click, stays visible) */}
+      {selectedRegion && (
+        <div 
+          style={{
+            ...styles.regionCard,
+            ...getHoveredRegionData()?.cardPosition,
+          }}
+        >
+          <p style={styles.cardDescription}>
+            {getHoveredRegionData()?.description}
+          </p>
+          <p style={styles.cardDifficulty}>
+            Difficulty: {getHoveredRegionData()?.difficulty}
+          </p>
+          
+          {getHoveredRegionData()?.available ? (
+            <button 
+              style={styles.goButton}
+              onClick={() => onRegionClick(selectedRegion)}
+              onMouseOver={(e) => {
+                e.target.style.background = '#333'
+                e.target.style.transform = 'scale(1.02)'
+              }}
+              onMouseOut={(e) => {
+                e.target.style.background = '#000'
+                e.target.style.transform = 'scale(1)'
+              }}
+            >
+              GO
+            </button>
+          ) : (
+            <button style={styles.lockedButton}>
+              🔒 LOCKED
+            </button>
+          )}
+          
+          {/* NPC state 2 at card bottom-left */}
+          <img 
+            src="/npc/npc2.png" 
+            alt="Glitch" 
+            style={styles.cardNpc}
+          />
+        </div>
+      )}
     </div>
   )
 }

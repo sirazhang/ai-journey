@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-const SignInModal = ({ onClose }) => {
+const SignInModal = ({ onClose, onSignUpComplete }) => {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -15,6 +15,16 @@ const SignInModal = ({ onClose }) => {
   const handleSubmit = (e) => {
     e.preventDefault()
     console.log('Sign up data:', formData)
+    // Save user to localStorage
+    localStorage.setItem('aiJourneyUser', JSON.stringify({
+      username: formData.username,
+      email: formData.email,
+      hasStarted: false,
+      currentProgress: null,
+    }))
+    if (onSignUpComplete) {
+      onSignUpComplete(formData)
+    }
     onClose()
   }
 
@@ -25,105 +35,85 @@ const SignInModal = ({ onClose }) => {
       left: 0,
       width: '100%',
       height: '100%',
-      backgroundColor: 'rgba(0, 0, 0, 0.7)',
+      backgroundColor: 'transparent',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       zIndex: 1000,
-      backdropFilter: 'blur(5px)',
     },
     modal: {
       position: 'relative',
-      width: '400px',
-      padding: '50px 40px',
-      borderRadius: '20px',
-      background: 'rgba(20, 20, 30, 0.95)',
+      width: '550px',
+      padding: '40px 50px',
+      borderRadius: '25px',
+      background: 'rgba(0, 0, 10, 0.95)',
       border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(20,20,30,0.95), rgba(20,20,30,0.95)), linear-gradient(90deg, #5170FF, #FFBBC4)',
+      backgroundImage: 'linear-gradient(rgba(0,0,10,0.95), rgba(0,0,10,0.95)), linear-gradient(90deg, #5170FF, #FF6B9D)',
       backgroundOrigin: 'border-box',
       backgroundClip: 'padding-box, border-box',
       animation: 'scaleIn 0.3s ease-out',
     },
-    closeButton: {
-      position: 'absolute',
-      top: '15px',
-      right: '20px',
-      background: 'none',
-      border: 'none',
-      color: '#fff',
-      fontSize: '24px',
-      cursor: 'pointer',
-      opacity: 0.7,
-      transition: 'opacity 0.2s',
-    },
     title: {
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '28px',
-      fontWeight: 500,
+      fontSize: '24px',
+      fontWeight: 400,
       color: '#fff',
       textAlign: 'center',
-      marginBottom: '40px',
+      marginBottom: '35px',
     },
     form: {
       display: 'flex',
       flexDirection: 'column',
-      gap: '24px',
+      gap: '20px',
     },
-    inputGroup: {
+    inputRow: {
       display: 'flex',
-      flexDirection: 'column',
-      gap: '8px',
+      alignItems: 'center',
+      gap: '20px',
     },
     label: {
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '14px',
+      fontSize: '16px',
       fontWeight: 400,
-      color: 'rgba(255, 255, 255, 0.7)',
-      letterSpacing: '1px',
+      color: '#fff',
+      width: '120px',
+      textAlign: 'right',
+      flexShrink: 0,
     },
     input: {
+      flex: 1,
       fontFamily: "'Roboto', sans-serif",
       fontSize: '16px',
-      padding: '14px 18px',
-      borderRadius: '10px',
-      border: '1px solid rgba(255, 255, 255, 0.2)',
-      backgroundColor: 'rgba(255, 255, 255, 0.05)',
+      padding: '12px 16px',
+      borderRadius: '25px',
+      border: '2px solid rgba(255, 255, 255, 0.3)',
+      backgroundColor: 'rgba(0, 0, 0, 0.3)',
       color: '#fff',
       outline: 'none',
       transition: 'border-color 0.2s, background-color 0.2s',
     },
     submitButton: {
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '16px',
-      fontWeight: 500,
+      fontSize: '18px',
+      fontWeight: 400,
       color: '#fff',
-      background: 'linear-gradient(90deg, #5170FF, #FFBBC4)',
+      background: 'transparent',
       border: 'none',
-      padding: '16px',
-      borderRadius: '30px',
+      padding: '15px',
       cursor: 'pointer',
-      marginTop: '20px',
-      transition: 'transform 0.2s, box-shadow 0.2s',
+      marginTop: '15px',
+      transition: 'opacity 0.2s',
     },
   }
 
   return (
     <div style={styles.overlay} onClick={onClose}>
       <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <button 
-          style={styles.closeButton}
-          onClick={onClose}
-          onMouseOver={(e) => e.target.style.opacity = '1'}
-          onMouseOut={(e) => e.target.style.opacity = '0.7'}
-        >
-          ×
-        </button>
-        
         <h2 style={styles.title}>Sign Up</h2>
         
         <form style={styles.form} onSubmit={handleSubmit}>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Username</label>
+          <div style={styles.inputRow}>
+            <label style={styles.label}>User Name</label>
             <input
               type="text"
               name="username"
@@ -132,17 +122,17 @@ const SignInModal = ({ onClose }) => {
               style={styles.input}
               onFocus={(e) => {
                 e.target.style.borderColor = '#5170FF'
-                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+                e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)'
-                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'
+                e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
+                e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.3)'
               }}
               required
             />
           </div>
           
-          <div style={styles.inputGroup}>
+          <div style={styles.inputRow}>
             <label style={styles.label}>Password</label>
             <input
               type="password"
@@ -152,17 +142,17 @@ const SignInModal = ({ onClose }) => {
               style={styles.input}
               onFocus={(e) => {
                 e.target.style.borderColor = '#5170FF'
-                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+                e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)'
-                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'
+                e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
+                e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.3)'
               }}
               required
             />
           </div>
           
-          <div style={styles.inputGroup}>
+          <div style={styles.inputRow}>
             <label style={styles.label}>Email</label>
             <input
               type="email"
@@ -172,11 +162,11 @@ const SignInModal = ({ onClose }) => {
               style={styles.input}
               onFocus={(e) => {
                 e.target.style.borderColor = '#5170FF'
-                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+                e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'
               }}
               onBlur={(e) => {
-                e.target.style.borderColor = 'rgba(255, 255, 255, 0.2)'
-                e.target.style.backgroundColor = 'rgba(255, 255, 255, 0.05)'
+                e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
+                e.target.style.backgroundColor = 'rgba(0, 0, 0, 0.3)'
               }}
               required
             />
@@ -185,16 +175,10 @@ const SignInModal = ({ onClose }) => {
           <button 
             type="submit" 
             style={styles.submitButton}
-            onMouseOver={(e) => {
-              e.target.style.transform = 'scale(1.02)'
-              e.target.style.boxShadow = '0 5px 20px rgba(81, 112, 255, 0.4)'
-            }}
-            onMouseOut={(e) => {
-              e.target.style.transform = 'scale(1)'
-              e.target.style.boxShadow = 'none'
-            }}
+            onMouseOver={(e) => e.target.style.opacity = '0.7'}
+            onMouseOut={(e) => e.target.style.opacity = '1'}
           >
-            Create Account
+            Done
           </button>
         </form>
       </div>

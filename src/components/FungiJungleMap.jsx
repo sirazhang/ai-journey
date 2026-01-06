@@ -208,22 +208,16 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
       position: 'absolute',
       top: '15px',
       right: '15px',
-      width: '70px',
-      height: '70px',
-      borderRadius: '50%',
-      overflow: 'hidden',
-      border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(30,30,40,1), rgba(30,30,40,1)), linear-gradient(90deg, #5170FF, #FFBBC4)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
+      width: '210px',  // 3x size (70px * 3)
+      height: '210px',
       zIndex: 10,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
     },
     miniNpcImage: {
-      width: '60px',
-      height: '60px',
+      width: '180px',  // 3x size (60px * 3)
+      height: '180px',
       objectFit: 'contain',
     },
     navArrow: {
@@ -299,11 +293,11 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
       width: 'auto',
       filter: 'drop-shadow(0 0 15px rgba(0,0,0,0.3))',
     },
-    // NPC B specific container - left side, 1/2 height
+    // NPC B specific container - left side 1/4, 1/2 height
     npcContainerNpcB: {
       position: 'absolute',
       bottom: '0',
-      left: '50px',
+      left: '25%',  // 1/4 from left
       height: '50vh',
       display: 'flex',
       alignItems: 'flex-end',
@@ -316,17 +310,17 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
       width: 'auto',
       filter: 'drop-shadow(0 0 15px rgba(0,0,0,0.3))',
     },
-    // Ranger Moss specific container - bottom 1/5, right 1/4, 1/3 height
+    // Ranger Moss specific container - 2/3 height, bottom 10%, right 15%
     npcContainerRangerMoss: {
       position: 'absolute',
-      bottom: '20%',
-      right: '25%',
+      bottom: '10%',
+      right: '15%',
       zIndex: 5,
       animation: 'fadeIn 0.5s ease-out',
     },
-    // Ranger Moss specific image - 1/3 of page height
+    // Ranger Moss specific image - 2/3 of page height
     npcImageRangerMoss: {
-      height: '33.33vh',
+      height: '66.67vh',
       width: 'auto',
       filter: 'drop-shadow(0 0 15px rgba(0,0,0,0.3))',
     },
@@ -338,28 +332,28 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
       zIndex: 5,
       animation: 'fadeIn 0.3s ease-out',
     },
-    // NPC A specific dialogue container - left side, 1/2 width
+    // NPC A specific dialogue container - left side, 1/3 from top
     dialogueContainerNpcA: {
       position: 'absolute',
-      top: '80px',
+      top: '33.33%',  // 1/3 from top
       left: '80px',
       width: '50%',
       zIndex: 5,
       animation: 'fadeIn 0.3s ease-out',
     },
-    // NPC B specific dialogue container - right side, 1/2 width
+    // NPC B specific dialogue container - right side, 1/3 from top
     dialogueContainerNpcB: {
       position: 'absolute',
-      top: '80px',
+      top: '33.33%',  // 1/3 from top
       right: '80px',
       width: '50%',
       zIndex: 5,
       animation: 'fadeIn 0.3s ease-out',
     },
-    // Ranger Moss specific dialogue container - left side, 1/2 width
+    // Ranger Moss specific dialogue container - left side, 1/4 from top
     dialogueContainerRangerMoss: {
       position: 'absolute',
-      top: '80px',
+      top: '25%',  // 1/4 from top
       left: '80px',
       width: '50%',
       zIndex: 5,
