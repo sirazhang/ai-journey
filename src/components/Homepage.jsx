@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react'
+import useSoundEffects from '../hooks/useSoundEffects'
 
 const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
   const [hasProgress, setHasProgress] = useState(false)
   const [username, setUsername] = useState('')
+  const { playClickSound } = useSoundEffects()
 
   useEffect(() => {
     // Check if user has previous progress
@@ -15,6 +17,7 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
   }, [])
 
   const handleStartOver = () => {
+    playClickSound() // Add click sound
     // Reset progress but keep user info
     const savedUser = localStorage.getItem('aiJourneyUser')
     if (savedUser) {
@@ -25,6 +28,20 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
     }
     if (onStartOver) {
       onStartOver()
+    } else {
+      onStart()
+    }
+  }
+
+  const handleStart = () => {
+    playClickSound() // Add click sound
+    onStart()
+  }
+
+  const handleContinue = () => {
+    playClickSound() // Add click sound
+    if (onContinue) {
+      onContinue()
     } else {
       onStart()
     }
@@ -214,7 +231,9 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
         style={styles.backgroundGif}
       />
       
-      <span style={styles.welcome}>Welcome!</span>
+      <span style={styles.welcome}>
+        {username ? `Welcome, ${username}!` : 'Welcome!'}
+      </span>
       
       <button 
         style={styles.signInButton} 
@@ -239,7 +258,7 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
           
           <button 
             style={styles.continueButton}
-            onClick={onContinue || onStart}
+            onClick={handleContinue}
             onMouseOver={(e) => {
               e.target.style.transform = 'scale(1.05)'
               e.target.style.boxShadow = '0 10px 40px rgba(81, 112, 255, 0.4)'
@@ -268,7 +287,7 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
           <p style={styles.cardSubtitle}>An interactive journey into AI literacy</p>
           <button 
             style={styles.startButton}
-            onClick={onStart}
+            onClick={handleStart}
             onMouseOver={(e) => {
               e.target.style.backgroundColor = '#333'
               e.target.style.transform = 'scale(1.05)'

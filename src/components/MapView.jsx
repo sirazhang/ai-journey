@@ -16,9 +16,9 @@ const regions = [
     name: 'AETHER DESERT', 
     position: { top: '5%', left: '30%' },
     cardPosition: { top: '15%', left: '30%' },
-    description: 'The Aether Desert is a vast expanse of golden sands and ancient ruins. Strange energy patterns have been detected here.',
-    difficulty: '⭐⭐ (Medium)',
-    available: false,
+    description: 'Welcome back! The guardian here is a yellow robot named \'Alpha\'. He is usually responsible for the castle\'s security system, but something is wrong. Let\'s find him and ask.',
+    difficulty: '⭐⭐ (Intermediate)',
+    available: true,
   },
   { 
     id: 'glacier', 
@@ -85,6 +85,8 @@ const MapView = ({ onRegionClick }) => {
       position: 'absolute',
       top: '20px',
       right: '20px',
+      width: '120px',
+      height: '120px',
       cursor: 'pointer',
       zIndex: 10,
       transition: 'opacity 0.3s ease',
@@ -93,7 +95,8 @@ const MapView = ({ onRegionClick }) => {
     },
     npcImage: {
       width: '120px',
-      height: 'auto',
+      height: '120px',
+      objectFit: 'contain',
       transition: 'transform 0.3s ease',
       animation: hoveredNpc ? 'breathe 1s ease-in-out infinite' : 'none',
     },
@@ -171,7 +174,7 @@ const MapView = ({ onRegionClick }) => {
     goButton: {
       display: 'block',
       width: '80%',
-      margin: '0 auto',
+      margin: '0 auto 10px auto',
       padding: '12px 0',
       borderRadius: '8px',
       border: 'none',
@@ -180,6 +183,21 @@ const MapView = ({ onRegionClick }) => {
       fontSize: '18px',
       fontWeight: 700,
       color: '#fff',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+    },
+    startOverButton: {
+      display: 'block',
+      width: '80%',
+      margin: '5px auto 0 auto', // 减小上边距，从 0 改为 5px
+      padding: '6px 0', // 减小内边距
+      borderRadius: '6px',
+      border: 'none',
+      background: 'transparent',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      fontWeight: 500,
+      color: '#333',
       cursor: 'pointer',
       transition: 'all 0.2s ease',
     },
@@ -200,10 +218,11 @@ const MapView = ({ onRegionClick }) => {
     // NPC state 2 at bottom-left of card
     cardNpc: {
       position: 'absolute',
-      bottom: '-30px',
-      left: '-30px',
+      top: '50px', // 与 GO 按钮水平对齐（大约在卡片中部）
+      left: '-50px', // 向左移动更多
       width: '100px',
-      height: 'auto',
+      height: '100px',
+      objectFit: 'contain',
       zIndex: 21,
     },
     // Keyframes style tag
@@ -295,20 +314,39 @@ const MapView = ({ onRegionClick }) => {
           </p>
           
           {getHoveredRegionData()?.available ? (
-            <button 
-              style={styles.goButton}
-              onClick={() => onRegionClick(selectedRegion)}
-              onMouseOver={(e) => {
-                e.target.style.background = '#333'
-                e.target.style.transform = 'scale(1.02)'
-              }}
-              onMouseOut={(e) => {
-                e.target.style.background = '#000'
-                e.target.style.transform = 'scale(1)'
-              }}
-            >
-              GO
-            </button>
+            <>
+              <button 
+                style={styles.goButton}
+                onClick={() => onRegionClick(selectedRegion)}
+                onMouseOver={(e) => {
+                  e.target.style.background = '#333'
+                  e.target.style.transform = 'scale(1.02)'
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = '#000'
+                  e.target.style.transform = 'scale(1)'
+                }}
+              >
+                GO
+              </button>
+              
+              {(selectedRegion === 'fungi' || selectedRegion === 'desert') && (
+                <button 
+                  style={styles.startOverButton}
+                  onClick={() => onRegionClick(selectedRegion, true)} // Pass true for startOver
+                  onMouseOver={(e) => {
+                    e.target.style.color = '#666'
+                    e.target.style.transform = 'scale(1.02)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.color = '#333'
+                    e.target.style.transform = 'scale(1)'
+                  }}
+                >
+                  START OVER
+                </button>
+              )}
+            </>
           ) : (
             <button style={styles.lockedButton}>
               🔒 LOCKED

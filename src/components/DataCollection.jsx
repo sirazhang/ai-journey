@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import useSoundEffects from '../hooks/useSoundEffects'
 
 // Map positions: bottom-left (0), bottom-right (1), top-left (2), top-right (3)
 const POSITIONS = {
@@ -109,6 +110,38 @@ const DataCollection = ({ onComplete, onExit }) => {
   const [allCollected, setAllCollected] = useState(false)
   const [hoveredNpc, setHoveredNpc] = useState(null) // Track which NPC is hovered ('npc_a', 'npc_b', 'npc_c', 'glitch')
 
+  // Sound effects
+  const { playCameraSound } = useSoundEffects()
+
+  // Load saved progress on mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (savedUser) {
+      const userData = JSON.parse(savedUser)
+      const dataCollectionProgress = userData.dataCollectionProgress
+      if (dataCollectionProgress) {
+        setCurrentPosition(dataCollectionProgress.currentPosition || POSITIONS.TOP_LEFT)
+        setCollectedIds(dataCollectionProgress.collectedIds || [])
+        console.log('Loaded Data Collection progress:', dataCollectionProgress)
+      }
+    }
+  }, [])
+
+  // Save progress when position or collected items change
+  useEffect(() => {
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (savedUser) {
+      const userData = JSON.parse(savedUser)
+      userData.dataCollectionProgress = {
+        currentPosition,
+        collectedIds,
+        lastSaved: Date.now()
+      }
+      localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+      console.log('Saved Data Collection progress:', userData.dataCollectionProgress)
+    }
+  }, [currentPosition, collectedIds])
+
   const handleNavigate = (direction) => {
     const nextPosition = navigationMap[currentPosition]?.[direction]
     if (nextPosition !== undefined && !isTransitioning) {
@@ -122,6 +155,7 @@ const DataCollection = ({ onComplete, onExit }) => {
 
   const handleMushroomClick = (id) => {
     if (!collectedIds.includes(id)) {
+      playCameraSound() // Add camera sound effect
       setSelectedMushroom(id)
       setShowCard(true)
     }

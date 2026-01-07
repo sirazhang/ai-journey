@@ -122,14 +122,14 @@ const GameInterface = ({ onComplete }) => {
       transition: 'opacity 0.5s ease-in-out',
     },
     npcImage: {
-      width: '400px',
+      width: '300px',
       height: 'auto',
       filter: 'drop-shadow(0 0 20px rgba(81, 112, 255, 0.5))',
     },
     dialogueContainer: {
       position: 'absolute',
       bottom: '80px',
-      left: '280px',
+      left: '380px',
       right: '80px',
       zIndex: 3,
       opacity: showNpc ? 1 : 0,

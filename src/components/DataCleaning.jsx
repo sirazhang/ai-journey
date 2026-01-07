@@ -228,6 +228,37 @@ const DataCleaning = ({ onComplete, onExit }) => {
   const [phase, setPhase] = useState('INTRO') // INTRO, NOISE_REMOVAL, LABEL_CORRECTION, FILL_MISSING_INTRO, FILL_MISSING, QUIZ, TRAINING, VALIDATION_INTRO, VALIDATION_DATA, ADJUST_MODEL_INTRO, ADJUST_MODEL_DATA, ADJUST_MODEL_TRAINING, LOADING, COLOR_MAP_EXPLORATION, COMPLETE
   const [noiseBatch, setNoiseBatch] = useState(0)
   const [removedItems, setRemovedItems] = useState([])
+
+  // Load saved progress on mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (savedUser) {
+      const userData = JSON.parse(savedUser)
+      const dataCleaningProgress = userData.dataCleaningProgress
+      if (dataCleaningProgress) {
+        setPhase(dataCleaningProgress.phase || 'INTRO')
+        setNoiseBatch(dataCleaningProgress.noiseBatch || 0)
+        setRemovedItems(dataCleaningProgress.removedItems || [])
+        console.log('Loaded Data Cleaning progress:', dataCleaningProgress)
+      }
+    }
+  }, [])
+
+  // Save progress when phase changes
+  useEffect(() => {
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (savedUser) {
+      const userData = JSON.parse(savedUser)
+      userData.dataCleaningProgress = {
+        phase,
+        noiseBatch,
+        removedItems,
+        lastSaved: Date.now()
+      }
+      localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+      console.log('Saved Data Cleaning progress:', userData.dataCleaningProgress)
+    }
+  }, [phase, noiseBatch, removedItems])
   const [labelBatch, setLabelBatch] = useState(1)
   const [selectedCells, setSelectedCells] = useState([]) // Cells user clicked as errors
   const [showGlitchHint, setShowGlitchHint] = useState(false)
@@ -937,10 +968,6 @@ const DataCleaning = ({ onComplete, onExit }) => {
       height: '120px',
       zIndex: 100,
       cursor: 'pointer',
-      borderRadius: '50%',
-      background: '#fff',
-      padding: '5px',
-      boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
     },
     rangerNpc: {
       position: 'absolute',

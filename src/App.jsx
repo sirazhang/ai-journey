@@ -6,6 +6,8 @@ import MapView from './components/MapView'
 import FungiJungleMap from './components/FungiJungleMap'
 import DataCollection from './components/DataCollection'
 import DataCleaning from './components/DataCleaning'
+import DesertMap from './components/DesertMap'
+import useBackgroundMusic from './hooks/useBackgroundMusic'
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState('home')
@@ -14,6 +16,48 @@ function App() {
   const [dialogueComplete, setDialogueComplete] = useState(false)
   const [selectedRegion, setSelectedRegion] = useState(null)
   const [collectedData, setCollectedData] = useState([])
+  const [userLoggedIn, setUserLoggedIn] = useState(false) // Track login status
+  const [musicEnabled, setMusicEnabled] = useState(true) // Track music state
+
+  // Background music based on current screen
+  const getMusicFile = () => {
+    switch (currentScreen) {
+      case 'home':
+      case 'game':
+      case 'map':
+        return '/sound/spaceship.mp3'
+      case 'fungiMap':
+      case 'dataCollection':
+      case 'dataCleaning':
+        return '/sound/jungle.mp3'
+      case 'desertMap':
+        return '/sound/desert.mp3'
+      default:
+        return '/sound/spaceship.mp3'
+    }
+  }
+
+  // Use background music hook
+  const { startMusic, stopMusic, setVolume } = useBackgroundMusic(getMusicFile(), 0.3)
+
+  // Handle user interaction to start music (for autoplay restrictions)
+  const handleUserInteraction = useCallback(() => {
+    startMusic()
+    // Remove the event listener after first interaction
+    document.removeEventListener('click', handleUserInteraction)
+    document.removeEventListener('keydown', handleUserInteraction)
+  }, [startMusic])
+
+  // Add event listeners for user interaction
+  useEffect(() => {
+    document.addEventListener('click', handleUserInteraction)
+    document.addEventListener('keydown', handleUserInteraction)
+    
+    return () => {
+      document.removeEventListener('click', handleUserInteraction)
+      document.removeEventListener('keydown', handleUserInteraction)
+    }
+  }, [handleUserInteraction])
 
   // Load saved progress on mount
   useEffect(() => {
@@ -21,6 +65,7 @@ function App() {
     if (savedUser) {
       const userData = JSON.parse(savedUser)
       setIsFirstVisit(!userData.hasStarted)
+      setUserLoggedIn(true) // User is logged in if data exists
     }
   }, [])
 
@@ -76,6 +121,17 @@ function App() {
 
   const handleSignUpComplete = (userData) => {
     setIsFirstVisit(false)
+    setUserLoggedIn(true) // Set login status to true
+  }
+
+  const toggleMusic = () => {
+    if (musicEnabled) {
+      stopMusic()
+      setMusicEnabled(false)
+    } else {
+      startMusic()
+      setMusicEnabled(true)
+    }
   }
 
   const handleDialogueComplete = () => {
@@ -84,13 +140,37 @@ function App() {
     setCurrentScreen('map')
   }
 
-  const handleRegionClick = (region) => {
-    console.log('Region clicked:', region)
+  const handleRegionClick = (region, startOver = false) => {
+    console.log('Region clicked:', region, 'Start over:', startOver)
     setSelectedRegion(region)
     if (region === 'fungi') {
+      if (startOver) {
+        // Clear Fungi Jungle progress
+        const savedUser = localStorage.getItem('aiJourneyUser')
+        if (savedUser) {
+          const userData = JSON.parse(savedUser)
+          userData.fungiJungleProgress = null
+          userData.dataCollectionProgress = null
+          userData.dataCleaningProgress = null
+          localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+        }
+      }
       // Go directly to Fungi Jungle map (skip intro)
       saveProgress('fungiMap')
       setCurrentScreen('fungiMap')
+    } else if (region === 'desert') {
+      if (startOver) {
+        // Clear Desert progress
+        const savedUser = localStorage.getItem('aiJourneyUser')
+        if (savedUser) {
+          const userData = JSON.parse(savedUser)
+          userData.desertProgress = null
+          localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+        }
+      }
+      // Go to Desert map
+      saveProgress('desertMap')
+      setCurrentScreen('desertMap')
     }
   }
 
@@ -130,9 +210,10 @@ function App() {
   }
 
   return (
-    <div style={{ width: '100%', height: '100vh', overflow: 'hidden' }}>
+    <div style={{ width: '100%', height: '100vh', overflow: 'hidden', position: 'relative' }}>
       {currentScreen === 'home' && (
         <Homepage 
+          key={userLoggedIn ? 'logged-in' : 'logged-out'} // Force re-render when login status changes
           onStart={handleStart} 
           onContinue={handleContinue}
           onStartOver={handleStartOver}
@@ -147,6 +228,15 @@ function App() {
       
       {currentScreen === 'map' && (
         <MapView onRegionClick={handleRegionClick} />
+      )}
+
+      {currentScreen === 'desertMap' && (
+        <DesertMap 
+          onExit={() => {
+            saveProgress('map')
+            setCurrentScreen('map')
+          }}
+        />
       )}
 
       {currentScreen === 'fungiMap' && (

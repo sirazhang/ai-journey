@@ -71,6 +71,35 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [dialogueComplete, setDialogueComplete] = useState({})
 
+  // Load saved progress on mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (savedUser) {
+      const userData = JSON.parse(savedUser)
+      const fungiProgress = userData.fungiJungleProgress
+      if (fungiProgress) {
+        setCurrentPosition(fungiProgress.currentPosition || POSITIONS.BOTTOM_LEFT)
+        setDialogueComplete(fungiProgress.dialogueComplete || {})
+        console.log('Loaded Fungi Jungle progress:', fungiProgress)
+      }
+    }
+  }, [])
+
+  // Save progress when position or dialogue completion changes
+  useEffect(() => {
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (savedUser) {
+      const userData = JSON.parse(savedUser)
+      userData.fungiJungleProgress = {
+        currentPosition,
+        dialogueComplete,
+        lastSaved: Date.now()
+      }
+      localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+      console.log('Saved Fungi Jungle progress:', userData.fungiJungleProgress)
+    }
+  }, [currentPosition, dialogueComplete])
+
   const currentNpcData = npcDialogues[currentPosition]
   const currentDialogue = currentNpcData?.dialogues?.[currentDialogueIndex]
 
@@ -208,16 +237,16 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
       position: 'absolute',
       top: '15px',
       right: '15px',
-      width: '210px',  // 3x size (70px * 3)
-      height: '210px',
+      width: '120px',
+      height: '120px',
       zIndex: 10,
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
     },
     miniNpcImage: {
-      width: '180px',  // 3x size (60px * 3)
-      height: '180px',
+      width: '120px',
+      height: '120px',
       objectFit: 'contain',
     },
     navArrow: {
