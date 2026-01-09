@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useLanguage } from '../contexts/LanguageContext'
 
 // Map positions: bottom-left (0), bottom-right (1), top-left (2), top-right (3)
 const POSITIONS = {
@@ -63,6 +64,7 @@ const positionTransforms = {
 }
 
 const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
+  const { t } = useLanguage()
   const [currentPosition, setCurrentPosition] = useState(POSITIONS.BOTTOM_LEFT)
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0)
   const [displayedText, setDisplayedText] = useState('')
@@ -599,7 +601,7 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
           e.target.style.borderColor = 'rgba(81, 112, 255, 0.5)'
         }}
       >
-        Exit
+        {t('exit')}
       </button>
 
       {/* Mini Glitch NPC */}

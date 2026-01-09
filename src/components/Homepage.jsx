@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import useSoundEffects from '../hooks/useSoundEffects'
+import { useLanguage } from '../contexts/LanguageContext'
 
 const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
+  const { t } = useLanguage()
   const [hasProgress, setHasProgress] = useState(false)
   const [username, setUsername] = useState('')
   const { playClickSound } = useSoundEffects()
@@ -247,7 +249,7 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
           e.target.style.background = 'transparent'
         }}
       >
-        Sign in
+        {t('signIn')}
       </button>
       
       {hasProgress ? (
@@ -268,7 +270,7 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
               e.target.style.boxShadow = 'none'
             }}
           >
-            CONTINUE
+            {t('continueGame')}
           </button>
           
           <button 
@@ -277,7 +279,7 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
             onMouseOver={(e) => e.target.style.opacity = '0.6'}
             onMouseOut={(e) => e.target.style.opacity = '0.9'}
           >
-            START OVER
+            {t('startOver')}
           </button>
         </div>
       ) : (
@@ -297,7 +299,7 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
               e.target.style.transform = 'scale(1)'
             }}
           >
-            start
+            {t('start')}
           </button>
         </div>
       )}

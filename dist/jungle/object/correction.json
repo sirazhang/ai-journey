@@ -1,0 +1,98 @@
+[
+  {
+    "ID": "#01",
+    "Name": "Candy Blob",
+    "Color": "TRUE",
+    "Texture": "Smooth",
+    "Spikes": "No",
+    "Is_Toxic": "NO"
+  },
+  {
+    "ID": "#02",
+    "Name": "img_file_002.png",
+    "Color": "Red",
+    "Texture": "Wavy",
+    "Spikes": "Yes",
+    "Is_Toxic": "YES"
+  },
+  {
+    "ID": "#03",
+    "Name": "Velvet Star",
+    "Color": "Blue",
+    "Texture": "404 Error",
+    "Spikes": "Yes",
+    "Is_Toxic": "NO"
+  },
+  {
+    "ID": "#04",
+    "Name": "Polka Cluster",
+    "Color": "Green",
+    "Texture": "Smooth",
+    "Spikes": "Zero",
+    "Is_Toxic": "NO"
+  },
+  {
+    "ID": "#05",
+    "Name": "Speckled Bell",
+    "Color": "#800080",
+    "Texture": "Matte",
+    "Spikes": "No",
+    "Is_Toxic": "NO"
+  },
+  {
+    "ID": "#06",
+    "Name": "Glowing Shroom",
+    "Color": "Blue",
+    "Texture": "Glowing",
+    "Spikes": "1",
+    "Is_Toxic": "Safe"
+  },
+  {
+    "ID": "#07",
+    "Name": "Striped Chime",
+    "Color": "Orange",
+    "Texture": "Looks very nice",
+    "Spikes": "No",
+    "Is_Toxic": "NO"
+  },
+  {
+    "ID": "#08",
+    "Name": "NULL",
+    "Color": "Yellow",
+    "Texture": "Glossy",
+    "Spikes": "No",
+    "Is_Toxic": "NO"
+  },
+  {
+    "ID": "#09",
+    "Name": "Frostfire Cap",
+    "Color": "Pink",
+    "Texture": "Glossy",
+    "Spikes": "N/A",
+    "Is_Toxic": "NO"
+  },
+  {
+    "ID": "#10",
+    "Name": "Classic Toadstool",
+    "Color": "255, 0, 0",
+    "Texture": "Matte",
+    "Spikes": "No",
+    "Is_Toxic": "NO"
+  },
+  {
+    "ID": "#11",
+    "Name": "Rainbow Drip",
+    "Color": "Pastel",
+    "Texture": "Glossy",
+    "Spikes": "No",
+    "Is_Toxic": "MAYBE"
+  },
+  {
+    "ID": "#12",
+    "Name": "Starlight Shroom",
+    "Color": "Purple",
+    "Texture": "%&*(#@!",
+    "Spikes": "Yes",
+    "Is_Toxic": "YES"
+  }
+]

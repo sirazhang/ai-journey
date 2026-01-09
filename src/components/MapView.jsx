@@ -1,46 +1,76 @@
 import React, { useState, useEffect } from 'react'
+import { useLanguage } from '../contexts/LanguageContext'
+import LanguageToggle from './LanguageToggle'
 
-// Region data with positions and info cards
-const regions = [
+// Simple sound effect function
+const playSelectSound = () => {
+  try {
+    const audio = new Audio('/sound/select.mp3')
+    audio.volume = 0.6
+    audio.play().catch(error => {
+      console.log('Could not play select sound:', error)
+    })
+  } catch (error) {
+    console.log('Error creating select audio:', error)
+  }
+}
+
+// NPC Glitch dialogue sound effect
+const playHumSound = () => {
+  try {
+    const audio = new Audio('/sound/hum.mp3')
+    audio.volume = 0.5
+    audio.play().catch(error => {
+      console.log('Could not play hum sound:', error)
+    })
+  } catch (error) {
+    console.log('Error creating hum audio:', error)
+  }
+}
+
+// Region data with positions and info cards - will be translated dynamically
+const getRegions = (t) => [
   { 
     id: 'fungi', 
-    name: 'FUNGI JUNGLE', 
+    name: t('fungiJungle'), 
     position: { top: '52%', left: '5%' },
     cardPosition: { top: '62%', left: '5%' },
-    description: 'Welcome to the Fungi Jungle! The guardian here is a green robot named Ranger Moss. He usually keeps everything running smoothly. Let\'s look for him first!',
-    difficulty: '⭐ (Easy / Introductory)',
+    description: t('fungiDescription'),
+    difficulty: t('easyDifficulty'),
     available: true,
   },
   { 
     id: 'desert', 
-    name: 'AETHER DESERT', 
+    name: t('desert'), 
     position: { top: '5%', left: '30%' },
     cardPosition: { top: '15%', left: '30%' },
-    description: 'Welcome back! The guardian here is a yellow robot named \'Alpha\'. He is usually responsible for the castle\'s security system, but something is wrong. Let\'s find him and ask.',
-    difficulty: '⭐⭐ (Intermediate)',
+    description: t('desertDescription'),
+    difficulty: t('intermediateDifficulty'),
     available: true,
   },
   { 
     id: 'glacier', 
-    name: 'CORE GLACIER', 
+    name: t('glacier'), 
     position: { bottom: '8%', left: '45%' },
     cardPosition: { bottom: '22%', left: '45%' },
-    description: 'The Core Glacier holds frozen data from ancient times. Careful navigation is required through the icy terrain.',
-    difficulty: '⭐⭐⭐ (Hard)',
+    description: t('glacierDescription'),
+    difficulty: t('advancedDifficulty'),
     available: false,
   },
   { 
     id: 'island', 
-    name: 'NEXUS ISLAND', 
+    name: t('island'), 
     position: { top: '35%', right: '5%' },
     cardPosition: { top: '48%', right: '5%' },
-    description: 'Nexus Island floats above the ocean, connected by data streams. It\'s the hub of all AI operations in this world.',
-    difficulty: '⭐⭐⭐⭐ (Expert)',
-    available: false,
+    description: t('islandDescription'),
+    difficulty: t('advancedDifficulty'),
+    available: true, // 改为可用
   },
 ]
 
 const MapView = ({ onRegionClick }) => {
+  const { t } = useLanguage()
+  const regions = getRegions(t)
   const [hoveredNpc, setHoveredNpc] = useState(false)
   const [selectedRegion, setSelectedRegion] = useState(null)  // Changed from hoveredRegion to selectedRegion (click-based)
   const [regionsVisible, setRegionsVisible] = useState(false)
@@ -56,6 +86,9 @@ const MapView = ({ onRegionClick }) => {
   const isCardShowing = selectedRegion !== null
 
   const handleRegionClick = (regionId) => {
+    // Play select sound effect
+    playSelectSound()
+    
     // Toggle: if clicking same region, keep it open; otherwise switch to new region
     if (selectedRegion === regionId) {
       // Keep open, do nothing (user can click GO to proceed)
@@ -145,7 +178,7 @@ const MapView = ({ onRegionClick }) => {
       position: 'absolute',
       width: '350px',
       padding: '20px',
-      paddingBottom: '70px',
+      paddingBottom: '25px', // 从70px减少到25px，减少下方留白
       borderRadius: '20px',
       background: 'rgba(255, 255, 255, 0.95)',
       border: '3px solid transparent',
@@ -161,20 +194,20 @@ const MapView = ({ onRegionClick }) => {
       fontSize: '15px',
       color: '#333',
       lineHeight: 1.6,
-      marginBottom: '12px',
+      marginBottom: '10px', // 从12px减少到10px
       textAlign: 'center',
     },
     cardDifficulty: {
       fontFamily: "'Roboto', sans-serif",
       fontSize: '14px',
       color: '#666',
-      marginBottom: '15px',
+      marginBottom: '12px', // 从15px减少到12px
       textAlign: 'center',
     },
     goButton: {
       display: 'block',
       width: '80%',
-      margin: '0 auto 10px auto',
+      margin: '0 auto 8px auto', // 从10px减少到8px
       padding: '12px 0',
       borderRadius: '8px',
       border: 'none',
@@ -189,8 +222,8 @@ const MapView = ({ onRegionClick }) => {
     startOverButton: {
       display: 'block',
       width: '80%',
-      margin: '5px auto 0 auto', // 减小上边距，从 0 改为 5px
-      padding: '6px 0', // 减小内边距
+      margin: '0 auto', // 移除上边距，让按钮更紧凑
+      padding: '6px 0',
       borderRadius: '6px',
       border: 'none',
       background: 'transparent',
@@ -218,8 +251,8 @@ const MapView = ({ onRegionClick }) => {
     // NPC state 2 at bottom-left of card
     cardNpc: {
       position: 'absolute',
-      top: '50px', // 与 GO 按钮水平对齐（大约在卡片中部）
-      left: '-50px', // 向左移动更多
+      top: '40px', // 从50px调整到40px，适应更紧凑的卡片
+      left: '-50px',
       width: '100px',
       height: '100px',
       objectFit: 'contain',
@@ -252,6 +285,9 @@ const MapView = ({ onRegionClick }) => {
     <div style={styles.container}>
       <style>{styles.keyframes}</style>
       
+      {/* Language Toggle Button */}
+      <LanguageToggle position="topLeft" />
+      
       <img 
         src="/background/map.gif" 
         alt="Map Background" 
@@ -261,7 +297,10 @@ const MapView = ({ onRegionClick }) => {
       {/* NPC Glitch in top-right (disappears when card shows) */}
       <div 
         style={styles.npcContainer}
-        onMouseEnter={() => setHoveredNpc(true)}
+        onMouseEnter={() => {
+          setHoveredNpc(true)
+          playHumSound() // 添加hum音效
+        }}
         onMouseLeave={() => setHoveredNpc(false)}
       >
         <img 
@@ -317,7 +356,10 @@ const MapView = ({ onRegionClick }) => {
             <>
               <button 
                 style={styles.goButton}
-                onClick={() => onRegionClick(selectedRegion)}
+                onClick={() => {
+                  playSelectSound() // 添加音效
+                  onRegionClick(selectedRegion)
+                }}
                 onMouseOver={(e) => {
                   e.target.style.background = '#333'
                   e.target.style.transform = 'scale(1.02)'
@@ -327,13 +369,16 @@ const MapView = ({ onRegionClick }) => {
                   e.target.style.transform = 'scale(1)'
                 }}
               >
-                GO
+                {t('continue')}
               </button>
               
               {(selectedRegion === 'fungi' || selectedRegion === 'desert') && (
                 <button 
                   style={styles.startOverButton}
-                  onClick={() => onRegionClick(selectedRegion, true)} // Pass true for startOver
+                  onClick={() => {
+                    playSelectSound() // 添加音效
+                    onRegionClick(selectedRegion, true) // Pass true for startOver
+                  }}
                   onMouseOver={(e) => {
                     e.target.style.color = '#666'
                     e.target.style.transform = 'scale(1.02)'
@@ -343,13 +388,13 @@ const MapView = ({ onRegionClick }) => {
                     e.target.style.transform = 'scale(1)'
                   }}
                 >
-                  START OVER
+                  {t('startOver')}
                 </button>
               )}
             </>
           ) : (
             <button style={styles.lockedButton}>
-              🔒 LOCKED
+              🔒 {t('comingSoon')}
             </button>
           )}
           

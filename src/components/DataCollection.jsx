@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import useSoundEffects from '../hooks/useSoundEffects'
+import { useLanguage } from '../contexts/LanguageContext'
 
 // Map positions: bottom-left (0), bottom-right (1), top-left (2), top-right (3)
 const POSITIONS = {
@@ -99,6 +100,7 @@ const mushroomData = {
 }
 
 const DataCollection = ({ onComplete, onExit }) => {
+  const { t } = useLanguage()
   const [currentPosition, setCurrentPosition] = useState(POSITIONS.TOP_LEFT)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [collectedIds, setCollectedIds] = useState([])
@@ -520,7 +522,7 @@ const DataCollection = ({ onComplete, onExit }) => {
           e.target.style.borderColor = 'rgba(81, 112, 255, 0.4)'
         }}
       >
-        Exit
+        {t('exit')}
       </button>
 
       {/* Glitch NPC (top right corner) */}

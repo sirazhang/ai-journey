@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useLanguage } from '../contexts/LanguageContext'
 
 // Noise items that aren't mushrooms
 const NOISE_ITEMS = ['03', '05', '07']
@@ -225,6 +226,7 @@ const colorMapNpcs = {
 }
 
 const DataCleaning = ({ onComplete, onExit }) => {
+  const { t } = useLanguage()
   const [phase, setPhase] = useState('INTRO') // INTRO, NOISE_REMOVAL, LABEL_CORRECTION, FILL_MISSING_INTRO, FILL_MISSING, QUIZ, TRAINING, VALIDATION_INTRO, VALIDATION_DATA, ADJUST_MODEL_INTRO, ADJUST_MODEL_DATA, ADJUST_MODEL_TRAINING, LOADING, COLOR_MAP_EXPLORATION, COMPLETE
   const [noiseBatch, setNoiseBatch] = useState(0)
   const [removedItems, setRemovedItems] = useState([])
@@ -2161,7 +2163,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
             </div>
 
             {/* Exit Button */}
-            <button style={styles.exitButton} onClick={onExit}>Exit</button>
+            <button style={styles.exitButton} onClick={onExit}>{t('exit')}</button>
 
             {/* Glitch NPC */}
             <div 
@@ -2325,7 +2327,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
       {phase !== 'LOADING' && phase !== 'COLOR_MAP_EXPLORATION' && (
         <>
           {/* Exit Button */}
-          <button style={styles.exitButton} onClick={onExit}>Exit</button>
+          <button style={styles.exitButton} onClick={onExit}>{t('exit')}</button>
 
           {/* Glitch NPC */}
           <div 

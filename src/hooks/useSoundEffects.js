@@ -21,10 +21,25 @@ const useSoundEffects = () => {
     playSound('/sound/camera.mp3', 0.7)
   }, [playSound])
 
+  const playStampSound = useCallback(() => {
+    playSound('/sound/stamp.mp3', 0.8)
+  }, [playSound])
+
+  const playSafeSound = useCallback(() => {
+    playSound('/sound/safe.mp3', 0.7)
+  }, [playSound])
+
+  const playAlertSound = useCallback(() => {
+    playSound('/sound/alert.mp3', 0.7)
+  }, [playSound])
+
   return {
     playSound,
     playClickSound,
-    playCameraSound
+    playCameraSound,
+    playStampSound,
+    playSafeSound,
+    playAlertSound
   }
 }
 

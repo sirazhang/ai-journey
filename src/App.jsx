@@ -7,7 +7,9 @@ import FungiJungleMap from './components/FungiJungleMap'
 import DataCollection from './components/DataCollection'
 import DataCleaning from './components/DataCleaning'
 import DesertMap from './components/DesertMap'
+import IslandMap from './components/IslandMap'
 import useBackgroundMusic from './hooks/useBackgroundMusic'
+import { LanguageProvider } from './contexts/LanguageContext'
 
 function App() {
   const [currentScreen, setCurrentScreen] = useState('home')
@@ -32,6 +34,8 @@ function App() {
         return '/sound/jungle.mp3'
       case 'desertMap':
         return '/sound/desert.mp3'
+      case 'islandMap':
+        return '/sound/island.mp3'
       default:
         return '/sound/spaceship.mp3'
     }
@@ -86,18 +90,30 @@ function App() {
   }
 
   const handleContinue = () => {
-    // Load last saved screen or go to map
+    // For continuing users, skip Glitch intro and go directly to map or last saved screen
     const savedUser = localStorage.getItem('aiJourneyUser')
     if (savedUser) {
       const userData = JSON.parse(savedUser)
       const lastScreen = userData.currentProgress || 'map'
-      // If saved progress was fungiIntro, go directly to fungiMap
-      if (lastScreen === 'fungiIntro') {
-        setCurrentScreen('fungiMap')
+      const hasCompletedIntro = userData.hasCompletedIntro || userData.hasStarted
+      
+      // If user has completed intro before, skip it
+      if (hasCompletedIntro) {
+        if (lastScreen === 'game') {
+          // If last screen was game (Glitch intro), go to map instead
+          setCurrentScreen('map')
+        } else if (lastScreen === 'fungiIntro') {
+          // If saved progress was fungiIntro, go directly to fungiMap
+          setCurrentScreen('fungiMap')
+        } else {
+          setCurrentScreen(lastScreen)
+        }
       } else {
-        setCurrentScreen(lastScreen)
+        // User hasn't completed intro, go to map anyway for continue
+        setCurrentScreen('map')
       }
     } else {
+      // If no saved data, go to map (skip Glitch intro)
       setCurrentScreen('map')
     }
   }
@@ -136,6 +152,16 @@ function App() {
 
   const handleDialogueComplete = () => {
     setDialogueComplete(true)
+    
+    // Mark user as having completed the intro
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (savedUser) {
+      const userData = JSON.parse(savedUser)
+      userData.hasStarted = true
+      userData.hasCompletedIntro = true // Add flag for completed intro
+      localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+    }
+    
     saveProgress('map')
     setCurrentScreen('map')
   }
@@ -171,10 +197,29 @@ function App() {
       // Go to Desert map
       saveProgress('desertMap')
       setCurrentScreen('desertMap')
+    } else if (region === 'island') {
+      if (startOver) {
+        // Clear Island progress
+        const savedUser = localStorage.getItem('aiJourneyUser')
+        if (savedUser) {
+          const userData = JSON.parse(savedUser)
+          userData.islandProgress = null
+          localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+        }
+      }
+      // Go to Island map
+      saveProgress('islandMap')
+      setCurrentScreen('islandMap')
     }
   }
 
   const handleFungiMapExit = () => {
+    saveProgress('map')
+    setCurrentScreen('map')
+    setSelectedRegion(null)
+  }
+
+  const handleIslandMapExit = () => {
     saveProgress('map')
     setCurrentScreen('map')
     setSelectedRegion(null)
@@ -210,63 +255,71 @@ function App() {
   }
 
   return (
-    <div style={{ width: '100%', height: '100vh', overflow: 'hidden', position: 'relative' }}>
-      {currentScreen === 'home' && (
-        <Homepage 
-          key={userLoggedIn ? 'logged-in' : 'logged-out'} // Force re-render when login status changes
-          onStart={handleStart} 
-          onContinue={handleContinue}
-          onStartOver={handleStartOver}
-          onSignIn={handleSignIn}
-          isFirstVisit={isFirstVisit}
-        />
-      )}
-      
-      {currentScreen === 'game' && (
-        <GameInterface onComplete={handleDialogueComplete} />
-      )}
-      
-      {currentScreen === 'map' && (
-        <MapView onRegionClick={handleRegionClick} />
-      )}
+    <LanguageProvider>
+      <div style={{ width: '100%', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+        {currentScreen === 'home' && (
+          <Homepage 
+            key={userLoggedIn ? 'logged-in' : 'logged-out'} // Force re-render when login status changes
+            onStart={handleStart} 
+            onContinue={handleContinue}
+            onStartOver={handleStartOver}
+            onSignIn={handleSignIn}
+            isFirstVisit={isFirstVisit}
+          />
+        )}
+        
+        {currentScreen === 'game' && (
+          <GameInterface onComplete={handleDialogueComplete} />
+        )}
+        
+        {currentScreen === 'map' && (
+          <MapView onRegionClick={handleRegionClick} />
+        )}
 
-      {currentScreen === 'desertMap' && (
-        <DesertMap 
-          onExit={() => {
-            saveProgress('map')
-            setCurrentScreen('map')
-          }}
-        />
-      )}
+        {currentScreen === 'desertMap' && (
+          <DesertMap 
+            onExit={() => {
+              saveProgress('map')
+              setCurrentScreen('map')
+            }}
+          />
+        )}
 
-      {currentScreen === 'fungiMap' && (
-        <FungiJungleMap 
-          onExit={handleFungiMapExit}
-          onStartDataCollection={handleStartDataCollection}
-        />
-      )}
+        {currentScreen === 'islandMap' && (
+          <IslandMap 
+            onExit={handleIslandMapExit}
+          />
+        )}
 
-      {currentScreen === 'dataCollection' && (
-        <DataCollection
-          onComplete={handleDataCollectionComplete}
-          onExit={handleDataCollectionExit}
-        />
-      )}
+        {currentScreen === 'fungiMap' && (
+          <FungiJungleMap 
+            onExit={handleFungiMapExit}
+            onStartDataCollection={handleStartDataCollection}
+          />
+        )}
 
-      {currentScreen === 'dataCleaning' && (
-        <DataCleaning
-          onComplete={handleDataCleaningComplete}
-          onExit={handleDataCleaningExit}
-        />
-      )}
+        {currentScreen === 'dataCollection' && (
+          <DataCollection
+            onComplete={handleDataCollectionComplete}
+            onExit={handleDataCollectionExit}
+          />
+        )}
 
-      {showSignIn && (
-        <SignInModal 
-          onClose={handleCloseSignIn} 
-          onSignUpComplete={handleSignUpComplete}
-        />
-      )}
-    </div>
+        {currentScreen === 'dataCleaning' && (
+          <DataCleaning
+            onComplete={handleDataCleaningComplete}
+            onExit={handleDataCleaningExit}
+          />
+        )}
+
+        {showSignIn && (
+          <SignInModal 
+            onClose={handleCloseSignIn} 
+            onSignUpComplete={handleSignUpComplete}
+          />
+        )}
+      </div>
+    </LanguageProvider>
   )
 }
 
