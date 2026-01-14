@@ -55,13 +55,13 @@ const getRegions = (t) => [
     cardPosition: { bottom: '22%', left: '45%' },
     description: t('glacierDescription'),
     difficulty: t('advancedDifficulty'),
-    available: false,
+    available: true, // 改为可用
   },
   { 
     id: 'island', 
     name: t('island'), 
     position: { top: '35%', right: '5%' },
-    cardPosition: { top: '48%', right: '5%' },
+    cardPosition: { top: '38%', right: '5%' }, // 向上移动80px (从48%改为38%)
     description: t('islandDescription'),
     difficulty: t('advancedDifficulty'),
     available: true, // 改为可用
@@ -74,6 +74,8 @@ const MapView = ({ onRegionClick }) => {
   const [hoveredNpc, setHoveredNpc] = useState(false)
   const [selectedRegion, setSelectedRegion] = useState(null)  // Changed from hoveredRegion to selectedRegion (click-based)
   const [regionsVisible, setRegionsVisible] = useState(false)
+  const [zoomRegion, setZoomRegion] = useState(null) // For zoom effect
+  const [isZooming, setIsZooming] = useState(false) // Animation state
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -89,11 +91,37 @@ const MapView = ({ onRegionClick }) => {
     // Play select sound effect
     playSelectSound()
     
-    // Toggle: if clicking same region, keep it open; otherwise switch to new region
-    if (selectedRegion === regionId) {
-      // Keep open, do nothing (user can click GO to proceed)
-    } else {
-      setSelectedRegion(regionId)
+    // Start zoom effect
+    setZoomRegion(regionId)
+    setIsZooming(true)
+    
+    // After zoom animation, show the region card
+    setTimeout(() => {
+      setIsZooming(false)
+      // Toggle: if clicking same region, keep it open; otherwise switch to new region
+      if (selectedRegion === regionId) {
+        // Keep open, do nothing (user can click GO to proceed)
+      } else {
+        setSelectedRegion(regionId)
+      }
+    }, 800) // Animation duration
+  }
+
+  // Get zoom transform based on region
+  const getZoomTransform = (regionId) => {
+    if (!isZooming || zoomRegion !== regionId) return 'scale(1) translate(0, 0)'
+    
+    switch (regionId) {
+      case 'island': // NEXUS ISLAND - 显示右上角
+        return 'scale(3) translate(-25%, 25%)'
+      case 'desert': // AETHER DESERT - 显示左上角  
+        return 'scale(3) translate(25%, 25%)'
+      case 'fungi': // FUNGI JUNGLE - 显示左下角
+        return 'scale(3) translate(25%, -25%)'
+      case 'glacier': // GLACIER PEAKS - 显示右下角
+        return 'scale(3) translate(-25%, -25%)'
+      default:
+        return 'scale(1) translate(0, 0)'
     }
   }
 
@@ -112,6 +140,8 @@ const MapView = ({ onRegionClick }) => {
       height: '100%',
       objectFit: 'cover',
       zIndex: 0,
+      transition: 'transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+      transformOrigin: 'center center',
     },
     // NPC in top-right corner (no background card)
     npcContainer: {
@@ -123,8 +153,6 @@ const MapView = ({ onRegionClick }) => {
       cursor: 'pointer',
       zIndex: 10,
       transition: 'opacity 0.3s ease',
-      opacity: isCardShowing ? 0 : 1,
-      pointerEvents: isCardShowing ? 'none' : 'auto',
     },
     npcImage: {
       width: '120px',
@@ -188,6 +216,15 @@ const MapView = ({ onRegionClick }) => {
       zIndex: 20,
       boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
       animation: 'fadeInUp 0.3s ease-out',
+    },
+    cardTitle: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '18px',
+      fontWeight: 700,
+      color: '#333',
+      marginBottom: '15px',
+      textAlign: 'center',
+      textTransform: 'uppercase',
     },
     cardDescription: {
       fontFamily: "'Roboto', sans-serif",
@@ -281,22 +318,46 @@ const MapView = ({ onRegionClick }) => {
     return regions.find(r => r.id === selectedRegion)
   }
 
+  const getCardTitle = (regionData) => {
+    if (!regionData) return ''
+    
+    switch (regionData.id) {
+      case 'island':
+        return 'NEXUS ISLAND · Start Card'
+      case 'desert':
+        return 'AETHER DESERT · Mission Card'
+      case 'fungi':
+        return 'FUNGI JUNGLE · Mission Card'
+      case 'glacier':
+        return 'GLACIER PEAKS'
+      default:
+        return regionData.name
+    }
+  }
+
   return (
     <div style={styles.container}>
       <style>{styles.keyframes}</style>
       
       {/* Language Toggle Button */}
-      <LanguageToggle position="topLeft" />
+      {!isZooming && <LanguageToggle position="topLeft" />}
       
       <img 
         src="/background/map.gif" 
         alt="Map Background" 
-        style={styles.backgroundGif}
+        style={{
+          ...styles.backgroundGif,
+          transform: isZooming ? getZoomTransform(zoomRegion) : 'scale(1) translate(0, 0)'
+        }}
       />
       
       {/* NPC Glitch in top-right (disappears when card shows) */}
       <div 
-        style={styles.npcContainer}
+        style={{
+          ...styles.npcContainer,
+          opacity: (isCardShowing || isZooming) ? 0 : 1,
+          pointerEvents: (isCardShowing || isZooming) ? 'none' : 'auto',
+        }}
         onMouseEnter={() => {
           setHoveredNpc(true)
           playHumSound() // 添加hum音效
@@ -311,7 +372,7 @@ const MapView = ({ onRegionClick }) => {
       </div>
       
       {/* NPC Dialogue (shows on hover) */}
-      {hoveredNpc && !isCardShowing && (
+      {hoveredNpc && !isCardShowing && !isZooming && (
         <div style={styles.npcDialogue}>
           <p style={styles.npcDialogueText}>
             I suggest go to the Fungi Jungle first.
@@ -326,9 +387,10 @@ const MapView = ({ onRegionClick }) => {
           style={{
             ...styles.regionLabel,
             ...region.position,
-            opacity: regionsVisible ? 1 : 0,
+            opacity: regionsVisible && !isZooming ? 1 : 0,
             transform: regionsVisible ? 'translateY(0)' : 'translateY(20px)',
             transitionDelay: `${index * 0.1}s`,
+            pointerEvents: isZooming ? 'none' : 'auto',
             ...(selectedRegion === region.id ? { background: 'rgba(81, 112, 255, 0.2)' } : {}),
           }}
           onClick={() => handleRegionClick(region.id)}
@@ -338,13 +400,16 @@ const MapView = ({ onRegionClick }) => {
       ))}
       
       {/* Region Info Card (shows on click, stays visible) */}
-      {selectedRegion && (
+      {selectedRegion && !isZooming && (
         <div 
           style={{
             ...styles.regionCard,
             ...getHoveredRegionData()?.cardPosition,
           }}
         >
+          <h3 style={styles.cardTitle}>
+            {getCardTitle(getHoveredRegionData())}
+          </h3>
           <p style={styles.cardDescription}>
             {getHoveredRegionData()?.description}
           </p>

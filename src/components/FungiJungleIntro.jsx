@@ -173,7 +173,7 @@ const FungiJungleIntro = ({ onContinue, onExit }) => {
       
       <div style={styles.npcContainer}>
         <img 
-          src="/npc/npc1.png" 
+          src="/npc/npc_jungle.png" 
           alt="Glitch" 
           style={styles.npcImage}
         />

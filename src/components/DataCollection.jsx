@@ -532,7 +532,7 @@ const DataCollection = ({ onComplete, onExit }) => {
         onMouseEnter={() => handleGlitchHover(true)}
         onMouseLeave={() => handleGlitchHover(false)}
       >
-        <img src="/npc/npc1.png" alt="Glitch" style={styles.glitchImage} />
+        <img src="/npc/npc_jungle.png" alt="Glitch" style={styles.glitchImage} />
       </div>
 
       {/* Navigation Arrows */}

@@ -2174,7 +2174,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
               }}
               onClick={handleGlitchClickColorMap}
             >
-              <img src="/npc/npc1.png" alt="Glitch" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              <img src="/npc/npc_jungle.png" alt="Glitch" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
 
             {/* Navigation Arrows */}
@@ -2341,7 +2341,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
               setShowGlitchHint(true)
             }}
           >
-            <img src="/npc/npc1.png" alt="Glitch" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            <img src="/npc/npc_jungle.png" alt="Glitch" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
 
           {/* Ranger Moss NPC */}

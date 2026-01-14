@@ -1992,7 +1992,7 @@ const DesertMap = ({ onExit }) => {
       transition: 'transform 0.2s ease',
     },
     mission2ButtonIconInDialogueNew: {
-      width: '100px',
+      width: '91px', // Maintain aspect ratio (width slightly less than height)
       height: '100px',
       marginBottom: '15px',
     },
@@ -2306,7 +2306,7 @@ const DesertMap = ({ onExit }) => {
 
       {/* Glitch NPC (always visible) */}
       <div style={styles.glitchNpc} onClick={handleGlitchClick}>
-        <img src="/npc/npc1.png" alt="Glitch" style={styles.glitchImage} />
+        <img src="/npc/npc_desert.png" alt="Glitch" style={styles.glitchImage} />
       </div>
 
       {/* Desert view navigation and NPCs */}

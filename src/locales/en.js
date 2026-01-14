@@ -21,8 +21,8 @@ export const en = {
   glacier: "GLACIER PEAKS",
   fungiDescription: "Welcome to the Fungi Jungle! The guardian here is a green robot named Ranger Moss. He usually keeps everything running smoothly. Let's look for him first!",
   desertDescription: "Welcome back! The guardian here is a yellow robot named 'Alpha'. He is usually responsible for the castle's security system, but something is wrong. Let's find him and ask.",
-  islandDescription: "Welcome to NEXUS ISLAND! This mysterious island holds the key to understanding AI systems. Explore and discover the secrets within.",
-  glacierDescription: "The frozen peaks await your exploration. This region is currently under development.",
+  islandDescription: "Welcome to NEXUS ISLAND! Recently, a large number of spies disguised as workers have arrived the island. Before things spiral out of control, go find Sparky and learn how to identify these impostors hiding among the workforce.",
+  glacierDescription: "The most advanced and economically developed region, where GenAI is widely used to optimize resources and decision-making. Explore complex ethical challenges around societal impact, autonomy, and fairness.",
   easyDifficulty: "⭐ (Easy / Introductory)",
   intermediateDifficulty: "⭐⭐ (Intermediate)",
   advancedDifficulty: "⭐⭐⭐ (Advanced)",
@@ -76,6 +76,49 @@ export const en = {
   checkFacts: "Check the facts. Is that logical?",
   fakeNews: "AI models often invent 'Fake News' just to sound important.",
   
+  // Sparky Debrief Translations
+  visualHallucinations: "Visual Hallucinations",
+  textHallucinations: "Text Hallucinations", 
+  coreTraitTitle: "The Core Trait",
+  aiIsMean: "The AI is mean",
+  aiLacksEmotion: "AI lacks emotion and common sense",
+  aiIsTired: "The AI is tired",
+  
   // Language
-  language: "EN/中文"
+  language: "EN/中文",
+  
+  // NPC Dialogues
+  npc1Island1Dialog1: "Hey! You! Be careful out there.",
+  npc1Island1Dialog2: "I don't know what's going on. A lot of new workers arrived, but they look... wrong.",
+  npc1Island1Dialog3: "You should go to the Main Island ➡️. Sparky will know what to do.",
+  
+  npc2Island2Dialog1: "This is a disaster! The new workers are ruining our archives!",
+  npc2Island2Dialog2: "They sound so confident, but they just make things up! Please, head to ⬅️the Main Island. Find Sparky. He controls the grid!",
+  
+  npc3Island3Dialog1: "It's so boring lately... so eerily boring.",
+  npc3Island3Dialog2: "The new guys? They all look the same.",
+  npc3Island3Dialog3: "Go ⬆️ find Sparky on the Main Island. He's the only one who can fix this mess.",
+  
+  // Random NPC Dialogues for restored island
+  randomDialog1: "Phew... I am absolutely drained today.",
+  randomDialog2: "My back is killing me...",
+  randomDialog3: "Work, work, work. It never ends.",
+  randomDialog4: "I need a vacation from this island.",
+  randomDialog5: "Yay! Now I can finally charge my phone.",
+  randomDialog6: "Finally! The lights are back on!",
+  randomDialog7: "Thanks for the fix, buddy! It was getting spooky in the dark.",
+  randomDialog8: "Is it lunch time yet?",
+  randomDialog9: "My shell is aching...",
+  
+  // Sparky restored dialogue
+  sparkyRestored: "Systems online! Oh, that sweet, sweet electricity!",
+  
+  // Phase 2 completion dialogue
+  phase2Complete: "Yo! High five! Go Back to the MAIN LAND",
+  
+  // Phase 2 Glitch message
+  phase2GlitchMessage: "Task 2: Spot the GenAI NPC You should talk to all the NPCs before making your decision.",
+  
+  // Phase 1 completion message
+  phase1Complete: "System purged! 6/6 Spies caught. Return to Sparky for debrief."
 }

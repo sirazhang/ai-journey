@@ -17,12 +17,12 @@ export const zh = {
   selectRegion: "选择区域",
   fungiJungle: "真菌丛林",
   desert: "以太沙漠",
-  island: "连接岛",
+  island: "NEXUS ISLAND",
   glacier: "冰川峰",
   fungiDescription: "欢迎来到真菌丛林！这里的守护者是一个名叫苔藓游侠的绿色机器人。他通常保持一切正常运行。让我们先找到他！",
   desertDescription: "欢迎回来！这里的守护者是一个名叫'阿尔法'的黄色机器人。他通常负责城堡的安全系统，但出了问题。让我们找到他并询问。",
-  islandDescription: "欢迎来到连接岛！这个神秘的岛屿掌握着理解AI系统的关键。探索并发现其中的秘密。",
-  glacierDescription: "冰冻的山峰等待着你的探索。这个区域目前正在开发中。",
+  islandDescription: "欢迎来到NEXUS ISLAND！最近，大量伪装成工人的间谍抵达了这个岛屿。在事情失控之前，去找到Sparky并学习如何识别隐藏在工人中的这些冒名顶替者。",
+  glacierDescription: "最先进和经济最发达的地区，生成式AI被广泛用于优化资源和决策。探索围绕社会影响、自主性和公平性的复杂伦理挑战。",
   easyDifficulty: "⭐ (简单 / 入门)",
   intermediateDifficulty: "⭐⭐ (中级)",
   advancedDifficulty: "⭐⭐⭐ (高级)",
@@ -76,6 +76,49 @@ export const zh = {
   checkFacts: "检查事实。这合乎逻辑吗？",
   fakeNews: "AI模型经常编造'假新闻'只是为了显得重要。",
   
+  // Sparky Debrief Translations
+  visualHallucinations: "视觉幻觉",
+  textHallucinations: "文字幻觉", 
+  coreTraitTitle: "核心特征",
+  aiIsMean: "AI很刻薄",
+  aiLacksEmotion: "AI缺乏情感和常识",
+  aiIsTired: "AI累了",
+  
   // Language
-  language: "EN/中文"
+  language: "EN/中文",
+  
+  // NPC Dialogues
+  npc1Island1Dialog1: "嘿！你！在那里小心点。",
+  npc1Island1Dialog2: "我不知道发生了什么。很多新工人到了，但他们看起来...不对劲。",
+  npc1Island1Dialog3: "你应该去主岛 ➡️。Sparky会知道该怎么做。",
+  
+  npc2Island2Dialog1: "这是一场灾难！新工人正在破坏我们的档案！",
+  npc2Island2Dialog2: "他们听起来很自信，但他们只是编造东西！请，前往 ⬅️主岛。找到Sparky。他控制着网格！",
+  
+  npc3Island3Dialog1: "最近太无聊了...非常诡异的无聊。",
+  npc3Island3Dialog2: "新来的家伙？他们看起来都一样。",
+  npc3Island3Dialog3: "去 ⬆️ 在主岛找到Sparky。他是唯一能修复这个混乱的人。",
+  
+  // Random NPC Dialogues for restored island
+  randomDialog1: "呼...我今天完全累坏了。",
+  randomDialog2: "我的背疼死了...",
+  randomDialog3: "工作，工作，工作。永远没有尽头。",
+  randomDialog4: "我需要从这个岛上度假。",
+  randomDialog5: "耶！现在我终于可以给手机充电了。",
+  randomDialog6: "终于！灯又亮了！",
+  randomDialog7: "谢谢你的修复，伙计！在黑暗中变得很可怕。",
+  randomDialog8: "现在是午餐时间了吗？",
+  randomDialog9: "我的壳疼...",
+  
+  // Sparky restored dialogue
+  sparkyRestored: "系统在线！哦，那甜美的，甜美的电力！",
+  
+  // Phase 2 completion dialogue
+  phase2Complete: "哟！击掌！回到主岛！",
+  
+  // Phase 2 Glitch message
+  phase2GlitchMessage: "任务2：识别生成式AI NPC 你应该在做决定之前与所有NPC交谈。",
+  
+  // Phase 1 completion message
+  phase1Complete: "系统清除完成！6/6 间谍被抓获。返回Sparky进行汇报。"
 }

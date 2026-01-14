@@ -607,7 +607,7 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
       {/* Mini Glitch NPC */}
       <div style={styles.miniNpc}>
         <img 
-          src="/npc/npc1.png"
+          src="/npc/npc_jungle.png"
           alt="Glitch"
           style={styles.miniNpcImage}
         />
