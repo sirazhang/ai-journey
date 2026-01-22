@@ -7,18 +7,39 @@ export const en = {
   failed: "FAILED",
   
   // Homepage
-  welcome: "Welcome to AI Journey",
+  welcome: "Welcome!",
+  aiJourneyTitle: "AI JOURNEY",
+  aiJourneySubtitle: "An Interactive Journey into AI Literacy",
   start: "Start",
   continueGame: "Continue",
   startOver: "Start Over",
   signIn: "Sign In",
   
+  // Sign In Modal
+  signInTitle: "Sign In",
+  signUpTitle: "Sign Up",
+  userName: "User Name",
+  userNameEmail: "User Name/ Email",
+  password: "Password",
+  email: "Email",
+  enterUsername: "Enter username",
+  enterUsernameOrEmail: "Enter username or email",
+  enterPassword: "Enter password",
+  enterEmail: "Enter email address",
+  done: "Done",
+  alreadyHaveAccount: "Already have an account?",
+  dontHaveAccount: "Don't have an account?",
+  signUp: "Sign Up",
+  invalidCredentials: "Invalid username/email or password",
+  noAccountFound: "No account found. Please sign up first.",
+  userAlreadyExists: "User already exists. Please sign in instead.",
+  
   // Map View
   selectRegion: "Select a Region",
-  fungiJungle: "FUNGI JUNGLE",
+  fungiJungle: "FUNGA JUNGLE",
   desert: "AETHER DESERT",
   island: "NEXUS ISLAND",
-  glacier: "GLACIER PEAKS",
+  glacier: "CORE GLACIER",
   fungiDescription: "Welcome to the Fungi Jungle! The guardian here is a green robot named Ranger Moss. He usually keeps everything running smoothly. Let's look for him first!",
   desertDescription: "Welcome back! The guardian here is a yellow robot named 'Alpha'. He is usually responsible for the castle's security system, but something is wrong. Let's find him and ask.",
   islandDescription: "Welcome to NEXUS ISLAND! Recently, a large number of spies disguised as workers have arrived the island. Before things spiral out of control, go find Sparky and learn how to identify these impostors hiding among the workforce.",
@@ -86,6 +107,14 @@ export const en = {
   
   // Language
   language: "EN/中文",
+  
+  // Settings Panel
+  setting: "SETTING",
+  controlPanel: "CONTROL PANEL",
+  languageSelection: "LANGUAGE SELECTION",
+  systemVolume: "SYSTEM VOLUME",
+  reset: "Reset",
+  applyChanges: "Apply Changes",
   
   // NPC Dialogues
   npc1Island1Dialog1: "Hey! You! Be careful out there.",

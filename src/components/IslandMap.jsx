@@ -1220,21 +1220,15 @@ const IslandMap = ({ onExit }) => {
     console.log('Found NPC:', npc)
     if (!npc) return
     
-    console.log('Setting up Q&A dialogue for:', npc.question)
-    setCurrentQANpc(npc)
-    setShowQADialogue(true)
-    setShowQuestion(true) // 立即显示问题
-    setShowAnswer(false) // 答案稍后显示
-    setQuestionText('')
-    setAnswerText('')
-    setIsQuestionTyping(false)
-    setIsAnswerTyping(false)
+    // Use Conversation Test Card for Island 3
+    setCurrentMissionNpc(npc)
+    setShowMissionDialogue(true)
+    setConversationMessages([])
+    setCurrentConvMessageIndex(0)
+    setShowConvButtons(false)
     
-    // 800ms后显示答案
-    setTimeout(() => {
-      console.log('Showing answer:', npc.answer)
-      setShowAnswer(true)
-    }, 800)
+    // Start conversation flow for Island 3
+    startIsland3Conversation(npc)
   }
 
   const handlePhase2TextNpcClick = (npcId) => {
@@ -1272,11 +1266,74 @@ const IslandMap = ({ onExit }) => {
     const npc = island2Npcs[npcId]
     if (!npc) return
     
-    setCurrentImageNpc(npc)
-    setShowImageDialogue(true)
-    setShowImageResponse(false)
-    setImageResponseText('')
-    setIsImageResponseTyping(false)
+    // Use Conversation Test Card for Island 2
+    setCurrentMissionNpc(npc)
+    setShowMissionDialogue(true)
+    setConversationMessages([])
+    setCurrentConvMessageIndex(0)
+    setShowConvButtons(false)
+    
+    // Start conversation flow for Island 2
+    startIsland2Conversation(npc)
+  }
+
+  const startIsland2Conversation = (npc) => {
+    // Island 2: YOU sends image, then asks "What do you think about this image?", NPC responds with text
+    const messages = [
+      { speaker: 'you', text: 'What do you think about this image?', timestamp: getCurrentTimestamp(), hasImage: true, image: npc.missionImage },
+      { speaker: 'npc', text: npc.response, timestamp: getCurrentTimestamp(), hasImage: false }
+    ]
+    
+    // Start typing first message
+    setTimeout(() => {
+      typeNextMessage(messages, 0)
+    }, 100)
+  }
+
+  const startIsland3Conversation = (npc) => {
+    // Island 3: YOU asks question, NPC answers (text only, 26px font)
+    const messages = [
+      { speaker: 'you', text: npc.question, timestamp: getCurrentTimestamp() },
+      { speaker: 'npc', text: npc.answer, timestamp: getCurrentTimestamp(), hasImage: false }
+    ]
+    
+    // Start typing first message
+    setTimeout(() => {
+      typeNextMessage(messages, 0)
+    }, 100)
+  }
+
+  const typeNextMessage = (messages, index) => {
+    if (index >= messages.length) {
+      // All messages typed, show buttons
+      setShowConvButtons(true)
+      return
+    }
+    
+    const currentMessage = messages[index]
+    
+    // Add message to conversation
+    setConversationMessages(prev => [...prev, currentMessage])
+    
+    // Start typing animation
+    let charIndex = 0
+    setConvTypingText('')
+    setIsConvTyping(true)
+    
+    const typingInterval = setInterval(() => {
+      if (charIndex < currentMessage.text.length) {
+        setConvTypingText(currentMessage.text.substring(0, charIndex + 1))
+        charIndex++
+      } else {
+        setIsConvTyping(false)
+        clearInterval(typingInterval)
+        
+        // Move to next message after delay
+        setTimeout(() => {
+          typeNextMessage(messages, index + 1)
+        }, 800)
+      }
+    }, 30)
   }
 
   const handleShowImageResponse = () => {
@@ -1483,6 +1540,16 @@ const IslandMap = ({ onExit }) => {
     setShowNpcResponse(false)
     setNpcResponseText('')
     setIsNpcTyping(false)
+    
+    // Start conversation flow for Island 1
+    const messages = [
+      { speaker: 'you', text: npc.question, timestamp: getCurrentTimestamp() },
+      { speaker: 'npc', text: 'Sure! Let me show you...', timestamp: getCurrentTimestamp(), hasImage: true, image: npc.missionImage }
+    ]
+    
+    setTimeout(() => {
+      typeNextMessage(messages, 0)
+    }, 100)
   }
 
   const handleShowMissionImage = () => {
@@ -1990,51 +2057,8 @@ const IslandMap = ({ onExit }) => {
     return () => clearInterval(typingInterval)
   }, [currentDialogue, showDialogue])
   
-  // New Conversation Test typing effect
-  useEffect(() => {
-    if (!showMissionDialogue || !currentMissionNpc) return
-    if (currentConvMessageIndex >= 2) {
-      // All messages displayed, show buttons
-      setShowConvButtons(true)
-      return
-    }
-    
-    // Prepare messages based on NPC data
-    const messages = [
-      { speaker: 'you', text: currentMissionNpc.question, timestamp: getCurrentTimestamp() },
-      { speaker: 'npc', text: 'Sure! Let me show you...', timestamp: getCurrentTimestamp(), hasImage: true, image: currentMissionNpc.missionImage }
-    ]
-    
-    const currentMessage = messages[currentConvMessageIndex]
-    if (!currentMessage) return
-    
-    // Add message to history immediately
-    if (!conversationMessages.find(m => m.text === currentMessage.text)) {
-      setConversationMessages(prev => [...prev, currentMessage])
-    }
-    
-    // Start typing animation
-    let charIndex = 0
-    setConvTypingText('')
-    setIsConvTyping(true)
-    
-    const typingInterval = setInterval(() => {
-      if (charIndex < currentMessage.text.length) {
-        setConvTypingText(currentMessage.text.substring(0, charIndex + 1))
-        charIndex++
-      } else {
-        setIsConvTyping(false)
-        clearInterval(typingInterval)
-        
-        // Move to next message after delay
-        setTimeout(() => {
-          setCurrentConvMessageIndex(currentConvMessageIndex + 1)
-        }, 800)
-      }
-    }, 30)
-    
-    return () => clearInterval(typingInterval)
-  }, [showMissionDialogue, currentMissionNpc, currentConvMessageIndex])
+  // New Conversation Test typing effect - disabled, now using typeNextMessage function
+  // useEffect removed to use manual typeNextMessage control
   
   // Handle conversation judgment
   const handleConversationJudgment = (judgment) => {
@@ -3284,14 +3308,14 @@ const IslandMap = ({ onExit }) => {
     // New Conversation Test Card Styles
     conversationTestCard: {
       position: 'absolute',
-      top: '12.5%',
+      top: '10%',
       left: '20%',
       width: '60%',
-      height: '75%',
+      height: '80%',
       zIndex: 100,
       background: 'white',
       borderRadius: '15px',
-      boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+      boxShadow: '0 15px 50px rgba(0,0,0,0.3)',
       display: 'flex',
       flexDirection: 'column',
     },
@@ -3388,8 +3412,9 @@ const IslandMap = ({ onExit }) => {
       fontFamily: "'Rajdhani', sans-serif",
     },
     conversationMessageImage: {
-      maxWidth: '200px',
-      maxHeight: '200px',
+      height: '400px',
+      width: 'auto',
+      objectFit: 'contain',
       borderRadius: '8px',
       marginTop: '8px',
     },
@@ -3646,25 +3671,9 @@ const IslandMap = ({ onExit }) => {
           }}>
             {/* Header with Progress */}
             <div style={styles.modernDialogueHeader}>
-              <div style={styles.modernProgressContainer}>
-                <div style={styles.modernMissionTitle}>SPARKY</div>
+              {/* Progress bar at top */}
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
                 <div style={styles.modernStepIndicator}>STEP {currentStep}/{totalSteps}</div>
-              </div>
-              <div style={styles.modernProgressBar}>
-                <div style={{
-                  ...styles.modernProgressFill,
-                  width: `${progressPercent}%`,
-                  background: theme.progressColor,
-                }} />
-              </div>
-              
-              <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-                <div style={styles.modernNpcInfo}>
-                  <img src={theme.avatar} alt="Sparky" style={styles.modernNpcAvatar} />
-                  <div>
-                    <div style={styles.modernNpcName}>SPARKY:</div>
-                  </div>
-                </div>
                 <button 
                   style={styles.modernCloseButton}
                   onClick={() => {
@@ -3677,6 +3686,19 @@ const IslandMap = ({ onExit }) => {
                   ✕
                 </button>
               </div>
+              <div style={styles.modernProgressBar}>
+                <div style={{
+                  ...styles.modernProgressFill,
+                  width: `${progressPercent}%`,
+                  background: theme.progressColor,
+                }} />
+              </div>
+              
+              {/* NPC info below progress bar */}
+              <div style={{...styles.modernNpcInfo, marginTop: '15px'}}>
+                <img src={theme.avatar} alt="Sparky" style={styles.modernNpcAvatar} />
+                <div style={styles.modernNpcName}>SPARKY:</div>
+              </div>
             </div>
             
             {/* Messages Content */}
@@ -3688,7 +3710,6 @@ const IslandMap = ({ onExit }) => {
                 if (message.type === 'message') {
                   return (
                     <div key={index} style={styles.modernNpcMessage}>
-                      <div style={styles.modernNpcSpeaker}>SPARKY:</div>
                       <p style={styles.modernNpcText}
                         dangerouslySetInnerHTML={{ 
                           __html: (isLastMessage && sparkyIsTyping ? sparkyTypingText : message.text).replace(
@@ -3706,7 +3727,6 @@ const IslandMap = ({ onExit }) => {
                 if (message.type === 'user_choice') {
                   return (
                     <div key={index} style={styles.modernUserMessage}>
-                      <div style={styles.modernUserSpeaker}>YOU:</div>
                       <div style={{
                         ...styles.modernUserBubble,
                         background: theme.borderColor
@@ -3733,7 +3753,6 @@ const IslandMap = ({ onExit }) => {
                 if (message.type === 'quiz_feedback') {
                   return (
                     <div key={index} style={styles.modernNpcMessage}>
-                      <div style={styles.modernNpcSpeaker}>SPARKY:</div>
                       <p style={{
                         ...styles.modernNpcText,
                         padding: '12px 16px',
@@ -3797,7 +3816,7 @@ const IslandMap = ({ onExit }) => {
                 return null
               })()}
               
-              {/* User Choice Buttons */}
+              {/* User Choice Buttons - aligned to left */}
               {waitingForChoice && (() => {
                 const flow = showFinalSparkyDialogue ? getFinalSparkyDialogueFlow(t) : 
                              showSparkyDebrief ? getSparkyDebriefFlow(t) : getSparkyDialogueFlow(t)
@@ -3806,33 +3825,36 @@ const IslandMap = ({ onExit }) => {
                 
                 if (currentItem && currentItem.nextChoice) {
                   return (
-                    <button
-                      style={{
-                        ...styles.modernActionButton,
-                        background: theme.borderColor,
-                        color: 'white',
-                        border: 'none',
-                      }}
-                      onClick={() => {
-                        if (showFinalSparkyDialogue) {
-                          handleSparkyChoice(currentItem.nextChoice.text, currentItem.nextChoice.choiceId)
-                        } else if (showSparkyDebrief) {
-                          handleSparkyChoice(currentItem.nextChoice.text, currentItem.nextChoice.choiceId)
-                        } else {
-                          handleSparkyChoice(currentItem.nextChoice.text, currentItem.nextChoice.choiceId)
-                        }
-                      }}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-2px)'
-                        e.currentTarget.style.boxShadow = '0 6px 16px rgba(81, 112, 255, 0.3)'
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)'
-                        e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)'
-                      }}
-                    >
-                      👉 {currentItem.nextChoice.text}
-                    </button>
+                    <div style={{display: 'flex', justifyContent: 'flex-start', marginTop: '15px'}}>
+                      <button
+                        style={{
+                          ...styles.modernActionButton,
+                          background: theme.borderColor,
+                          color: 'white',
+                          border: 'none',
+                          marginLeft: '0',
+                        }}
+                        onClick={() => {
+                          if (showFinalSparkyDialogue) {
+                            handleSparkyChoice(currentItem.nextChoice.text, currentItem.nextChoice.choiceId)
+                          } else if (showSparkyDebrief) {
+                            handleSparkyChoice(currentItem.nextChoice.text, currentItem.nextChoice.choiceId)
+                          } else {
+                            handleSparkyChoice(currentItem.nextChoice.text, currentItem.nextChoice.choiceId)
+                          }
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-2px)'
+                          e.currentTarget.style.boxShadow = '0 6px 16px rgba(81, 112, 255, 0.3)'
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)'
+                          e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)'
+                        }}
+                      >
+                        👉 {currentItem.nextChoice.text}
+                      </button>
+                    </div>
                   )
                 }
                 return null
@@ -3841,7 +3863,7 @@ const IslandMap = ({ onExit }) => {
           </div>
         )
       })()}
-                            background: 'rgba(255, 193, 7, 0.1)',
+
       {/* New Conversation Test Card */}
       {showMissionDialogue && currentMissionNpc && (
         <div style={styles.conversationTestCard}>
@@ -3877,17 +3899,56 @@ const IslandMap = ({ onExit }) => {
                     return (
                       <div key={index} style={styles.conversationMessageYou}>
                         <div style={styles.conversationMessageYouTime}>{msg.timestamp} ● You</div>
-                        <div style={styles.conversationMessageYouBubble}>
+                        <div style={{
+                          ...styles.conversationMessageYouBubble,
+                          fontSize: currentIsland === ISLANDS.ISLAND_3 ? '26px' : '14px'
+                        }}>
                           {displayText}
                           {isTyping && <span style={{ opacity: 0.5 }}>|</span>}
                         </div>
+                        {/* Show image after text for YOU messages (Island 2) */}
+                        {msg.hasImage && !isTyping && (
+                          <div style={{position: 'relative', marginTop: '8px', display: 'flex', justifyContent: 'flex-end'}}>
+                            <img 
+                              src={msg.image} 
+                              alt="Work" 
+                              style={{
+                                height: '300px',
+                                width: 'auto',
+                                objectFit: 'contain',
+                                borderRadius: '8px',
+                                marginTop: '8px',
+                              }}
+                            />
+                            {/* Stamp overlay on image */}
+                            {showStamp && (
+                              <img 
+                                src={stampType === 'passed' ? '/island/icon/passed.png' : '/island/icon/failed.png'}
+                                alt={stampType}
+                                style={{
+                                  position: 'absolute',
+                                  top: '50%',
+                                  left: '50%',
+                                  transform: 'translate(-50%, -50%)',
+                                  width: '150px',
+                                  height: 'auto',
+                                  zIndex: 10,
+                                  pointerEvents: 'none',
+                                }}
+                              />
+                            )}
+                          </div>
+                        )}
                       </div>
                     )
                   } else {
                     return (
                       <div key={index} style={styles.conversationMessageNpc}>
                         <div style={styles.conversationMessageNpcTime}>{msg.timestamp} ● {currentMissionNpc.id.toUpperCase()}</div>
-                        <div style={styles.conversationMessageNpcBubble}>
+                        <div style={{
+                          ...styles.conversationMessageNpcBubble,
+                          fontSize: currentIsland === ISLANDS.ISLAND_3 ? '26px' : '14px'
+                        }}>
                           {displayText}
                           {isTyping && <span style={{ opacity: 0.5 }}>|</span>}
                         </div>
@@ -4029,214 +4090,7 @@ const IslandMap = ({ onExit }) => {
         </div>
       )}
 
-      {/* Q&A Dialogue for Island 3 - New Design */}
-      {showQADialogue && currentQANpc && (
-        <div style={styles.qaDialogueContainerNew}>
-          <div style={styles.sparkyDialogueHeader}>
-            <h3 style={styles.sparkyDialogueTitle}>
-              {phase2Active && currentQANpc.id && currentQANpc.id.includes('_p2') ? 
-                'Poetry Evaluation' : t('questionAndAnswer')}
-            </h3>
-            <button style={styles.sparkyCloseButton} onClick={() => {
-              setShowQADialogue(false)
-              setCurrentQANpc(null)
-              setShowQuestion(false)
-              setShowAnswer(false)
-              setShowQAStamp(false)
-            }}>
-              ✕
-            </button>
-          </div>
-          
-          <div style={styles.qaDialogueContentNew}>
-            {/* YOU section with question */}
-            <div style={styles.youSection}>
-              <div style={styles.youLabel}>YOU:</div>
-              <div style={styles.qaQuestionButtonNew}>
-                Q: {currentQANpc.question}
-              </div>
-            </div>
-            
-            {/* NPC section with answer - shows after question */}
-            {showAnswer && (
-              <div style={styles.npcSection}>
-                <div style={styles.npcLabel}>NPC:</div>
-                <div style={{
-                  ...styles.npcResponseText,
-                  whiteSpace: 'pre-line', // 保持换行格式，特别是诗歌
-                  fontFamily: phase2Active && currentQANpc.id && currentQANpc.id.includes('_p2') ? 
-                    "'Georgia', serif" : "'Roboto', sans-serif", // Phase 2诗歌使用衬线字体
-                  fontStyle: phase2Active && currentQANpc.id && currentQANpc.id.includes('_p2') ? 
-                    'italic' : 'normal' // Phase 2诗歌使用斜体
-                }}>
-                  {phase2Active && currentQANpc.id && currentQANpc.id.includes('_p2') ? 
-                    (currentQANpc.id === 'npc15_p2' ? 
-                      <span dangerouslySetInnerHTML={{ __html: currentQANpc.answer }} /> :
-                      currentQANpc.answer
-                    ) : 
-                    `A: ${currentQANpc.answer}`}
-                </div>
-              </div>
-            )}
-            
-            {/* Judgment buttons - positioned 20px below NPC content */}
-            {showAnswer && (
-              <div style={styles.qaJudgmentContainerNew}>
-                {/* Q&A Stamp overlay - centered on entire screen */}
-                {showQAStamp && (
-                  <img 
-                    src={qaStampType === 'passed' ? '/island/icon/passed.png' : '/island/icon/failed.png'}
-                    alt={qaStampType}
-                    style={styles.qaStampNew}
-                  />
-                )}
-                
-                {/* Passed button - positioned 100px from left */}
-                <button 
-                  style={styles.qaJudgmentButtonLeft}
-                  onClick={() => handleQAJudgment('passed')}
-                  onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-                  onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
-                >
-                  <img 
-                    src="/desert/icon/correct.png" 
-                    alt="Correct" 
-                    style={styles.qaButtonIcon}
-                  />
-                  <span style={{...styles.qaButtonText, color: '#4CAF50'}}>{t('passed')}</span>
-                </button>
-                
-                {/* Failed button - positioned 100px from right */}
-                <button 
-                  style={styles.qaJudgmentButtonRight}
-                  onClick={() => handleQAJudgment('failed')}
-                  onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-                  onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
-                >
-                  <img 
-                    src="/desert/icon/wrong.png" 
-                    alt="Wrong" 
-                    style={styles.qaButtonIcon}
-                  />
-                  <span style={{...styles.qaButtonText, color: '#F44336'}}>{t('failed')}</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Image Evaluation Dialogue for Island 2 */}
-      {showImageDialogue && currentImageNpc && (
-        <div style={styles.imageDialogueContainer}>
-          <div style={styles.sparkyDialogueHeader}>
-            <h3 style={styles.sparkyDialogueTitle}>
-              {phase2Active && currentImageNpc.id && currentImageNpc.id.includes('_p2') ? 
-                'Text Evaluation' : t('imageEvaluation')}
-            </h3>
-            <button style={styles.sparkyCloseButton} onClick={() => setShowImageDialogue(false)}>
-              ✕
-            </button>
-          </div>
-          
-          <div style={styles.imageDialogueContent}>
-            <div style={styles.youSection}>
-              <div style={styles.youLabel}>YOU:</div>
-              <button 
-                style={styles.imageQuestionButton}
-                onClick={handleShowImageResponse}
-                disabled={showImageResponse}
-                onMouseOver={(e) => {
-                  if (!showImageResponse) {
-                    e.target.style.background = 'rgba(76, 175, 80, 0.2)'
-                    e.target.style.transform = 'scale(1.02)'
-                  }
-                }}
-                onMouseOut={(e) => {
-                  if (!showImageResponse) {
-                    e.target.style.background = 'rgba(76, 175, 80, 0.1)'
-                    e.target.style.transform = 'scale(1)'
-                  }
-                }}
-              >
-                {phase2Active && currentImageNpc.id && currentImageNpc.id.includes('_p2') ? 
-                  currentImageNpc.question : t('whatThinkImage')}
-              </button>
-            </div>
-            
-            {showImageResponse && (
-              <>
-                {/* Show image only for Phase 1, show text for Phase 2 */}
-                {!(phase2Active && currentImageNpc.id && currentImageNpc.id.includes('_p2')) && (
-                  <img 
-                    src={currentImageNpc.missionImage}
-                    alt="Mission Image"
-                    style={styles.missionImageDisplay}
-                  />
-                )}
-                
-                <div style={styles.npcSection}>
-                  <div style={styles.npcLabel}>NPC:</div>
-                  <div style={{
-                    ...styles.npcResponseText,
-                    whiteSpace: 'pre-line', // 保持换行格式
-                    maxWidth: '100%', // Phase 2文本需要更多宽度
-                    fontFamily: phase2Active && currentImageNpc.id && currentImageNpc.id.includes('_p2') ? 
-                      "'Courier New', monospace" : "'Roboto', sans-serif" // Phase 2使用等宽字体
-                  }}>
-                    {imageResponseText}
-                    {isImageResponseTyping && <span style={{ opacity: 0.5 }}>|</span>}
-                  </div>
-                </div>
-                
-                {/* Buttons positioned 20px below NPC content */}
-                {!isImageResponseTyping && (
-                  <div style={styles.imageJudgmentContainerNew}>
-                    {/* Image Stamp overlay */}
-                    {showImageStamp && (
-                      <img 
-                        src={imageStampType === 'passed' ? '/island/icon/passed.png' : '/island/icon/failed.png'}
-                        alt={imageStampType}
-                        style={styles.imageStamp}
-                      />
-                    )}
-                    
-                    {/* Passed button - positioned 100px from left */}
-                    <button 
-                      style={styles.imageJudgmentButtonLeft}
-                      onClick={() => handleImageJudgment('passed')}
-                      onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-                      onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
-                    >
-                      <img 
-                        src="/desert/icon/correct.png" 
-                        alt="Correct" 
-                        style={styles.imageButtonIcon}
-                      />
-                      <span style={{...styles.qaButtonText, color: '#4CAF50'}}>{t('passed')}</span>
-                    </button>
-                    
-                    {/* Failed button - positioned 100px from right */}
-                    <button 
-                      style={styles.imageJudgmentButtonRight}
-                      onClick={() => handleImageJudgment('failed')}
-                      onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-                      onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
-                    >
-                      <img 
-                        src="/desert/icon/wrong.png" 
-                        alt="Wrong" 
-                        style={styles.imageButtonIcon}
-                      />
-                      <span style={{...styles.qaButtonText, color: '#F44336'}}>{t('failed')}</span>
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      {/* OLD Q&A and Image Dialogues removed - now using unified Conversation Test Card */}
 
       {/* Reloading Screen */}
       {showReloading && (

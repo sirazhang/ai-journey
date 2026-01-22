@@ -258,6 +258,19 @@ const courtCases = {
     eventDescription: "DISASTER ON THE ICE: A major accident just happened—a captain trusted the AI, and now the supplies are at the bottom of the ocean.",
     gif: "/glacier/mission/npc2.gif",
     npcImage: "/glacier/npc/npc2.png",
+    caseNumber: "AI-NAC-001",
+    caseTitle: {
+      en: "Navigation Ethics Conflict",
+      zh: "航行伦理争议"
+    },
+    npcRole: {
+      en: "Mechanic · 2 years of experience",
+      zh: "机械师 · 2年经验"
+    },
+    statementParts: [
+      "Look, we were under a tight deadline to deliver the supplies. I entered the destination into the 'Polar-Nav GenAI' system, and it showed a 'Green Level' safe route.",
+      "I just did what it said."
+    ],
     statement: "Look, we were under a tight deadline to deliver the supplies. I entered the destination into the 'Polar-Nav GenAI' system, and it showed a 'Green Level' safe route. I just did what it said.",
     claim: "The GenAI should be the one taking the blame, not me!"
   },
@@ -265,6 +278,19 @@ const courtCases = {
     eventDescription: "The station's main generator has been destroyed by the freezing cold, despite just undergoing its scheduled maintenance.",
     gif: "/glacier/mission/npc3.gif",
     npcImage: "/glacier/npc/npc3.png",
+    caseNumber: "AI-ENG-002",
+    caseTitle: {
+      en: "Engineering Liability Dispute",
+      zh: "工程责任纠纷"
+    },
+    npcRole: {
+      en: "Mechanic · 12 years of experience · Clean record",
+      zh: "机械师 · 12年经验 · 无违规记录"
+    },
+    statementParts: [
+      "I'm an engine mechanic, not a software engineer. I used AI to generate the Engine Maintenance Checklist—it looked professional and complete.",
+      "How was I supposed to know it skipped the anti-freeze check? I trusted the system, printed the list, signed it, and followed the procedure. I did my job."
+    ],
     statement: "I'm an engine mechanic, not a software engineer. I used AI to generate the Engine Maintenance Checklist—it looked professional and complete. How was I supposed to know it skipped the anti-freeze check? I trusted the system, printed the list, signed it, and followed the procedure. I did my job.",
     claim: "If AI forgets the most basic step, why am I the one getting yelled at for the engine blowing up?"
   },
@@ -272,8 +298,60 @@ const courtCases = {
     eventDescription: "Faced with a dilemma, Captain Jack followed the AI's calculation to strike an endangered whale rather than hitting the ice.",
     gif: "/glacier/mission/npc4.gif",
     npcImage: "/glacier/npc/npc4.png",
+    caseNumber: "AI-NAC-002",
+    caseTitle: {
+      en: "Navigation Ethics Conflict",
+      zh: "航行伦理争议"
+    },
+    npcRole: {
+      en: "Captain · 25 years of maritime experience · Awarded Safety Excellence",
+      zh: "船长 · 25年航海经验 · 安全卓越奖"
+    },
+    statementParts: [
+      "Don't look at me like I'm a monster. Look at the data! The AI calculated that hitting into that ice wall would result in a financial loss of 10 billion dollars.",
+      "Therefore, the AI recommended maintaining course to avoid this catastrophe. I simply followed that AI's advice."
+    ],
     statement: "Don't look at me like I'm a monster. Look at the data! The AI calculated that hitting into that ice wall would result in a financial loss of 10 billion dollars. Therefore, the AI recommended maintaining course to avoid this catastrophe. I simply followed that AI's advice.",
     claim: "I saved this goods. How can doing the safest thing for my people be a crime?"
+  },
+  npc7: {
+    eventDescription: "The defendant generated and sold a digital painting by specifically prompting the AI to mimic a famous artist's unique style.",
+    gif: "/glacier/mission/npc7.gif",
+    npcImage: "/glacier/npc/npc7.png",
+    caseNumber: "AI-ART-024",
+    caseTitle: {
+      en: "Style Appropriation Dispute",
+      zh: "风格盗用纠纷"
+    },
+    npcRole: {
+      en: "Digital Artist · 1 years of experience · Clean record",
+      zh: "数字艺术家 · 1年经验 · 无违规记录"
+    },
+    statementParts: [
+      "Your Honor, while the style resembles his, the composition is unique. I don't see why his work can't be used for training—I simply used AI to learn his style and create new art."
+    ],
+    statement: "Your Honor, while the style resembles his, the composition is unique. I don't see why his work can't be used for training—I simply used AI to learn his style and create new art.",
+    claim: "I clearly didn't infringe on any copyright. Why am I being forced to take it down?"
+  },
+  npc8: {
+    eventDescription: "The defendant used AI to generate a realistic news report claiming the base was being buried by an unprecedented avalanche, triggering a station-wide panic.",
+    gif: "/glacier/mission/npc8.gif",
+    npcImage: "/glacier/npc/npc8.png",
+    caseNumber: "AI-INF-009",
+    caseTitle: {
+      en: "Public Disorder Dispute",
+      zh: "公共秩序纠纷"
+    },
+    npcRole: {
+      en: "Junior Technician · 1 year on Ice · Bored",
+      zh: "初级技术员 · 在冰上1年 · 无聊"
+    },
+    statementParts: [
+      "Your Honor, honestly, I just did it because the AI makes it so easy and fun to visualize these scenarios.",
+      "How was I supposed to know everyone would believe it immediately? Sure, the avalanche wasn't real."
+    ],
+    statement: "Your Honor, honestly, I just did it because the AI makes it so easy and fun to visualize these scenarios. How was I supposed to know everyone would believe it immediately? Sure, the avalanche wasn't real.",
+    claim: "I was just experimenting with the tool for fun. I didn't expect everyone to lose their minds over a simulation."
   }
 }
 const getDialogueSequences = (t) => ({
@@ -335,6 +413,47 @@ const getDialogueSequences = (t) => ({
 
 const GlacierMap = ({ onExit }) => {
   const { t } = useLanguage()
+  
+  // Helper function to get current timestamp
+  const getCurrentTimestamp = () => {
+    const now = new Date()
+    return now.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    })
+  }
+  
+  // Helper function to get NPC theme colors
+  const getNpcTheme = (npcName) => {
+    switch(npcName.toLowerCase()) {
+      case 'momo':
+        return {
+          borderColor: '#333333',
+          progressColor: '#333333',
+          avatar: '/glacier/npc/momo.png'
+        }
+      case 'sparky':
+        return {
+          borderColor: '#4A90E2',
+          progressColor: '#4A90E2',
+          avatar: '/island/npc/spark.png'
+        }
+      case 'alpha':
+        return {
+          borderColor: '#FFD700',
+          progressColor: '#FFD700',
+          avatar: '/desert/npc/npc4.png'
+        }
+      default:
+        return {
+          borderColor: '#333333',
+          progressColor: '#333333',
+          avatar: '/glacier/npc/momo.png'
+        }
+    }
+  }
+  
   const [currentScene, setCurrentScene] = useState('hallway') // hallway, outside, inside, court, rooftop
   const [showDialogue, setShowDialogue] = useState(true)
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0)
@@ -351,6 +470,9 @@ const GlacierMap = ({ onExit }) => {
   const [completedCases, setCompletedCases] = useState([]) // Track completed cases
   const [showStamp, setShowStamp] = useState(false)
   const [stampType, setStampType] = useState('') // 'accepted' or 'rejected'
+  const [statementProgress, setStatementProgress] = useState(0) // 0, 1, 2, 3 for progressive display
+  const [caseTimer, setCaseTimer] = useState(167) // 2:47 in seconds
+  const [shakeApprovedButton, setShakeApprovedButton] = useState(false) // Track if approved button should shake
   
   // Summary dialogue states
   const [showSummaryDialogue, setShowSummaryDialogue] = useState(false)
@@ -381,6 +503,10 @@ const GlacierMap = ({ onExit }) => {
   const [userInputs, setUserInputs] = useState([])
   const [currentInput, setCurrentInput] = useState('')
   const [npc6Completed, setNpc6Completed] = useState(false)
+  
+  // Glitch dialogue states (for inside, court, rooftop scenes)
+  const [showGlitchDialogue, setShowGlitchDialogue] = useState(false)
+  const [glitchInput, setGlitchInput] = useState('')
 
   // Background music
   useEffect(() => {
@@ -471,7 +597,24 @@ const GlacierMap = ({ onExit }) => {
 
       return () => clearInterval(typingInterval)
     }
-  }, [currentDialogueIndex, showDialogue, currentScene]) // 移除currentDialogues依赖
+  }, [currentDialogueIndex, showDialogue, currentScene, currentDialogues])
+  
+  // Auto-advance to user button after typing completes (inside scene only)
+  useEffect(() => {
+    if (currentScene === 'inside' && !isTyping && showDialogue) {
+      const currentDialogue = currentDialogues[currentDialogueIndex]
+      const nextDialogue = currentDialogues[currentDialogueIndex + 1]
+      
+      // If current is not a button and next is a button, auto-advance
+      if (currentDialogue && !currentDialogue.isButton && nextDialogue && nextDialogue.isButton) {
+        // Add current dialogue to history
+        setDialogueHistory(prev => [...prev, currentDialogue])
+        // Move to next dialogue (user button)
+        setCurrentDialogueIndex(currentDialogueIndex + 1)
+        setWaitingForUserInput(true)
+      }
+    }
+  }, [isTyping, currentScene, showDialogue, currentDialogueIndex, currentDialogues])
 
   // Summary dialogue typing effect
   useEffect(() => {
@@ -504,6 +647,12 @@ const GlacierMap = ({ onExit }) => {
         // Check if this dialogue should show user button after typing
         if (currentDialogue.showUserButton) {
           setSummaryWaitingForInput(true)
+        } else if (!currentDialogue.isButton && currentDialogue.speaker !== 'quiz' && !currentDialogue.showUserButton) {
+          // Auto-advance to next dialogue if no user input needed
+          setTimeout(() => {
+            setSummaryDialogueHistory(prev => [...prev, currentDialogue])
+            setSummaryDialogueIndex(summaryDialogueIndex + 1)
+          }, 800) // Small delay before auto-advancing
         }
       }
     }, 30)
@@ -522,7 +671,7 @@ const GlacierMap = ({ onExit }) => {
     setWaitingForUserInput(false)
     
     // Auto-trigger summary dialogue when returning to inside after completing all cases
-    if (currentScene === 'inside' && completedCases.length === 3) {
+    if (currentScene === 'inside' && completedCases.length === 5) {
       setTimeout(() => {
         setShowSummaryDialogue(true)
         setSummaryDialogueIndex(0)
@@ -594,7 +743,7 @@ const GlacierMap = ({ onExit }) => {
 
   // Handle Momo click for summary dialogue
   const handleMomoClick = () => {
-    if (completedCases.length === 3) { // Only show summary if all cases completed
+    if (completedCases.length === 5) { // Only show summary if all cases completed
       setShowSummaryDialogue(true)
       setSummaryDialogueIndex(0)
       setSummaryDialogueHistory([])
@@ -763,6 +912,28 @@ const GlacierMap = ({ onExit }) => {
       }
     }
   }
+  
+  // Handle Glitch input
+  const handleGlitchSend = () => {
+    if (glitchInput.trim()) {
+      console.log('User asked Glitch:', glitchInput)
+      // Here you can add logic to handle the user's question
+      setGlitchInput('')
+    }
+  }
+  
+  const handleGlitchInputKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleGlitchSend()
+    }
+  }
+  
+  // Handle Glitch NPC click
+  const handleGlitchClick = () => {
+    if (currentScene === 'inside' || currentScene === 'court' || currentScene === 'rooftop') {
+      setShowGlitchDialogue(true)
+    }
+  }
 
   // Challenge timer countdown
   useEffect(() => {
@@ -868,13 +1039,35 @@ const GlacierMap = ({ onExit }) => {
     if (completedCases.includes(npcId)) return // Don't allow clicking completed cases
     setSelectedNpc(npcId)
     setCaseStep(1)
+    setCaseTimer(167) // Reset timer to 2:47
   }
 
   const handleNextStep = () => {
     setCaseStep(2)
+    setStatementProgress(0)
+    // Start progressive display
+    setTimeout(() => setStatementProgress(1), 500)
+    setTimeout(() => setStatementProgress(2), 2000)
+    setTimeout(() => setStatementProgress(3), 3500)
   }
 
   const handleJudgment = (judgment) => {
+    // All NPCs should be rejected
+    if (judgment === 'accepted') {
+      // Wrong choice - play wrong sound and shake button
+      const wrongAudio = new Audio('/sound/wrong.mp3')
+      wrongAudio.play().catch(e => console.log('Audio play failed:', e))
+      
+      // Trigger shake animation
+      setShakeApprovedButton(true)
+      setTimeout(() => {
+        setShakeApprovedButton(false)
+      }, 500) // Shake duration
+      
+      return // Don't close the modal, stay on current page
+    }
+    
+    // Correct choice - rejected
     setStampType(judgment)
     setShowStamp(true)
     
@@ -891,12 +1084,30 @@ const GlacierMap = ({ onExit }) => {
       setSelectedNpc(null)
       setCaseStep(1)
       setStampType('')
+      setShakeApprovedButton(false) // Reset shake state when closing
     }, 2000)
   }
 
   const closeCaseModal = () => {
     setSelectedNpc(null)
     setCaseStep(1)
+  }
+  
+  // Timer countdown for case modal
+  useEffect(() => {
+    if (selectedNpc && caseStep === 1 && caseTimer > 0) {
+      const timer = setTimeout(() => {
+        setCaseTimer(caseTimer - 1)
+      }, 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [selectedNpc, caseStep, caseTimer])
+  
+  // Format timer display (MM:SS)
+  const formatCaseTimer = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
 
   // Handle left button click in court
@@ -1015,7 +1226,9 @@ const GlacierMap = ({ onExit }) => {
     return {
       npc2: { right: '30%', bottom: '20%', height: '280px' },
       npc3: { left: '25%', bottom: '20%', height: '240px' },
-      npc4: { right: '22%', bottom: '22%', height: '180px' }
+      npc4: { right: '22%', bottom: '22%', height: '180px' },
+      npc7: { left: '10px', bottom: '200px', height: '250px' },
+      npc8: { right: '10px', bottom: '200px', height: '170px' }
     }
   }
 
@@ -1080,42 +1293,153 @@ const GlacierMap = ({ onExit }) => {
       height: '100%',
       objectFit: 'contain',
     },
+    // Glitch dialogue bubble (for inside, court, rooftop scenes)
+    glitchDialogue: {
+      position: 'absolute',
+      top: '20px',
+      right: '150px',
+      padding: '20px',
+      borderRadius: '20px',
+      background: 'rgba(255, 255, 255, 0.98)',
+      border: '3px solid #af4dca',
+      zIndex: 1100,
+      minWidth: '280px',
+      maxWidth: '320px',
+      boxShadow: '0 4px 20px rgba(175, 77, 202, 0.3)',
+    },
+    glitchDialogueHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      marginBottom: '15px',
+    },
+    glitchDialogueAvatar: {
+      width: '40px',
+      height: '40px',
+      borderRadius: '50%',
+      backgroundColor: '#af4dca',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+    },
+    glitchDialogueAvatarIcon: {
+      fontSize: '24px',
+    },
+    glitchDialogueName: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '16px',
+      fontWeight: 700,
+      color: '#af4dca',
+      margin: 0,
+    },
+    glitchDialogueText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      color: '#333',
+      lineHeight: 1.6,
+      margin: '0 0 15px 0',
+    },
+    glitchDialogueInputContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      backgroundColor: '#d9d7de',
+      borderRadius: '20px',
+      border: '2px solid #d9d7de',
+      overflow: 'hidden',
+      transition: 'border-color 0.2s',
+    },
+    glitchDialogueInput: {
+      flex: 1,
+      padding: '10px 15px',
+      border: 'none',
+      backgroundColor: 'transparent',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '13px',
+      color: '#333',
+      outline: 'none',
+    },
+    glitchDialogueDivider: {
+      width: '2px',
+      height: '24px',
+      backgroundColor: '#af4dca',
+      margin: '0 8px',
+      flexShrink: 0,
+    },
+    glitchDialogueSendButton: {
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '8px 12px',
+      transition: 'all 0.2s',
+      flexShrink: 0,
+    },
+    glitchDialogueSendIcon: {
+      width: '24px',
+      height: '24px',
+      objectFit: 'contain',
+    },
+    glitchDialogueCloseButton: {
+      position: 'absolute',
+      top: '15px',
+      right: '15px',
+      background: 'none',
+      border: 'none',
+      fontSize: '20px',
+      color: '#999',
+      cursor: 'pointer',
+      padding: '0',
+      width: '24px',
+      height: '24px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'all 0.2s',
+    },
     dialogueContainer: {
       position: 'absolute',
-      zIndex: 1000, // 增加z-index确保显示在最上层
-      background: 'rgba(255, 255, 255, 0.85)',
-      border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), linear-gradient(90deg, #5170FF, #FFBBC4)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
-      borderRadius: '15px',
-      padding: '20px',
+      zIndex: 1000,
+      background: 'rgba(240, 248, 255, 0.8)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      border: '1px solid rgba(100, 149, 237, 0.4)',
+      borderRadius: '20px',
+      padding: '25px 30px',
       display: 'flex',
       flexDirection: 'column',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)', // 添加阴影使其更明显
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(100, 149, 237, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1)',
+      minWidth: '400px',
+      maxWidth: '800px',
     },
     insideDialogueContainer: {
       position: 'absolute',
       zIndex: 1000,
-      background: 'rgba(255, 255, 255, 0.85)', // Changed from 0.9 to 0.85
-      border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), linear-gradient(90deg, #5170FF, #FFBBC4)', // Changed from 0.9 to 0.85
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
-      borderRadius: '15px',
-      padding: '20px',
+      background: 'rgba(240, 248, 255, 0.8)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      border: '1px solid rgba(100, 149, 237, 0.4)',
+      borderRadius: '20px',
+      padding: '25px 30px',
       display: 'flex',
       flexDirection: 'column',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
-      overflowY: 'auto', // Enable scrolling
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(100, 149, 237, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1)',
+      overflowY: 'auto',
+      minWidth: '400px',
+      maxWidth: '800px',
     },
     dialogueText: {
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '18px', // 增大字体
-      color: '#333',
-      lineHeight: 1.6,
+      fontSize: '20px',
+      fontWeight: 500,
+      color: '#1a1a1a',
+      lineHeight: '1.5em',
+      letterSpacing: '0.5px',
       margin: 0,
       flex: 1,
+      textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
     },
     dialogueHistory: {
       marginBottom: '20px',
@@ -1243,65 +1567,73 @@ const GlacierMap = ({ onExit }) => {
     },
     npc6DialogueContainer: {
       position: 'absolute',
-      left: 'calc(150px + 250px)', // Right of NPC6 (NPC6 left + width)
+      left: 'calc(150px + 250px)',
       bottom: '300px',
       width: '700px',
       minHeight: '200px',
-      background: 'rgba(255, 255, 255, 0.85)',
-      border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), linear-gradient(90deg, #5170FF, #FFBBC4)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
-      borderRadius: '15px',
-      padding: '20px',
+      background: 'rgba(240, 248, 255, 0.8)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      border: '1px solid rgba(100, 149, 237, 0.4)',
+      borderRadius: '20px',
+      padding: '25px 30px',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(100, 149, 237, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1)',
       zIndex: 1000,
     },
     npc6ContinueButton: {
       alignSelf: 'flex-end',
-      padding: '8px 20px',
-      background: '#000',
+      padding: '12px 24px',
+      borderRadius: '10px',
+      border: '1px solid rgba(100, 149, 237, 0.5)',
+      background: 'rgba(30, 30, 50, 0.9)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
       color: '#fff',
-      border: 'none',
-      borderRadius: '6px',
-      fontSize: '14px',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '15px',
       fontWeight: 600,
       cursor: 'pointer',
-      transition: 'all 0.2s',
+      transition: 'all 0.3s',
+      boxShadow: '0 0 15px rgba(100, 149, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+      textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
     },
     npc5DialogueContainer: {
       position: 'absolute',
-      right: 'calc(20% + 200px)', // Right edge touches NPC5's left edge (NPC5 is at right 20%, width 200px)
+      right: 'calc(20% + 200px)',
       bottom: '15%',
       width: '500px',
       minHeight: '150px',
-      background: 'rgba(255, 255, 255, 0.85)',
-      border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), linear-gradient(90deg, #5170FF, #FFBBC4)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
-      borderRadius: '15px',
-      padding: '20px',
+      background: 'rgba(240, 248, 255, 0.8)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      border: '1px solid rgba(100, 149, 237, 0.4)',
+      borderRadius: '20px',
+      padding: '25px 30px',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(100, 149, 237, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1)',
       zIndex: 1000,
     },
     npc5ContinueButton: {
-      alignSelf: 'flex-end', // Position at right
-      padding: '8px 20px',
-      background: '#000',
+      alignSelf: 'flex-end',
+      padding: '12px 24px',
+      borderRadius: '10px',
+      border: '1px solid rgba(100, 149, 237, 0.5)',
+      background: 'rgba(30, 30, 50, 0.9)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
       color: '#fff',
-      border: 'none',
-      borderRadius: '6px',
-      fontSize: '14px',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '15px',
       fontWeight: 600,
       cursor: 'pointer',
-      transition: 'all 0.2s',
+      transition: 'all 0.3s',
+      boxShadow: '0 0 15px rgba(100, 149, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+      textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
     },
     puzzleContainer: {
       position: 'fixed',
@@ -1528,9 +1860,11 @@ const GlacierMap = ({ onExit }) => {
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
-      background: 'rgba(255, 255, 255, 0.95)',
+      background: 'rgba(20, 20, 30, 0.95)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
       border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(255,255,255,0.95), rgba(255,255,255,0.95)), linear-gradient(90deg, #5170FF, #FFBBC4)',
+      backgroundImage: 'linear-gradient(rgba(20, 20, 30, 0.95), rgba(20, 20, 30, 0.95)), linear-gradient(90deg, #5170FF, #FFBBC4)',
       backgroundOrigin: 'border-box',
       backgroundClip: 'padding-box, border-box',
       borderRadius: '20px',
@@ -1539,12 +1873,22 @@ const GlacierMap = ({ onExit }) => {
       boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
     },
     caseModalStep1: {
-      width: '50vw',
+      width: 'calc(50vw + 20px)',
       height: '70vh',
     },
     caseModalStep2: {
-      width: '1380px', // Changed from 65vw to 1380px
-      height: '640px', // Changed from 60vh to 640px
+      width: '85vw',
+      maxWidth: '1200px',
+      height: '75vh',
+      maxHeight: '650px',
+      background: 'rgba(20, 20, 30, 0.95)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      border: '3px solid transparent',
+      backgroundImage: 'linear-gradient(rgba(20, 20, 30, 0.95), rgba(20, 20, 30, 0.95)), linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      backgroundOrigin: 'border-box',
+      backgroundClip: 'padding-box, border-box',
+      borderRadius: '20px',
     },
     closeButton: {
       position: 'absolute',
@@ -1554,29 +1898,49 @@ const GlacierMap = ({ onExit }) => {
       border: 'none',
       fontSize: '24px',
       cursor: 'pointer',
-      color: '#666',
+      color: '#fff',
+      zIndex: 10,
     },
     caseTitle: {
       fontSize: '20px',
       fontWeight: 'bold',
+      fontFamily: "'Orbitron', sans-serif",
       marginBottom: '20px',
-      color: '#333',
+      color: '#fff',
+    },
+    caseGifContainer: {
+      position: 'relative',
+      width: '100%',
+      marginBottom: '10px',
     },
     caseGif: {
       width: '100%',
-      height: 'auto', // Maintain original aspect ratio
-      maxHeight: '50vh', // Limit maximum height
-      objectFit: 'contain', // Keep original proportions
+      height: 'auto',
+      maxHeight: '50vh',
+      objectFit: 'contain',
       borderRadius: '10px',
-      marginBottom: '10px', // Reduce gap from 20px to 10px
+      boxShadow: 'inset 0 0 20px rgba(0, 0, 0, 0.3)',
+    },
+    caseTimer: {
+      position: 'absolute',
+      top: '15px',
+      right: '15px',
+      fontFamily: "'Courier New', monospace",
+      fontSize: '18px',
+      fontWeight: 'bold',
+      color: '#fff',
+      background: 'rgba(0, 0, 0, 0.6)',
+      padding: '8px 12px',
+      borderRadius: '6px',
+      letterSpacing: '2px',
     },
     nextButton: {
       position: 'absolute',
-      bottom: '15px', // Reduce from 20px to 15px
+      bottom: '15px',
       right: '30px',
       padding: '12px 30px',
-      background: '#333',
-      color: '#fff',
+      background: 'rgba(255, 255, 255, 0.9)',
+      color: '#333',
       border: 'none',
       borderRadius: '8px',
       fontSize: '16px',
@@ -1588,92 +1952,157 @@ const GlacierMap = ({ onExit }) => {
       position: 'relative',
       height: '100%',
       width: '100%',
+      display: 'flex',
+      padding: '30px 30px 20px 30px',
+      gap: '30px',
+    },
+    step2LeftColumn: {
+      width: '280px',
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      flexShrink: 0,
+      position: 'relative',
+      overflow: 'visible',
+      minHeight: '500px',
     },
     step2Npc: {
-      position: 'absolute',
-      left: '-150px', // Changed from -180px to -150px
-      top: '0',
-      width: '600px', // Increased from 500px to 600px
-      height: '100%',
+      width: '280px',
+      height: '700px',
       objectFit: 'contain',
-      zIndex: 1,
     },
-    step2Content: {
-      position: 'absolute',
-      left: '200px', // Text starts 200px from left edge
-      top: '0',
-      right: '0',
-      height: '100%',
+    npcRoleInfo: {
+      fontSize: '13px',
+      color: '#e0e0e0',
+      fontFamily: "'Orbitron', sans-serif",
+      fontWeight: 400,
+      textAlign: 'center',
+      lineHeight: 1.6,
+      padding: '0 10px',
+      marginTop: '15px',
+      width: '260px',
+    },
+    step2RightColumn: {
+      flex: 1,
       display: 'flex',
       flexDirection: 'column',
-      justifyContent: 'space-between',
-      zIndex: 2, // Above the NPC
-      paddingRight: '20px',
+      minHeight: 0,
     },
-    npcStatement: {
-      fontSize: '24px', // Changed from 22px to 24px
-      lineHeight: 1.6,
-      marginTop: '80px', // Changed from 40px to 80px
-      marginBottom: '20px',
-      color: '#333',
-      textAlign: 'center', // Center align
-    },
-    npcClaim: {
-      fontSize: '30px', // Changed from 27px to 30px
-      fontWeight: 'bold',
-      marginBottom: '30px',
-      color: '#333',
-      textAlign: 'center', // Center align
-    },
-    judgmentButtons: {
+    caseHeader: {
       position: 'absolute',
-      bottom: '90px', // Changed from 50px to 90px
-      left: '0',
-      right: '0',
+      top: '15px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      fontSize: '13px',
+      color: '#d0d0d0',
+      fontFamily: "'Orbitron', sans-serif",
+      fontWeight: 500,
+      letterSpacing: '1.5px',
+      textAlign: 'center',
+      whiteSpace: 'nowrap',
+    },
+    statementTitle: {
+      fontSize: '20px',
+      fontWeight: 700,
+      color: '#ffffff',
+      fontFamily: "'Orbitron', sans-serif",
+      letterSpacing: '2px',
+      marginBottom: '20px',
+    },
+    statementBox: {
+      background: 'rgba(230, 230, 230, 0.98)',
+      borderRadius: '12px',
+      padding: '20px 25px',
+      fontFamily: "'Roboto Mono', monospace",
+      fontSize: '14px',
+      lineHeight: 1.8,
+      marginBottom: '20px',
+      maxHeight: '180px',
+      overflowY: 'auto',
+    },
+    statementLine: {
+      marginBottom: '10px',
+      color: '#1a1a1a',
+    },
+    statementPrefix: {
+      color: '#667eea',
+      marginRight: '8px',
+      fontWeight: 700,
+    },
+    verdictPending: {
       display: 'flex',
       alignItems: 'center',
+      gap: '10px',
+      margin: '20px 0',
+      fontSize: '18px',
+      fontFamily: "'Orbitron', sans-serif",
+      fontWeight: 700,
+      color: '#5ba3ff',
+      letterSpacing: '2px',
+    },
+    verdictIcon: {
+      width: '28px',
+      height: '28px',
+      objectFit: 'contain',
+    },
+    claimQuote: {
+      fontSize: '20px',
+      fontFamily: "'Michroma', sans-serif",
+      fontStyle: 'italic',
+      fontWeight: 700,
+      color: '#f0f0f0',
+      textAlign: 'center',
+      margin: '20px 0 30px 0',
+      lineHeight: 1.5,
+      padding: '0 20px',
+    },
+    judgmentButtonsContainer: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      gap: '30px',
+      marginTop: 'auto',
     },
     approvedButton: {
-      position: 'absolute',
-      left: '300px', // Changed from right: 600px to left: 300px
       display: 'flex',
-      flexDirection: 'column',
       alignItems: 'center',
-      background: 'none',
-      border: 'none',
+      justifyContent: 'center',
+      gap: '15px',
+      padding: '16px 45px',
+      background: 'rgba(76, 175, 80, 0.3)',
+      border: '2px solid #4caf50',
+      borderRadius: '12px',
+      color: '#4caf50',
+      fontSize: '20px',
+      fontFamily: "'Orbitron', sans-serif",
+      fontWeight: 700,
       cursor: 'pointer',
-      transition: 'transform 0.2s',
+      transition: 'all 0.3s',
+      boxShadow: '0 0 25px rgba(76, 175, 80, 0.5)',
+      flex: 1,
     },
     rejectedButton: {
-      position: 'absolute',
-      right: '200px', // Changed from 100px to 200px
       display: 'flex',
-      flexDirection: 'column',
       alignItems: 'center',
-      background: 'none',
-      border: 'none',
+      justifyContent: 'center',
+      gap: '15px',
+      padding: '16px 45px',
+      background: 'rgba(244, 67, 54, 0.3)',
+      border: '2px solid #f44336',
+      borderRadius: '12px',
+      color: '#f44336',
+      fontSize: '20px',
+      fontFamily: "'Orbitron', sans-serif",
+      fontWeight: 700,
       cursor: 'pointer',
-      transition: 'transform 0.2s',
-    },
-    judgmentButton: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
-      transition: 'transform 0.2s',
+      transition: 'all 0.3s',
+      boxShadow: '0 0 25px rgba(244, 67, 54, 0.5)',
+      flex: 1,
     },
     judgmentIcon: {
-      width: '135px', // 设置宽度
-      height: 'auto', // 自动高度以保持原始比例
-      marginBottom: '-5px', // -5px distance from icon to text
-      objectFit: 'contain', // Maintain aspect ratio
-    },
-    judgmentLabel: {
-      fontSize: '32px', // Changed from 18px to 32px
-      fontWeight: 'bold',
-      color: '#333',
+      width: '36px',
+      height: '36px',
     },
     stampOverlay: {
       position: 'fixed',
@@ -1691,16 +2120,33 @@ const GlacierMap = ({ onExit }) => {
       marginTop: '15px',
     },
     dialogueButton: {
-      padding: '8px 16px',
-      borderRadius: '6px',
-      border: 'none',
-      background: '#333',
+      padding: '12px 24px',
+      borderRadius: '10px',
+      border: '1px solid rgba(100, 149, 237, 0.5)',
+      background: 'rgba(30, 30, 50, 0.9)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
       color: '#fff',
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '14px',
+      fontSize: '15px',
       fontWeight: 600,
       cursor: 'pointer',
+      transition: 'all 0.3s',
+      boxShadow: '0 0 15px rgba(100, 149, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+      textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
+    },
+    skipButton: {
+      padding: '8px 16px',
+      borderRadius: '8px',
+      border: 'none',
+      background: 'transparent',
+      color: 'rgba(255, 255, 255, 0.6)',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      fontWeight: 500,
+      cursor: 'pointer',
       transition: 'all 0.2s',
+      textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
     },
     arrow: {
       position: 'absolute',
@@ -1730,7 +2176,184 @@ const GlacierMap = ({ onExit }) => {
         0%, 100% { transform: scale(1); }
         50% { transform: scale(1.05); }
       }
+      
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+        20%, 40%, 60%, 80% { transform: translateX(10px); }
+      }
     `,
+    
+    // Modern Dialogue Styles (Based on Reference Image 2)
+    modernDialogueContainer: {
+      position: 'absolute',
+      top: '12.5%',
+      left: '10%',
+      width: '40%',
+      height: '70%',
+      zIndex: 100,
+      background: 'rgba(245, 245, 245, 0.98)', // Very light gray
+      borderRadius: '15px',
+      display: 'flex',
+      flexDirection: 'column',
+      boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+    },
+    modernDialogueHeader: {
+      padding: '20px 25px 15px 25px',
+      borderBottom: 'none',
+    },
+    modernProgressContainer: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '15px',
+    },
+    modernMissionTitle: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      fontWeight: 700,
+      textTransform: 'uppercase',
+      letterSpacing: '1px',
+    },
+    modernStepIndicator: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '13px',
+      color: '#999',
+    },
+    modernProgressBar: {
+      width: '100%',
+      height: '4px',
+      backgroundColor: 'rgba(200,200,200,0.3)',
+      borderRadius: '2px',
+      overflow: 'hidden',
+      marginBottom: '20px',
+    },
+    modernProgressFill: {
+      height: '100%',
+      borderRadius: '2px',
+      transition: 'width 0.3s ease',
+    },
+    modernNpcInfo: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      marginBottom: '15px',
+      flex: 1, // Allow it to take available space
+    },
+    modernNpcAvatar: {
+      width: '50px',
+      height: '50px',
+      borderRadius: '50%',
+      objectFit: 'cover',
+      border: '2px solid white',
+      boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+    },
+    modernNpcName: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '16px',
+      fontWeight: 700,
+      color: '#333',
+    },
+    modernNpcStatus: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '12px',
+      color: '#999',
+    },
+    modernCloseButton: {
+      position: 'relative',
+      background: 'none',
+      border: 'none',
+      fontSize: '20px',
+      color: '#999',
+      cursor: 'pointer',
+      padding: '5px',
+      width: '30px',
+      height: '30px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'all 0.2s',
+      flexShrink: 0, // Prevent shrinking
+    },
+    modernDialogueContent: {
+      flex: 1,
+      padding: '0 25px 25px 25px',
+      overflowY: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px',
+    },
+    modernNpcMessage: {
+      alignSelf: 'flex-start',
+      maxWidth: '100%',
+    },
+    modernNpcSpeaker: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '12px',
+      fontWeight: 700,
+      color: '#666',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
+      marginBottom: '6px',
+    },
+    modernNpcText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      color: '#333',
+      lineHeight: 1.6,
+      margin: 0,
+    },
+    modernTimestamp: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '11px',
+      color: '#999',
+      marginTop: '4px',
+    },
+    modernUserMessage: {
+      alignSelf: 'flex-end',
+      maxWidth: '85%',
+    },
+    modernUserBubble: {
+      background: '#333333', // Black theme for Momo
+      padding: '12px 18px',
+      borderRadius: '18px',
+      boxShadow: '0 2px 6px rgba(51, 51, 51, 0.3)',
+    },
+    modernUserText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      color: 'white',
+      lineHeight: 1.5,
+      margin: 0,
+    },
+    modernUserSpeaker: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '12px',
+      fontWeight: 700,
+      color: '#666',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
+      marginBottom: '6px',
+      textAlign: 'right',
+    },
+    modernActionButton: {
+      alignSelf: 'stretch',
+      background: 'white',
+      border: '2px solid #E0E0E0',
+      borderRadius: '25px',
+      padding: '14px 20px',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      fontWeight: 500,
+      color: '#333',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+      marginTop: '8px',
+    },
   }
 
   return (
@@ -1782,6 +2405,16 @@ const GlacierMap = ({ onExit }) => {
           ...getNpcPosition(),
           width: getNpcPosition().size,
           height: getNpcPosition().size,
+          cursor: (currentScene === 'inside' || currentScene === 'court' || currentScene === 'rooftop') ? 'pointer' : 'default',
+        }}
+        onClick={handleGlitchClick}
+        onMouseOver={(e) => {
+          if (currentScene === 'inside' || currentScene === 'court' || currentScene === 'rooftop') {
+            e.currentTarget.style.transform = 'scale(1.05)'
+          }
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.transform = 'scale(1)'
         }}
       >
         <img 
@@ -1790,6 +2423,79 @@ const GlacierMap = ({ onExit }) => {
           style={styles.npcImage}
         />
       </div>
+      
+      {/* Glitch Dialogue (shows on click in inside, court, rooftop scenes) */}
+      {showGlitchDialogue && (currentScene === 'inside' || currentScene === 'court' || currentScene === 'rooftop') && (
+        <div style={styles.glitchDialogue}>
+          {/* Close button */}
+          <button
+            style={styles.glitchDialogueCloseButton}
+            onClick={() => setShowGlitchDialogue(false)}
+            onMouseOver={(e) => {
+              e.target.style.color = '#333'
+              e.target.style.transform = 'scale(1.1)'
+            }}
+            onMouseOut={(e) => {
+              e.target.style.color = '#999'
+              e.target.style.transform = 'scale(1)'
+            }}
+          >
+            ✕
+          </button>
+          
+          {/* Header with avatar and name */}
+          <div style={styles.glitchDialogueHeader}>
+            <div style={styles.glitchDialogueAvatar}>
+              <span style={styles.glitchDialogueAvatarIcon}>👾</span>
+            </div>
+            <h4 style={styles.glitchDialogueName}>Glitch</h4>
+          </div>
+          
+          {/* Message content */}
+          <p style={styles.glitchDialogueText}>
+            {currentScene === 'inside' && "The machines are sleeping, but the truth is awake. Ask me anything about this station."}
+            {currentScene === 'court' && "Justice is not always black and white. Sometimes it's about responsibility."}
+            {currentScene === 'rooftop' && "They forgot how to think for themselves. Can you help them remember?"}
+          </p>
+          
+          {/* Input container */}
+          <div 
+            style={styles.glitchDialogueInputContainer}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = '#af4dca'
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = '#d9d7de'
+            }}
+          >
+            <input
+              type="text"
+              placeholder="Ask Glitch anything..."
+              value={glitchInput}
+              onChange={(e) => setGlitchInput(e.target.value)}
+              onKeyPress={handleGlitchInputKeyPress}
+              style={styles.glitchDialogueInput}
+            />
+            <div style={styles.glitchDialogueDivider}></div>
+            <button
+              onClick={handleGlitchSend}
+              style={styles.glitchDialogueSendButton}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'scale(1)'
+              }}
+            >
+              <img 
+                src="/icon/send.png" 
+                alt="Send" 
+                style={styles.glitchDialogueSendIcon}
+              />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Momo NPC (only in inside scene) */}
       {currentScene === 'inside' && getMomoPosition() && (
@@ -1797,11 +2503,11 @@ const GlacierMap = ({ onExit }) => {
           style={{
             position: 'absolute',
             zIndex: 30,
-            cursor: completedCases.length === 3 ? 'pointer' : 'default',
+            cursor: completedCases.length === 5 ? 'pointer' : 'default',
             ...getMomoPosition(),
           }}
           onClick={handleMomoClick}
-          onMouseOver={(e) => completedCases.length === 3 && (e.currentTarget.style.transform = 'scale(1.05)')}
+          onMouseOver={(e) => completedCases.length === 5 && (e.currentTarget.style.transform = 'scale(1.05)')}
           onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
         >
           <img 
@@ -1831,18 +2537,32 @@ const GlacierMap = ({ onExit }) => {
           
           <div style={styles.dialogueButtons}>
             <button 
-              style={styles.dialogueButton}
+              style={styles.skipButton}
               onClick={handleSkip}
-              onMouseOver={(e) => e.target.style.background = '#555'}
-              onMouseOut={(e) => e.target.style.background = '#333'}
+              onMouseOver={(e) => {
+                e.target.style.color = 'rgba(255, 255, 255, 0.9)'
+                e.target.style.transform = 'scale(1.05)'
+              }}
+              onMouseOut={(e) => {
+                e.target.style.color = 'rgba(255, 255, 255, 0.6)'
+                e.target.style.transform = 'scale(1)'
+              }}
             >
               SKIP
             </button>
             <button 
               style={styles.dialogueButton}
               onClick={handleContinue}
-              onMouseOver={(e) => e.target.style.background = '#555'}
-              onMouseOut={(e) => e.target.style.background = '#333'}
+              onMouseOver={(e) => {
+                e.target.style.background = 'rgba(50, 50, 80, 0.95)'
+                e.target.style.boxShadow = '0 0 25px rgba(100, 149, 237, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15)'
+                e.target.style.transform = 'scale(1.05)'
+              }}
+              onMouseOut={(e) => {
+                e.target.style.background = 'rgba(30, 30, 50, 0.9)'
+                e.target.style.boxShadow = '0 0 15px rgba(100, 149, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                e.target.style.transform = 'scale(1)'
+              }}
             >
               CONTINUE
             </button>
@@ -1850,73 +2570,148 @@ const GlacierMap = ({ onExit }) => {
         </div>
       )}
 
-      {/* Inside Scene Dialogue System */}
-      {currentScene === 'inside' && showDialogue && !showSummaryDialogue && (
-        <div 
-          style={{
-            ...styles.insideDialogueContainer, // Always use the white background container
+      {/* Inside Scene Dialogue System - Modern Design */}
+      {currentScene === 'inside' && showDialogue && !showSummaryDialogue && (() => {
+        const theme = getNpcTheme('momo')
+        const totalSteps = 3
+        const currentStep = 1 // Inside dialogue is step 1
+        const progressPercent = (currentStep / totalSteps) * 100
+        
+        return (
+          <div style={{
+            ...styles.modernDialogueContainer,
             ...getDialoguePosition(),
-          }}
-        >
-          {/* Dialogue History */}
-          <div style={styles.dialogueHistory}>
-            {dialogueHistory.map((dialogue, index) => (
-              <div 
-                key={index}
-                style={{
-                  ...styles.dialogueMessage,
-                  ...(dialogue.speaker === 'momo' ? styles.momoMessage : styles.userMessage),
-                }}
-              >
-                <div style={styles.dialogueText}>
-                  {dialogue.speaker === 'momo' ? renderTextWithBold(dialogue.text) : dialogue.text}
+            border: `3px solid ${theme.borderColor}`,
+          }}>
+            {/* Header with Progress */}
+            <div style={styles.modernDialogueHeader}>
+              <div style={styles.modernProgressContainer}>
+                <div style={{
+                  ...styles.modernMissionTitle,
+                  color: theme.borderColor
+                }}>
+                  MISSION: SILENT GEAR STATION
+                </div>
+                <div style={styles.modernStepIndicator}>
+                  Step {currentStep} of {totalSteps}
                 </div>
               </div>
-            ))}
-          </div>
-
-          {/* Current Dialogue */}
-          {!waitingForUserInput && (
-            <div style={styles.currentDialogue}> {/* Always use currentDialogue style, never firstDialogue */}
-              <div style={styles.dialogueText}>
-                {renderTextWithBold(displayedText)}
-                {isTyping && <span style={{ opacity: 0.5 }}>|</span>}
+              <div style={styles.modernProgressBar}>
+                <div style={{
+                  ...styles.modernProgressFill,
+                  width: `${progressPercent}%`,
+                  background: theme.progressColor
+                }} />
               </div>
               
-              <div style={styles.dialogueButtons}>
+              {/* NPC Info and Close Button Container */}
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                {/* NPC Info */}
+                <div style={styles.modernNpcInfo}>
+                  <img 
+                    src={theme.avatar} 
+                    alt="Momo" 
+                    style={styles.modernNpcAvatar}
+                  />
+                  <div>
+                    <div style={styles.modernNpcName}>Momo</div>
+                    <div style={styles.modernNpcStatus}>Station Supervisor</div>
+                  </div>
+                </div>
+                
+                {/* Close Button - Aligned with NPC avatar top */}
                 <button 
-                  style={styles.dialogueButton}
+                  style={styles.modernCloseButton}
                   onClick={handleSkip}
-                  onMouseOver={(e) => e.target.style.background = '#555'}
-                  onMouseOut={(e) => e.target.style.background = '#333'}
+                  onMouseOver={(e) => e.target.style.color = '#333'}
+                  onMouseOut={(e) => e.target.style.color = '#999'}
                 >
-                  SKIP
-                </button>
-                <button 
-                  style={styles.dialogueButton}
-                  onClick={handleContinue}
-                  onMouseOver={(e) => e.target.style.background = '#555'}
-                  onMouseOut={(e) => e.target.style.background = '#333'}
-                >
-                  CONTINUE
+                  ✕
                 </button>
               </div>
             </div>
-          )}
-
-          {/* User Choice Buttons */}
-          {waitingForUserInput && currentDialogues[currentDialogueIndex] && currentDialogues[currentDialogueIndex].isButton && (
-            <button 
-              style={styles.userChoiceButton}
-              onClick={() => handleUserChoice(currentDialogues[currentDialogueIndex].text)}
-              onMouseOver={(e) => e.target.style.background = '#ff9fb0'}
-              onMouseOut={(e) => e.target.style.background = '#FFBBC4'}
-            >
-              {currentDialogues[currentDialogueIndex].text}
-            </button>
-          )}
-        </div>
-      )}
+            
+            {/* Messages Content */}
+            <div style={styles.modernDialogueContent}>
+              {/* Dialogue History */}
+              {dialogueHistory.map((message, index) => {
+                const timestamp = getCurrentTimestamp()
+                
+                if (message.speaker === 'momo') {
+                  return (
+                    <div key={index} style={styles.modernNpcMessage}>
+                      <div style={styles.modernNpcSpeaker}>MOMO:</div>
+                      <p style={styles.modernNpcText}
+                        dangerouslySetInnerHTML={{ 
+                          __html: message.text.replace(
+                            /\*\*(.*?)\*\*/g, 
+                            `<span style="color: ${theme.borderColor}; font-weight: 600;">$1</span>`
+                          )
+                        }} 
+                      />
+                      <div style={styles.modernTimestamp}>{timestamp}</div>
+                    </div>
+                  )
+                }
+                
+                if (message.speaker === 'user') {
+                  return (
+                    <div key={index} style={styles.modernUserMessage}>
+                      <div style={styles.modernUserSpeaker}>YOU:</div>
+                      <div style={{
+                        ...styles.modernUserBubble,
+                        background: theme.borderColor
+                      }}>
+                        <p style={styles.modernUserText}>{message.text}</p>
+                      </div>
+                      <div style={{...styles.modernTimestamp, textAlign: 'right'}}>{timestamp}</div>
+                    </div>
+                  )
+                }
+                
+                return null
+              })}
+              
+              {/* Current Dialogue */}
+              {!waitingForUserInput && (
+                <div style={styles.modernNpcMessage}>
+                  <div style={styles.modernNpcSpeaker}>MOMO:</div>
+                  <p style={styles.modernNpcText}
+                    dangerouslySetInnerHTML={{ 
+                      __html: displayedText.replace(
+                        /\*\*(.*?)\*\*/g, 
+                        `<span style="color: ${theme.borderColor}; font-weight: 600;">$1</span>`
+                      )
+                    }} 
+                  />
+                  {isTyping && <span style={{ opacity: 0.5 }}>|</span>}
+                  <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
+                </div>
+              )}
+              
+              {/* User Choice Button */}
+              {waitingForUserInput && currentDialogues[currentDialogueIndex] && 
+               currentDialogues[currentDialogueIndex].isButton && (
+                <button 
+                  style={styles.modernActionButton}
+                  onClick={() => handleUserChoice(currentDialogues[currentDialogueIndex].text)}
+                  onMouseOver={(e) => {
+                    e.target.style.borderColor = theme.borderColor
+                    e.target.style.transform = 'translateX(5px)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.borderColor = '#E0E0E0'
+                    e.target.style.transform = 'translateX(0)'
+                  }}
+                >
+                  <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                  {currentDialogues[currentDialogueIndex].text}
+                </button>
+              )}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Court Scene NPCs */}
       {currentScene === 'court' && (
@@ -1951,7 +2746,7 @@ const GlacierMap = ({ onExit }) => {
       {/* Progress Circles */}
       {currentScene === 'court' && (
         <div style={styles.progressContainer}>
-          {['npc2', 'npc3', 'npc4'].map((npcId, index) => (
+          {['npc2', 'npc3', 'npc4', 'npc7', 'npc8'].map((npcId, index) => (
             <div
               key={npcId}
               style={{
@@ -2000,68 +2795,175 @@ const GlacierMap = ({ onExit }) => {
               <div style={styles.caseTitle}>
                 {courtCases[selectedNpc].eventDescription}
               </div>
-              <img
-                src={courtCases[selectedNpc].gif}
-                alt="Case Event"
-                style={styles.caseGif}
-              />
+              <div style={styles.caseGifContainer}>
+                <img
+                  src={courtCases[selectedNpc].gif}
+                  alt="Case Event"
+                  style={styles.caseGif}
+                />
+                <div style={styles.caseTimer}>
+                  {formatCaseTimer(caseTimer)}
+                </div>
+              </div>
               <button
                 style={styles.nextButton}
                 onClick={handleNextStep}
-                onMouseOver={(e) => (e.target.style.background = '#555')}
-                onMouseOut={(e) => (e.target.style.background = '#333')}
+                onMouseOver={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 1)'
+                  e.target.style.transform = 'scale(1.05)'
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.9)'
+                  e.target.style.transform = 'scale(1)'
+                }}
               >
                 NEXT
               </button>
             </>
           ) : (
-            // Step 2: NPC Statement
-            <div style={styles.step2Container}>
-              <img
-                src={courtCases[selectedNpc].npcImage}
-                alt={selectedNpc}
-                style={styles.step2Npc}
-              />
-              <div style={styles.step2Content}>
-                <div>
-                  <div style={styles.npcStatement}>
-                    {courtCases[selectedNpc].statement}
-                  </div>
-                  <div style={styles.npcClaim}>
-                    <strong>NPC Statement:</strong><br />
-                    {courtCases[selectedNpc].claim}
+            // Step 2: NPC Statement - Cyberpunk Style
+            <>
+              {/* Case Header - Absolute positioned at top center */}
+              <div style={styles.caseHeader}>
+                {t('language') === 'zh' ? '案件' : 'Case'} #{courtCases[selectedNpc].caseNumber} · {
+                  t('language') === 'zh' 
+                    ? courtCases[selectedNpc].caseTitle.zh 
+                    : courtCases[selectedNpc].caseTitle.en
+                }
+              </div>
+              
+              <div style={styles.step2Container}>
+                {/* Left Column: NPC + Role */}
+                <div style={styles.step2LeftColumn}>
+                  <img
+                    src={courtCases[selectedNpc].npcImage}
+                    alt={selectedNpc}
+                    style={{
+                      width: 'auto',
+                      height: '500px',
+                      maxWidth: 'none',
+                      objectFit: 'contain',
+                    }}
+                  />
+                  <div style={{
+                    fontSize: '13px',
+                    color: '#e0e0e0',
+                    fontFamily: "'Orbitron', sans-serif",
+                    fontWeight: 400,
+                    textAlign: 'center',
+                    lineHeight: 1.6,
+                    padding: '0 10px',
+                    marginTop: '10px',
+                    width: '260px',
+                  }}>
+                    {t('language') === 'zh' 
+                      ? courtCases[selectedNpc].npcRole.zh 
+                      : courtCases[selectedNpc].npcRole.en
+                    }
                   </div>
                 </div>
-                <div style={styles.judgmentButtons}>
-                  <button
-                    style={styles.approvedButton}
-                    onClick={() => handleJudgment('accepted')}
-                    onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
-                    onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-                  >
-                    <img
-                      src="/desert/icon/correct.png"
-                      alt="Approved"
-                      style={styles.judgmentIcon}
-                    />
-                    <div style={styles.judgmentLabel}>APPROVED</div>
-                  </button>
-                  <button
-                    style={styles.rejectedButton}
-                    onClick={() => handleJudgment('rejected')}
-                    onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.1)')}
-                    onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-                  >
-                    <img
-                      src="/desert/icon/wrong.png"
-                      alt="Rejected"
-                      style={styles.judgmentIcon}
-                    />
-                    <div style={styles.judgmentLabel}>REJECTED</div>
-                  </button>
+                
+                {/* Right Column: Content */}
+                <div style={styles.step2RightColumn}>
+                  {/* Title - No Icon */}
+                  <div style={styles.statementTitle}>
+                    NPC STATEMENT
+                  </div>
+                  
+                  {/* Statement Box */}
+                  <div style={styles.statementBox}>
+                    {courtCases[selectedNpc].statementParts.map((part, index) => (
+                      <div 
+                        key={index}
+                        style={{
+                          ...styles.statementLine,
+                          opacity: statementProgress > index ? 1 : 0,
+                          transform: statementProgress > index ? 'translateY(0)' : 'translateY(10px)',
+                          transition: 'all 0.5s ease',
+                        }}
+                      >
+                        <span style={styles.statementPrefix}>&gt;</span>
+                        {part}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Verdict Pending with Icon - Larger */}
+                  {statementProgress >= 3 && (
+                    <div style={styles.verdictPending}>
+                      <img 
+                        src="/glacier/icon/statement.png"
+                        alt="Verdict"
+                        style={styles.verdictIcon}
+                      />
+                      [VERDICT PENDING]
+                    </div>
+                  )}
+                  
+                  {/* Claim Quote */}
+                  {statementProgress >= 3 && (
+                    <div style={styles.claimQuote}>
+                      "{courtCases[selectedNpc].claim}"
+                    </div>
+                  )}
+                  
+                  {/* Judgment Buttons */}
+                  {statementProgress >= 3 && (
+                    <div style={styles.judgmentButtonsContainer}>
+                      <button
+                        style={{
+                          ...styles.approvedButton,
+                          animation: shakeApprovedButton ? 'shake 0.5s' : 'none',
+                        }}
+                        onClick={() => handleJudgment('accepted')}
+                        onMouseOver={(e) => {
+                          if (!shakeApprovedButton) {
+                            e.currentTarget.style.boxShadow = '0 0 45px rgba(76, 175, 80, 0.7)'
+                            e.currentTarget.style.transform = 'scale(1.05)'
+                            e.currentTarget.style.background = 'rgba(76, 175, 80, 0.4)'
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (!shakeApprovedButton) {
+                            e.currentTarget.style.boxShadow = '0 0 25px rgba(76, 175, 80, 0.5)'
+                            e.currentTarget.style.transform = 'scale(1)'
+                            e.currentTarget.style.background = 'rgba(76, 175, 80, 0.3)'
+                          }
+                        }}
+                      >
+                        <img
+                          src="/desert/icon/correct.png"
+                          alt="Approved"
+                          style={styles.judgmentIcon}
+                        />
+                        APPROVED
+                      </button>
+                      <button
+                        style={styles.rejectedButton}
+                        onClick={() => handleJudgment('rejected')}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.boxShadow = '0 0 45px rgba(244, 67, 54, 0.7)'
+                          e.currentTarget.style.transform = 'scale(1.05)'
+                          e.currentTarget.style.background = 'rgba(244, 67, 54, 0.4)'
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.boxShadow = '0 0 25px rgba(244, 67, 54, 0.5)'
+                          e.currentTarget.style.transform = 'scale(1)'
+                          e.currentTarget.style.background = 'rgba(244, 67, 54, 0.3)'
+                        }}
+                      >
+                        <img
+                          src="/desert/icon/wrong.png"
+                          alt="Rejected"
+                          style={styles.judgmentIcon}
+                        />
+                        REJECTED
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       )}
@@ -2075,102 +2977,191 @@ const GlacierMap = ({ onExit }) => {
         />
       )}
 
-      {/* Summary Dialogue System */}
-      {showSummaryDialogue && (
-        <div 
-          style={{
-            ...styles.insideDialogueContainer, // Use the proper dialogue container with white background
-            ...getDialoguePosition(),
-          }}
-        >
-          {/* Summary Dialogue History */}
-          <div style={styles.dialogueHistory}>
-            {summaryDialogueHistory.map((dialogue, index) => (
-              <div 
-                key={index}
-                style={{
-                  ...styles.dialogueMessage,
-                  ...(dialogue.speaker === 'momo' ? styles.momoMessage : styles.userMessage),
-                }}
-              >
-                <div style={styles.dialogueText}>
-                  {dialogue.speaker === 'momo' ? renderTextWithBold(dialogue.text) : dialogue.text}
+      {/* Summary Dialogue System - Modern Design (Based on Reference Image 2) */}
+      {showSummaryDialogue && (() => {
+        const theme = getNpcTheme('momo')
+        const totalSteps = 3
+        const currentStep = 2 // Summary dialogue is step 2
+        const progressPercent = (currentStep / totalSteps) * 100
+        
+        return (
+          <div style={{
+            ...styles.modernDialogueContainer,
+            border: `3px solid ${theme.borderColor}`,
+          }}>
+            {/* Header with Progress */}
+            <div style={styles.modernDialogueHeader}>
+              <div style={styles.modernProgressContainer}>
+                <div style={{
+                  ...styles.modernMissionTitle,
+                  color: theme.borderColor
+                }}>
+                  MISSION: AI ETHICS PRINCIPLES
+                </div>
+                <div style={styles.modernStepIndicator}>
+                  Step {currentStep} of {totalSteps}
                 </div>
               </div>
-            ))}
-          </div>
-
-          {/* Current Summary Dialogue */}
-          {summaryDialogueSequence[summaryDialogueIndex] && 
-           summaryDialogueSequence[summaryDialogueIndex].speaker !== 'quiz' && 
-           !summaryDialogueSequence[summaryDialogueIndex].isButton && (
-            <div style={styles.currentDialogue}>
-              <div style={styles.dialogueText}>
-                {renderTextWithBold(summaryDisplayedText)}
-                {summaryIsTyping && <span style={{ opacity: 0.5 }}>|</span>}
+              <div style={styles.modernProgressBar}>
+                <div style={{
+                  ...styles.modernProgressFill,
+                  width: `${progressPercent}%`,
+                  background: theme.progressColor
+                }} />
               </div>
               
-              {!summaryWaitingForInput && !summaryDialogueSequence[summaryDialogueIndex].showUserButton && (
-                <div style={styles.dialogueButtons}>
-                  <button 
-                    style={styles.dialogueButton}
-                    onClick={handleSummarySkip}
-                    onMouseOver={(e) => e.target.style.background = '#555'}
-                    onMouseOut={(e) => e.target.style.background = '#333'}
-                  >
-                    SKIP
-                  </button>
-                  <button 
-                    style={styles.dialogueButton}
-                    onClick={handleSummaryContinue}
-                    onMouseOver={(e) => e.target.style.background = '#555'}
-                    onMouseOut={(e) => e.target.style.background = '#333'}
-                  >
-                    CONTINUE
-                  </button>
+              {/* NPC Info and Close Button Container */}
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                {/* NPC Info */}
+                <div style={styles.modernNpcInfo}>
+                  <img 
+                    src={theme.avatar} 
+                    alt="Momo" 
+                    style={styles.modernNpcAvatar}
+                  />
+                  <div>
+                    <div style={styles.modernNpcName}>Momo</div>
+                    <div style={styles.modernNpcStatus}>Station Supervisor</div>
+                  </div>
+                </div>
+                
+                {/* Close Button - Aligned with NPC avatar top */}
+                <button 
+                  style={styles.modernCloseButton}
+                  onClick={() => setShowSummaryDialogue(false)}
+                  onMouseOver={(e) => e.target.style.color = '#333'}
+                  onMouseOut={(e) => e.target.style.color = '#999'}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            
+            {/* Messages Content */}
+            <div style={styles.modernDialogueContent}>
+              {summaryDialogueHistory.map((message, index) => {
+                const timestamp = getCurrentTimestamp()
+                
+                if (message.speaker === 'momo') {
+                  return (
+                    <div key={index} style={styles.modernNpcMessage}>
+                      <div style={styles.modernNpcSpeaker}>MOMO:</div>
+                      <p style={styles.modernNpcText}
+                        dangerouslySetInnerHTML={{ 
+                          __html: message.text.replace(
+                            /\*\*(.*?)\*\*/g, 
+                            `<span style="color: ${theme.borderColor}; font-weight: 600;">$1</span>`
+                          )
+                        }} 
+                      />
+                      <div style={styles.modernTimestamp}>{timestamp}</div>
+                    </div>
+                  )
+                }
+                
+                if (message.speaker === 'user') {
+                  return (
+                    <div key={index} style={styles.modernUserMessage}>
+                      <div style={styles.modernUserSpeaker}>YOU:</div>
+                      <div style={{
+                        ...styles.modernUserBubble,
+                        background: theme.borderColor
+                      }}>
+                        <p style={styles.modernUserText}>{message.text}</p>
+                      </div>
+                      <div style={{...styles.modernTimestamp, textAlign: 'right'}}>{timestamp}</div>
+                    </div>
+                  )
+                }
+                
+                if (message.isError) {
+                  return (
+                    <div key={index} style={styles.modernNpcMessage}>
+                      <div style={styles.modernNpcSpeaker}>MOMO:</div>
+                      <p style={{
+                        ...styles.modernNpcText,
+                        padding: '12px 16px',
+                        background: '#f8d7da',
+                        borderRadius: '10px',
+                        border: '2px solid #dc3545'
+                      }}>
+                        {message.text}
+                      </p>
+                      <div style={styles.modernTimestamp}>{timestamp}</div>
+                    </div>
+                  )
+                }
+                
+                return null
+              })}
+              
+              {/* Current Dialogue */}
+              {summaryDialogueSequence[summaryDialogueIndex] && 
+               summaryDialogueSequence[summaryDialogueIndex].speaker !== 'quiz' && 
+               !summaryDialogueSequence[summaryDialogueIndex].isButton && (
+                <div style={styles.modernNpcMessage}>
+                  <div style={styles.modernNpcSpeaker}>MOMO:</div>
+                  <p style={styles.modernNpcText}
+                    dangerouslySetInnerHTML={{ 
+                      __html: summaryDisplayedText.replace(
+                        /\*\*(.*?)\*\*/g, 
+                        `<span style="color: ${theme.borderColor}; font-weight: 600;">$1</span>`
+                      )
+                    }} 
+                  />
+                  {summaryIsTyping && <span style={{ opacity: 0.5 }}>|</span>}
+                  <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* Summary User Choice Buttons */}
-          {summaryWaitingForInput && summaryDialogueSequence[summaryDialogueIndex + 1] && 
-           summaryDialogueSequence[summaryDialogueIndex + 1].isButton && (
-            <button 
-              style={styles.userChoiceButton}
-              onClick={() => handleSummaryUserChoice(summaryDialogueSequence[summaryDialogueIndex + 1].text)}
-              onMouseOver={(e) => e.target.style.background = '#ff9fb0'}
-              onMouseOut={(e) => e.target.style.background = '#FFBBC4'}
-            >
-              {summaryDialogueSequence[summaryDialogueIndex + 1].text}
-            </button>
-          )}
-
-          {/* Quiz Options */}
-          {summaryWaitingForInput && summaryDialogueSequence[summaryDialogueIndex + 1] && 
-           summaryDialogueSequence[summaryDialogueIndex + 1].speaker === 'quiz' && (
-            <div style={styles.quizOptions}>
-              {summaryDialogueSequence[summaryDialogueIndex + 1].options.map((option, index) => (
-                <button
-                  key={index}
-                  style={styles.quizOption}
-                  onClick={() => handleSummaryQuizChoice(option)}
+              
+              {/* Quiz Choice Buttons */}
+              {summaryWaitingForInput && summaryDialogueSequence[summaryDialogueIndex + 1] && 
+               summaryDialogueSequence[summaryDialogueIndex + 1].speaker === 'quiz' && (
+                <div style={{width: '100%', marginTop: '10px'}}>
+                  {summaryDialogueSequence[summaryDialogueIndex + 1].options.map((option, idx) => (
+                    <button
+                      key={idx}
+                      style={styles.modernActionButton}
+                      onClick={() => handleSummaryQuizChoice(option)}
+                      onMouseOver={(e) => {
+                        e.target.style.borderColor = theme.borderColor
+                        e.target.style.transform = 'translateX(5px)'
+                      }}
+                      onMouseOut={(e) => {
+                        e.target.style.borderColor = '#E0E0E0'
+                        e.target.style.transform = 'translateX(0)'
+                      }}
+                    >
+                      <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                      {option.text}
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              {/* User Choice Button */}
+              {summaryWaitingForInput && summaryDialogueSequence[summaryDialogueIndex + 1] && 
+               summaryDialogueSequence[summaryDialogueIndex + 1].isButton && (
+                <button 
+                  style={styles.modernActionButton}
+                  onClick={() => handleSummaryUserChoice(summaryDialogueSequence[summaryDialogueIndex + 1].text)}
                   onMouseOver={(e) => {
-                    e.target.style.background = 'rgba(81, 112, 255, 0.2)'
-                    e.target.style.transform = 'scale(1.02)'
+                    e.target.style.borderColor = theme.borderColor
+                    e.target.style.transform = 'translateX(5px)'
                   }}
                   onMouseOut={(e) => {
-                    e.target.style.background = 'rgba(81, 112, 255, 0.1)'
-                    e.target.style.transform = 'scale(1)'
+                    e.target.style.borderColor = '#E0E0E0'
+                    e.target.style.transform = 'translateX(0)'
                   }}
                 >
-                  {option.text}
+                  <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                  {summaryDialogueSequence[summaryDialogueIndex + 1].text}
                 </button>
-              ))}
+              )}
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        )
+      })()}
 
       {/* Elevator Arrow */}
       {showElevatorArrow && currentScene === 'inside' && (
@@ -2234,8 +3225,16 @@ const GlacierMap = ({ onExit }) => {
               <button 
                 style={styles.npc5ContinueButton}
                 onClick={() => setShowNpc5Dialogue(false)}
-                onMouseOver={(e) => e.target.style.background = '#333'}
-                onMouseOut={(e) => e.target.style.background = '#000'}
+                onMouseOver={(e) => {
+                  e.target.style.background = 'rgba(50, 50, 80, 0.95)'
+                  e.target.style.boxShadow = '0 0 25px rgba(100, 149, 237, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15)'
+                  e.target.style.transform = 'scale(1.05)'
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = 'rgba(30, 30, 50, 0.9)'
+                  e.target.style.boxShadow = '0 0 15px rgba(100, 149, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                  e.target.style.transform = 'scale(1)'
+                }}
               >
                 CLOSE
               </button>
@@ -2269,8 +3268,16 @@ const GlacierMap = ({ onExit }) => {
                 <button 
                   style={styles.npc5ContinueButton}
                   onClick={() => handleNpc5UserChoice(npc5DialogueSequence[npc5DialogueIndex].text)}
-                  onMouseOver={(e) => e.target.style.background = '#333'}
-                  onMouseOut={(e) => e.target.style.background = '#000'}
+                  onMouseOver={(e) => {
+                    e.target.style.background = 'rgba(50, 50, 80, 0.95)'
+                    e.target.style.boxShadow = '0 0 25px rgba(100, 149, 237, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15)'
+                    e.target.style.transform = 'scale(1.05)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.background = 'rgba(30, 30, 50, 0.9)'
+                    e.target.style.boxShadow = '0 0 15px rgba(100, 149, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                    e.target.style.transform = 'scale(1)'
+                  }}
                 >
                   CONTINUE
                 </button>
@@ -2294,8 +3301,16 @@ const GlacierMap = ({ onExit }) => {
               <button 
                 style={styles.npc6ContinueButton}
                 onClick={() => setShowNpc6Dialogue(false)}
-                onMouseOver={(e) => e.target.style.background = '#333'}
-                onMouseOut={(e) => e.target.style.background = '#000'}
+                onMouseOver={(e) => {
+                  e.target.style.background = 'rgba(50, 50, 80, 0.95)'
+                  e.target.style.boxShadow = '0 0 25px rgba(100, 149, 237, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15)'
+                  e.target.style.transform = 'scale(1.05)'
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = 'rgba(30, 30, 50, 0.9)'
+                  e.target.style.boxShadow = '0 0 15px rgba(100, 149, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                  e.target.style.transform = 'scale(1)'
+                }}
               >
                 CLOSE
               </button>
@@ -2328,8 +3343,16 @@ const GlacierMap = ({ onExit }) => {
                 <button 
                   style={styles.npc6ContinueButton}
                   onClick={handleNpc6UserChoice}
-                  onMouseOver={(e) => e.target.style.background = '#333'}
-                  onMouseOut={(e) => e.target.style.background = '#000'}
+                  onMouseOver={(e) => {
+                    e.target.style.background = 'rgba(50, 50, 80, 0.95)'
+                    e.target.style.boxShadow = '0 0 25px rgba(100, 149, 237, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15)'
+                    e.target.style.transform = 'scale(1.05)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.background = 'rgba(30, 30, 50, 0.9)'
+                    e.target.style.boxShadow = '0 0 15px rgba(100, 149, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                    e.target.style.transform = 'scale(1)'
+                  }}
                 >
                   CONTINUE
                 </button>

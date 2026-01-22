@@ -7,11 +7,32 @@ export const zh = {
   failed: "失败",
   
   // Homepage
-  welcome: "欢迎来到AI之旅",
+  welcome: "欢迎！",
+  aiJourneyTitle: "AI 探索之旅",
+  aiJourneySubtitle: "开启人工智能素养互动课堂",
   start: "开始",
   continueGame: "继续游戏",
   startOver: "重新开始",
   signIn: "登录",
+  
+  // Sign In Modal
+  signInTitle: "登录",
+  signUpTitle: "注册",
+  userName: "用户名",
+  userNameEmail: "用户名/邮箱",
+  password: "密码",
+  email: "邮箱",
+  enterUsername: "输入用户名",
+  enterUsernameOrEmail: "输入用户名或邮箱",
+  enterPassword: "输入密码",
+  enterEmail: "输入邮箱地址",
+  done: "完成",
+  alreadyHaveAccount: "已有账号？",
+  dontHaveAccount: "还没有账号？",
+  signUp: "注册",
+  invalidCredentials: "用户名/邮箱或密码无效",
+  noAccountFound: "未找到账号。请先注册。",
+  userAlreadyExists: "用户已存在。请登录。",
   
   // Map View
   selectRegion: "选择区域",
@@ -86,6 +107,14 @@ export const zh = {
   
   // Language
   language: "EN/中文",
+  
+  // Settings Panel
+  setting: "设置",
+  controlPanel: "控制面板",
+  languageSelection: "语言选择",
+  systemVolume: "系统音量",
+  reset: "重置",
+  applyChanges: "应用更改",
   
   // NPC Dialogues
   npc1Island1Dialog1: "嘿！你！在那里小心点。",

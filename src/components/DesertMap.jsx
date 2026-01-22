@@ -237,6 +237,47 @@ const alphaPhase2DialogueFlow = [
 
 const DesertMap = ({ onExit }) => {
   const { t } = useLanguage()
+  
+  // Helper function to get current timestamp
+  const getCurrentTimestamp = () => {
+    const now = new Date()
+    return now.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    })
+  }
+  
+  // Helper function to get NPC theme colors
+  const getNpcTheme = (npcName) => {
+    switch(npcName.toLowerCase()) {
+      case 'alpha':
+        return {
+          borderColor: '#FFD700',
+          progressColor: '#FFD700',
+          avatar: '/desert/npc/npc4.png'
+        }
+      case 'sparky':
+        return {
+          borderColor: '#4A90E2',
+          progressColor: '#4A90E2',
+          avatar: '/island/npc/spark.png'
+        }
+      case 'momo':
+        return {
+          borderColor: '#333333',
+          progressColor: '#333333',
+          avatar: '/glacier/npc/momo.png'
+        }
+      default:
+        return {
+          borderColor: '#FFD700',
+          progressColor: '#FFD700',
+          avatar: '/desert/npc/npc4.png'
+        }
+    }
+  }
+  
   const [currentSegment, setCurrentSegment] = useState(SEGMENTS.SEGMENT_1)
   const [showDialogue, setShowDialogue] = useState(false)
   const [currentDialogue, setCurrentDialogue] = useState(null)
@@ -2286,6 +2327,177 @@ const DesertMap = ({ onExit }) => {
       borderRadius: '50%',
       animation: 'spin 1s linear infinite',
     },
+    
+    // Modern Dialogue Styles (Based on Reference Image 2)
+    modernDialogueContainer: {
+      position: 'absolute',
+      top: '12.5%',
+      left: '10%',
+      width: '40%',
+      height: '70%',
+      zIndex: 100,
+      background: 'rgba(245, 245, 245, 0.98)', // Very light gray
+      borderRadius: '15px',
+      display: 'flex',
+      flexDirection: 'column',
+      boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+    },
+    modernDialogueHeader: {
+      padding: '20px 25px 15px 25px',
+      borderBottom: 'none',
+    },
+    modernProgressContainer: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '15px',
+    },
+    modernMissionTitle: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      fontWeight: 700,
+      textTransform: 'uppercase',
+      letterSpacing: '1px',
+    },
+    modernStepIndicator: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '13px',
+      color: '#999',
+    },
+    modernProgressBar: {
+      width: '100%',
+      height: '4px',
+      backgroundColor: 'rgba(200,200,200,0.3)',
+      borderRadius: '2px',
+      overflow: 'hidden',
+      marginBottom: '20px',
+    },
+    modernProgressFill: {
+      height: '100%',
+      borderRadius: '2px',
+      transition: 'width 0.3s ease',
+    },
+    modernNpcInfo: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      marginBottom: '15px',
+      flex: 1, // Allow it to take available space
+    },
+    modernNpcAvatar: {
+      width: '50px',
+      height: '50px',
+      borderRadius: '50%',
+      objectFit: 'cover',
+      border: '2px solid white',
+      boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+    },
+    modernNpcName: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '16px',
+      fontWeight: 700,
+      color: '#333',
+    },
+    modernNpcStatus: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '12px',
+      color: '#999',
+    },
+    modernCloseButton: {
+      position: 'relative',
+      background: 'none',
+      border: 'none',
+      fontSize: '20px',
+      color: '#999',
+      cursor: 'pointer',
+      padding: '5px',
+      width: '30px',
+      height: '30px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'all 0.2s',
+      flexShrink: 0, // Prevent shrinking
+    },
+    modernDialogueContent: {
+      flex: 1,
+      padding: '0 25px 25px 25px',
+      overflowY: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px',
+    },
+    modernNpcMessage: {
+      alignSelf: 'flex-start',
+      maxWidth: '100%',
+    },
+    modernNpcSpeaker: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '12px',
+      fontWeight: 700,
+      color: '#666',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
+      marginBottom: '6px',
+    },
+    modernNpcText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      color: '#333',
+      lineHeight: 1.6,
+      margin: 0,
+    },
+    modernTimestamp: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '11px',
+      color: '#999',
+      marginTop: '4px',
+    },
+    modernUserMessage: {
+      alignSelf: 'flex-end',
+      maxWidth: '85%',
+    },
+    modernUserBubble: {
+      background: '#FFD700', // Yellow theme for Alpha
+      padding: '12px 18px',
+      borderRadius: '18px',
+      boxShadow: '0 2px 6px rgba(255, 215, 0, 0.3)',
+    },
+    modernUserText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      color: '#333', // Dark text for yellow background
+      lineHeight: 1.5,
+      margin: 0,
+    },
+    modernUserSpeaker: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '12px',
+      fontWeight: 700,
+      color: '#666',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
+      marginBottom: '6px',
+      textAlign: 'right',
+    },
+    modernActionButton: {
+      alignSelf: 'stretch',
+      background: 'white',
+      border: '2px solid #E0E0E0',
+      borderRadius: '25px',
+      padding: '14px 20px',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      fontWeight: 500,
+      color: '#333',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+      marginTop: '8px',
+    },
   }
 
   return (
@@ -2792,190 +3004,245 @@ const DesertMap = ({ onExit }) => {
         </div>
       )}
 
-      {/* Alpha Dialogue - Both Phase 1 and Phase 2 */}
-      {showAlphaDialogue && (
-        <div style={styles.alphaDialogueContainer}>
-          <div style={styles.alphaDialogueHeader}>
-            <h3 style={styles.alphaDialogueTitle}>
-              {isPhase2 ? 'Alpha - Data Analysis Phase' : 'Alpha - Castle AI System'}
-            </h3>
-            <button style={styles.alphaCloseButton} onClick={handleCloseAlphaDialogue}>
-              ✕
-            </button>
-          </div>
-          
-          <div style={styles.alphaDialogueContent}>
-            {/* Phase 1 Messages */}
-            {!isPhase2 && alphaDialogueMessages.map((message, index) => (
-              <div key={index}>
-                {message.type === 'message' && (
-                  <div style={{...styles.alphaDialogueMessage, position: 'relative'}}>
-                    <strong>{message.speaker}:</strong> 
-                    {currentTypingMessage && currentTypingMessage === message ? (
-                      <>
-                        {alphaDisplayedText}
-                        {alphaIsTyping && <span style={{ opacity: 0.5 }}>|</span>}
-                      </>
-                    ) : (
-                      message.text
-                    )}
-                    {/* Continue/Skip button for the latest message */}
-                    {index === alphaDialogueMessages.length - 1 && 
-                     message.type === 'message' && 
-                     !waitingForChoice && 
-                     currentAlphaStep < alphaDialogueFlow.length && (
-                      <button
-                        style={styles.continueButton}
-                        onClick={handleAlphaContinue}
-                      >
-                        {alphaIsTyping ? 'Skip' : 'CONTINUE'}
-                      </button>
-                    )}
-                  </div>
-                )}
-                {message.type === 'choice' && message.isUser && (
-                  <div style={{...styles.alphaDialogueMessage, background: '#e3f2fd', textAlign: 'right'}}>
-                    <strong>You:</strong> {message.text}
-                  </div>
-                )}
-              </div>
-            ))}
-            
-            {/* Phase 1 Choice Button */}
-            {!isPhase2 && waitingForChoice && currentAlphaStep < alphaDialogueFlow.length && (
-              <button 
-                style={styles.alphaUserChoice}
-                onClick={() => handleAlphaChoice(alphaDialogueFlow[currentAlphaStep].text)}
-                onMouseOver={(e) => {
-                  e.target.style.background = 'rgba(81, 112, 255, 0.2)'
-                  e.target.style.transform = 'scale(1.02)'
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.background = 'rgba(81, 112, 255, 0.1)'
-                  e.target.style.transform = 'scale(1)'
-                }}
-              >
-                👉 {alphaDialogueFlow[currentAlphaStep].text}
-              </button>
-            )}
-
-            {/* Phase 2 Messages */}
-            {isPhase2 && phase2Messages.map((message, index) => (
-              <div key={index}>
-                {message.type === 'message' && (
-                  <div style={styles.alphaDialogueMessage}>
-                    <strong>{message.speaker}:</strong> {message.text}
-                    {message.image && (
-                      <div style={{marginTop: '15px'}}>
-                        <img src={message.image} alt="Comparison" style={styles.comparisonImage} />
-                      </div>
-                    )}
-                  </div>
-                )}
-                {message.type === 'choice' && message.isUser && (
-                  <div style={{
-                    ...styles.alphaDialogueMessage, 
-                    background: message.isCorrect === true ? '#d4edda' : 
-                               message.isCorrect === false ? '#f8d7da' : '#e3f2fd', 
-                    textAlign: 'right'
-                  }}>
-                    <strong>You:</strong> {message.text}
-                    {message.isCorrect === true && <span style={{color: '#28a745'}}> ✓ Correct!</span>}
-                    {message.isCorrect === false && <span style={{color: '#dc3545'}}> ✗ Incorrect</span>}
-                  </div>
-                )}
-              </div>
-            ))}
-
-            {/* Phase 2 Choice Button */}
-            {isPhase2 && waitingForPhase2Choice && currentPhase2Step < alphaPhase2DialogueFlow.length && (
-              <button 
-                style={styles.alphaUserChoice}
-                onClick={() => handlePhase2Choice(alphaPhase2DialogueFlow[currentPhase2Step].text)}
-                onMouseOver={(e) => {
-                  e.target.style.background = 'rgba(81, 112, 255, 0.2)'
-                  e.target.style.transform = 'scale(1.02)'
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.background = 'rgba(81, 112, 255, 0.1)'
-                  e.target.style.transform = 'scale(1)'
-                }}
-              >
-                👉 {alphaPhase2DialogueFlow[currentPhase2Step].text}
-              </button>
-            )}
-
-            {/* Quiz Interface */}
-            {isPhase2 && showQuiz && currentPhase2Step < alphaPhase2DialogueFlow.length && (
-              <div style={styles.quizContainer}>
-                <div style={styles.quizQuestion}>
-                  {alphaPhase2DialogueFlow[currentPhase2Step].question}
+      {/* Alpha Dialogue - Modern Design (Based on Reference Image 2) */}
+      {showAlphaDialogue && (() => {
+        const theme = getNpcTheme('alpha')
+        const totalSteps = 3
+        const currentStep = isPhase2 ? 2 : 1 // Phase 1 is step 1, Phase 2 is step 2
+        const progressPercent = (currentStep / totalSteps) * 100
+        
+        return (
+          <div style={{
+            ...styles.modernDialogueContainer,
+            border: `3px solid ${theme.borderColor}`,
+          }}>
+            {/* Header with Progress */}
+            <div style={styles.modernDialogueHeader}>
+              <div style={styles.modernProgressContainer}>
+                <div style={{
+                  ...styles.modernMissionTitle,
+                  color: theme.borderColor
+                }}>
+                  {isPhase2 ? 'MISSION: DATA ANALYSIS' : 'MISSION: CASTLE DEFENSE'}
                 </div>
-                {alphaPhase2DialogueFlow[currentPhase2Step].options.map((option, index) => (
-                  <button
-                    key={index}
-                    style={styles.quizOption}
-                    onClick={() => handleQuizAnswer(index)}
-                    onMouseOver={(e) => {
-                      e.target.style.background = '#f0f0f0'
-                    }}
-                    onMouseOut={(e) => {
-                      e.target.style.background = 'white'
-                    }}
-                  >
-                    {option.text}
-                  </button>
-                ))}
+                <div style={styles.modernStepIndicator}>
+                  Step {currentStep} of {totalSteps}
+                </div>
               </div>
-            )}
-
-            {/* Action Button (GO) */}
-            {isPhase2 && !waitingForPhase2Choice && !showQuiz && 
-             currentPhase2Step < alphaPhase2DialogueFlow.length && 
-             alphaPhase2DialogueFlow[currentPhase2Step].type === 'action' && (
-              <button 
-                style={styles.actionButton}
-                onClick={handleStartLabeling}
-                onMouseOver={(e) => {
-                  e.target.style.transform = 'scale(1.05)'
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.transform = 'scale(1)'
-                }}
-              >
-                {alphaPhase2DialogueFlow[currentPhase2Step].text}
-              </button>
-            )}
+              <div style={styles.modernProgressBar}>
+                <div style={{
+                  ...styles.modernProgressFill,
+                  width: `${progressPercent}%`,
+                  background: theme.progressColor
+                }} />
+              </div>
+              
+              {/* NPC Info and Close Button Container */}
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                {/* NPC Info */}
+                <div style={styles.modernNpcInfo}>
+                  <img 
+                    src={theme.avatar} 
+                    alt="Alpha" 
+                    style={styles.modernNpcAvatar}
+                  />
+                  <div>
+                    <div style={styles.modernNpcName}>Alpha</div>
+                    <div style={styles.modernNpcStatus}>Castle AI System</div>
+                  </div>
+                </div>
+                
+                {/* Close Button - Aligned with NPC avatar top */}
+                <button 
+                  style={styles.modernCloseButton}
+                  onClick={handleCloseAlphaDialogue}
+                  onMouseOver={(e) => e.target.style.color = '#333'}
+                  onMouseOut={(e) => e.target.style.color = '#999'}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
             
-            {/* Phase 1 completion message */}
-            {!isPhase2 && !waitingForChoice && currentAlphaStep >= alphaDialogueFlow.length && (
-              <div style={{...styles.alphaDialogueMessage, background: '#e8f5e8', textAlign: 'center', fontWeight: 'bold', position: 'relative'}}>
-                Mission briefing complete! You can now start collecting data samples.
-                <button
-                  style={styles.continueButton}
-                  onClick={handleCloseAlphaDialogue}
+            {/* Messages Content */}
+            <div style={styles.modernDialogueContent}>
+              {/* Phase 1 Messages */}
+              {!isPhase2 && alphaDialogueMessages.map((message, index) => {
+                const timestamp = getCurrentTimestamp()
+                
+                if (message.type === 'message') {
+                  return (
+                    <div key={index} style={styles.modernNpcMessage}>
+                      <div style={styles.modernNpcSpeaker}>ALPHA:</div>
+                      <p style={styles.modernNpcText}>
+                        {currentTypingMessage && currentTypingMessage === message ? (
+                          <>
+                            {alphaDisplayedText}
+                            {alphaIsTyping && <span style={{ opacity: 0.5 }}>|</span>}
+                          </>
+                        ) : (
+                          message.text
+                        )}
+                      </p>
+                      <div style={styles.modernTimestamp}>{timestamp}</div>
+                    </div>
+                  )
+                }
+                
+                if (message.type === 'choice' && message.isUser) {
+                  return (
+                    <div key={index} style={styles.modernUserMessage}>
+                      <div style={styles.modernUserSpeaker}>YOU:</div>
+                      <div style={{
+                        ...styles.modernUserBubble,
+                        background: theme.borderColor
+                      }}>
+                        <p style={styles.modernUserText}>{message.text}</p>
+                      </div>
+                      <div style={{...styles.modernTimestamp, textAlign: 'right'}}>{timestamp}</div>
+                    </div>
+                  )
+                }
+                
+                return null
+              })}
+              
+              {/* Phase 1 Choice Button */}
+              {!isPhase2 && waitingForChoice && currentAlphaStep < alphaDialogueFlow.length && (
+                <button 
+                  style={styles.modernActionButton}
+                  onClick={() => handleAlphaChoice(alphaDialogueFlow[currentAlphaStep].text)}
+                  onMouseOver={(e) => {
+                    e.target.style.borderColor = theme.borderColor
+                    e.target.style.transform = 'translateX(5px)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.borderColor = '#E0E0E0'
+                    e.target.style.transform = 'translateX(0)'
+                  }}
                 >
-                  CONTINUE
+                  <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                  {alphaDialogueFlow[currentAlphaStep].text}
                 </button>
-              </div>
-            )}
+              )}
 
-            {/* Phase 2 completion message with Continue button */}
-            {isPhase2 && !waitingForPhase2Choice && !showQuiz && 
-             currentPhase2Step >= alphaPhase2DialogueFlow.length && (
-              <div style={{...styles.alphaDialogueMessage, background: '#e8f5e8', textAlign: 'center', fontWeight: 'bold', position: 'relative'}}>
-                Data analysis complete! Ready for next phase.
-                <button
-                  style={styles.continueButton}
-                  onClick={handleCloseAlphaDialogue}
+              {/* Phase 2 Messages */}
+              {isPhase2 && phase2Messages.map((message, index) => {
+                const timestamp = getCurrentTimestamp()
+                
+                if (message.type === 'message') {
+                  return (
+                    <div key={index} style={styles.modernNpcMessage}>
+                      <div style={styles.modernNpcSpeaker}>ALPHA:</div>
+                      <p style={styles.modernNpcText}>{message.text}</p>
+                      {message.image && (
+                        <img src={message.image} alt="Comparison" style={{width: '100%', height: 'auto', borderRadius: '10px', marginTop: '8px'}} />
+                      )}
+                      <div style={styles.modernTimestamp}>{timestamp}</div>
+                    </div>
+                  )
+                }
+                
+                if (message.type === 'choice' && message.isUser) {
+                  return (
+                    <div key={index} style={styles.modernUserMessage}>
+                      <div style={styles.modernUserSpeaker}>YOU:</div>
+                      <div style={{
+                        ...styles.modernUserBubble,
+                        background: message.isCorrect === true ? '#28a745' : 
+                                   message.isCorrect === false ? '#dc3545' : theme.borderColor
+                      }}>
+                        <p style={{
+                          ...styles.modernUserText,
+                          color: message.isCorrect !== undefined ? 'white' : '#333'
+                        }}>
+                          {message.text}
+                          {message.isCorrect === true && ' ✓'}
+                          {message.isCorrect === false && ' ✗'}
+                        </p>
+                      </div>
+                      <div style={{...styles.modernTimestamp, textAlign: 'right'}}>{timestamp}</div>
+                    </div>
+                  )
+                }
+                
+                return null
+              })}
+
+              {/* Phase 2 Choice Button */}
+              {isPhase2 && waitingForPhase2Choice && currentPhase2Step < alphaPhase2DialogueFlow.length && (
+                <button 
+                  style={styles.modernActionButton}
+                  onClick={() => handlePhase2Choice(alphaPhase2DialogueFlow[currentPhase2Step].text)}
+                  onMouseOver={(e) => {
+                    e.target.style.borderColor = theme.borderColor
+                    e.target.style.transform = 'translateX(5px)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.borderColor = '#E0E0E0'
+                    e.target.style.transform = 'translateX(0)'
+                  }}
                 >
-                  CONTINUE
+                  <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                  {alphaPhase2DialogueFlow[currentPhase2Step].text}
                 </button>
-              </div>
-            )}
+              )}
+
+              {/* Quiz Interface */}
+              {isPhase2 && showQuiz && currentPhase2Step < alphaPhase2DialogueFlow.length && (
+                <div style={{width: '100%', marginTop: '10px'}}>
+                  <div style={styles.modernNpcMessage}>
+                    <div style={styles.modernNpcSpeaker}>ALPHA:</div>
+                    <p style={{...styles.modernNpcText, fontWeight: 600}}>
+                      {alphaPhase2DialogueFlow[currentPhase2Step].question}
+                    </p>
+                  </div>
+                  
+                  {alphaPhase2DialogueFlow[currentPhase2Step].options.map((option, index) => (
+                    <button
+                      key={index}
+                      style={styles.modernActionButton}
+                      onClick={() => handleQuizAnswer(index)}
+                      onMouseOver={(e) => {
+                        e.target.style.borderColor = theme.borderColor
+                        e.target.style.transform = 'translateX(5px)'
+                      }}
+                      onMouseOut={(e) => {
+                        e.target.style.borderColor = '#E0E0E0'
+                        e.target.style.transform = 'translateX(0)'
+                      }}
+                    >
+                      <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                      {option.text}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Action Button (GO) */}
+              {isPhase2 && !waitingForPhase2Choice && !showQuiz && 
+               currentPhase2Step < alphaPhase2DialogueFlow.length && 
+               alphaPhase2DialogueFlow[currentPhase2Step].type === 'action' && (
+                <button 
+                  style={styles.modernActionButton}
+                  onClick={handleStartLabeling}
+                  onMouseOver={(e) => {
+                    e.target.style.borderColor = theme.borderColor
+                    e.target.style.transform = 'translateX(5px)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.borderColor = '#E0E0E0'
+                    e.target.style.transform = 'translateX(0)'
+                  }}
+                >
+                  <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                  {alphaPhase2DialogueFlow[currentPhase2Step].text}
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* Camera Interface */}
       {showCamera && (

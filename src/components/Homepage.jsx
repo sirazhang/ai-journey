@@ -61,6 +61,7 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
       overflow: 'hidden',
       margin: 0,
       padding: 0,
+      cursor: 'url(/icon/spaceship.svg), auto',
     },
     backgroundGif: {
       position: 'absolute',
@@ -165,14 +166,26 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '60px 80px',
-      borderRadius: '20px',
-      background: 'rgba(0, 0, 0, 0.4)',
-      backdropFilter: 'blur(10px)',
-      border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), linear-gradient(90deg, #5170FF, #FFBBC4)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
-      animation: 'breathe 3s ease-in-out infinite',
+      borderRadius: '25px',
+      background: 'rgba(255, 255, 255, 0.08)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      border: '1px solid rgba(255, 255, 255, 0.18)',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(100, 149, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+      position: 'relative',
+      overflow: 'hidden',
+      animation: 'floatCard 3s ease-in-out infinite',
+    },
+    cardGradientOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'linear-gradient(135deg, rgba(100, 149, 237, 0.2), rgba(75, 0, 130, 0.15))',
+      borderRadius: '25px',
+      zIndex: 0,
+      pointerEvents: 'none',
     },
     cardTitle: {
       fontFamily: "'Montserrat', sans-serif",
@@ -182,6 +195,9 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
       marginBottom: '16px',
       textAlign: 'center',
       letterSpacing: '2px',
+      textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+      position: 'relative',
+      zIndex: 1,
     },
     cardSubtitle: {
       fontFamily: "'Roboto', sans-serif",
@@ -190,21 +206,29 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
       color: '#fff',
       marginBottom: '40px',
       textAlign: 'center',
-      opacity: 0.9,
+      opacity: 0.95,
+      textShadow: '0 1px 4px rgba(0, 0, 0, 0.3)',
+      position: 'relative',
+      zIndex: 1,
     },
     startButton: {
       fontFamily: "'Roboto', sans-serif",
       fontSize: '18px',
       fontWeight: 500,
       color: '#fff',
-      backgroundColor: '#000',
-      border: 'none',
+      background: 'rgba(0, 0, 0, 0.6)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      border: '1px solid rgba(255, 255, 255, 0.2)',
       padding: '16px 60px',
       borderRadius: '30px',
       cursor: 'pointer',
       textTransform: 'lowercase',
       letterSpacing: '2px',
       transition: 'all 0.3s ease',
+      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+      position: 'relative',
+      zIndex: 1,
     },
     footer: {
       position: 'absolute',
@@ -219,9 +243,15 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
       textAlign: 'right',
     },
     keyframes: `
-      @keyframes breathe {
-        0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(81, 112, 255, 0.3); }
-        50% { transform: scale(1.02); box-shadow: 0 0 50px rgba(81, 112, 255, 0.5); }
+      @keyframes floatCard {
+        0%, 100% { 
+          transform: translateY(0px); 
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(100, 149, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        50% { 
+          transform: translateY(-8px); 
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(100, 149, 237, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
       }
     `,
   }
@@ -236,7 +266,7 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
       />
       
       <span style={styles.welcome}>
-        {username ? `Welcome, ${username}!` : 'Welcome!'}
+        {username ? `${t('welcome').replace('!', '')}, ${username}!` : t('welcome')}
       </span>
       
       <button 
@@ -257,8 +287,8 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
       {hasProgress ? (
         // Returning user view - CONTINUE / START OVER
         <div style={styles.content}>
-          <h1 style={styles.title}>AI JOURNEY</h1>
-          <p style={styles.subtitle}>An Interactive Journey into AI Literacy</p>
+          <h1 style={styles.title}>{t('aiJourneyTitle')}</h1>
+          <p style={styles.subtitle}>{t('aiJourneySubtitle')}</p>
           
           <button 
             style={styles.continueButton}
@@ -287,18 +317,21 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
       ) : (
         // First-time user view - Card with START
         <div style={styles.cardWrapper}>
-          <h1 style={styles.cardTitle}>AI Journey</h1>
-          <p style={styles.cardSubtitle}>An interactive journey into AI literacy</p>
+          <div style={styles.cardGradientOverlay}></div>
+          <h1 style={styles.cardTitle}>{t('aiJourneyTitle')}</h1>
+          <p style={styles.cardSubtitle}>{t('aiJourneySubtitle')}</p>
           <button 
             style={styles.startButton}
             onClick={handleStart}
             onMouseOver={(e) => {
-              e.target.style.backgroundColor = '#333'
+              e.target.style.background = 'rgba(0, 0, 0, 0.8)'
               e.target.style.transform = 'scale(1.05)'
+              e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.3)'
             }}
             onMouseOut={(e) => {
-              e.target.style.backgroundColor = '#000'
+              e.target.style.background = 'rgba(0, 0, 0, 0.6)'
               e.target.style.transform = 'scale(1)'
+              e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)'
             }}
           >
             {t('start')}

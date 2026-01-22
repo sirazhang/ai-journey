@@ -77,10 +77,8 @@ const GameInterface = ({ onComplete }) => {
   }
 
   const handleSkip = () => {
-    if (isTyping) {
-      setDisplayedText(dialogues[currentDialogue].text)
-      setIsTyping(false)
-    }
+    // Skip all dialogues and go directly to map
+    onComplete()
   }
 
   // Highlight keywords in text
@@ -137,12 +135,12 @@ const GameInterface = ({ onComplete }) => {
     },
     dialogueBox: {
       padding: '30px 40px',
-      borderRadius: '20px',
-      background: 'rgba(20, 20, 35, 0.95)',
-      border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(20,20,35,0.95), rgba(20,20,35,0.95)), linear-gradient(90deg, #5170FF, #FFBBC4)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
+      borderRadius: '25px',
+      background: 'rgba(255, 255, 255, 0.08)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      border: '1px solid rgba(255, 255, 255, 0.18)',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(100, 149, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
       position: 'relative',
     },
     dialogueText: {
@@ -152,6 +150,7 @@ const GameInterface = ({ onComplete }) => {
       color: '#fff',
       lineHeight: 1.7,
       marginBottom: '20px',
+      textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)',
     },
     cursor: {
       display: 'inline-block',
@@ -172,24 +171,32 @@ const GameInterface = ({ onComplete }) => {
       fontSize: '14px',
       fontWeight: 500,
       color: '#fff',
-      background: 'rgba(81, 112, 255, 0.3)',
-      border: '1px solid rgba(81, 112, 255, 0.5)',
+      background: 'linear-gradient(135deg, rgba(81, 112, 255, 0.6), rgba(75, 0, 130, 0.6))',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      border: '1px solid rgba(100, 149, 237, 0.5)',
       padding: '10px 30px',
       borderRadius: '20px',
       cursor: 'pointer',
       transition: 'all 0.2s',
+      boxShadow: '0 0 15px rgba(81, 112, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+      textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)',
     },
     skipButton: {
       fontFamily: "'Roboto', sans-serif",
       fontSize: '14px',
       fontWeight: 500,
       color: '#fff',
-      background: 'rgba(255, 255, 255, 0.1)',
-      border: '1px solid rgba(255, 255, 255, 0.3)',
+      background: 'rgba(255, 255, 255, 0.3)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      border: '1px solid rgba(255, 255, 255, 0.4)',
       padding: '10px 30px',
       borderRadius: '20px',
       cursor: 'pointer',
       transition: 'all 0.2s',
+      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+      textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)',
     },
     progressIndicator: {
       position: 'absolute',
@@ -230,32 +237,34 @@ const GameInterface = ({ onComplete }) => {
               <span style={styles.cursor}></span>
             </p>
             <div style={styles.buttonContainer}>
-              {isTyping && (
-                <button 
-                  style={styles.skipButton}
-                  onClick={handleSkip}
-                  onMouseOver={(e) => {
-                    e.target.style.background = 'rgba(255, 255, 255, 0.2)'
-                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)'
-                  }}
-                  onMouseOut={(e) => {
-                    e.target.style.background = 'rgba(255, 255, 255, 0.1)'
-                    e.target.style.borderColor = 'rgba(255, 255, 255, 0.3)'
-                  }}
-                >
-                  Skip
-                </button>
-              )}
+              <button 
+                style={styles.skipButton}
+                onClick={handleSkip}
+                onMouseOver={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.4)'
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.6)'
+                  e.target.style.transform = 'scale(1.02)'
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = 'rgba(255, 255, 255, 0.3)'
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.4)'
+                  e.target.style.transform = 'scale(1)'
+                }}
+              >
+                Skip
+              </button>
               <button 
                 style={styles.continueButton}
                 onClick={handleContinue}
                 onMouseOver={(e) => {
-                  e.target.style.background = 'rgba(81, 112, 255, 0.5)'
-                  e.target.style.borderColor = '#5170FF'
+                  e.target.style.background = 'linear-gradient(135deg, rgba(81, 112, 255, 0.8), rgba(75, 0, 130, 0.8))'
+                  e.target.style.boxShadow = '0 0 20px rgba(81, 112, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+                  e.target.style.transform = 'scale(1.02)'
                 }}
                 onMouseOut={(e) => {
-                  e.target.style.background = 'rgba(81, 112, 255, 0.3)'
-                  e.target.style.borderColor = 'rgba(81, 112, 255, 0.5)'
+                  e.target.style.background = 'linear-gradient(135deg, rgba(81, 112, 255, 0.6), rgba(75, 0, 130, 0.6))'
+                  e.target.style.boxShadow = '0 0 15px rgba(81, 112, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+                  e.target.style.transform = 'scale(1)'
                 }}
               >
                 {currentDialogue < dialogues.length - 1 ? 'Continue' : 'Enter Map'}

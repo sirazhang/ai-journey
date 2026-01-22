@@ -1,14 +1,21 @@
 import { useEffect, useRef } from 'react'
+import volumeManager from '../utils/volumeManager'
 
-const useBackgroundMusic = (musicFile, volume = 0.3) => {
+const useBackgroundMusic = (musicFile) => {
   const audioRef = useRef(null)
   const currentMusicFile = useRef(null)
 
   useEffect(() => {
+    // Skip if no music file provided
+    if (!musicFile) {
+      return
+    }
+
     // If music file changed, stop current music and start new one
     if (currentMusicFile.current !== musicFile) {
       // Stop current music
       if (audioRef.current) {
+        volumeManager.unregisterAudio(audioRef.current)
         audioRef.current.pause()
         audioRef.current.currentTime = 0
       }
@@ -16,8 +23,12 @@ const useBackgroundMusic = (musicFile, volume = 0.3) => {
       // Create new audio element
       audioRef.current = new Audio(musicFile)
       audioRef.current.loop = true
-      audioRef.current.volume = volume
+      
+      // Don't set volume here - let volumeManager handle it after registration
       currentMusicFile.current = musicFile
+
+      // Register with volume manager (this will set the correct volume)
+      volumeManager.registerAudio(audioRef.current)
 
       // Start playing
       const playMusic = async () => {
@@ -36,11 +47,12 @@ const useBackgroundMusic = (musicFile, volume = 0.3) => {
     // Cleanup function
     return () => {
       if (audioRef.current) {
+        volumeManager.unregisterAudio(audioRef.current)
         audioRef.current.pause()
         audioRef.current.currentTime = 0
       }
     }
-  }, [musicFile, volume])
+  }, [musicFile])
 
   // Function to manually start music (for user interaction)
   const startMusic = () => {

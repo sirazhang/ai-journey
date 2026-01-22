@@ -45,7 +45,7 @@ function App() {
   }
 
   // Use background music hook
-  const { startMusic, stopMusic, setVolume } = useBackgroundMusic(getMusicFile(), 0.3)
+  const { startMusic, stopMusic, setVolume } = useBackgroundMusic(getMusicFile())
 
   // Handle user interaction to start music (for autoplay restrictions)
   const handleUserInteraction = useCallback(() => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
-import LanguageToggle from './LanguageToggle'
+import SettingsPanel from './SettingsPanel'
 
 // Simple sound effect function
 const playSelectSound = () => {
@@ -33,8 +33,10 @@ const getRegions = (t) => [
   { 
     id: 'fungi', 
     name: t('fungiJungle'), 
+    regionNumber: 1,
+    stars: 1,
     position: { top: '52%', left: '5%' },
-    cardPosition: { top: '62%', left: '5%' },
+    cardPosition: { top: '15%', left: '5%' },
     description: t('fungiDescription'),
     difficulty: t('easyDifficulty'),
     available: true,
@@ -42,6 +44,8 @@ const getRegions = (t) => [
   { 
     id: 'desert', 
     name: t('desert'), 
+    regionNumber: 2,
+    stars: 2,
     position: { top: '5%', left: '30%' },
     cardPosition: { top: '15%', left: '30%' },
     description: t('desertDescription'),
@@ -51,20 +55,24 @@ const getRegions = (t) => [
   { 
     id: 'glacier', 
     name: t('glacier'), 
+    regionNumber: 4,
+    stars: 3,
     position: { bottom: '8%', left: '45%' },
     cardPosition: { bottom: '22%', left: '45%' },
     description: t('glacierDescription'),
     difficulty: t('advancedDifficulty'),
-    available: true, // 改为可用
+    available: true,
   },
   { 
     id: 'island', 
     name: t('island'), 
+    regionNumber: 3,
+    stars: 3,
     position: { top: '35%', right: '5%' },
-    cardPosition: { top: '38%', right: '5%' }, // 向上移动80px (从48%改为38%)
+    cardPosition: { top: '38%', right: '5%' },
     description: t('islandDescription'),
     difficulty: t('advancedDifficulty'),
-    available: true, // 改为可用
+    available: true,
   },
 ]
 
@@ -72,10 +80,12 @@ const MapView = ({ onRegionClick }) => {
   const { t } = useLanguage()
   const regions = getRegions(t)
   const [hoveredNpc, setHoveredNpc] = useState(false)
+  const [showGlitchDialogue, setShowGlitchDialogue] = useState(false) // Changed to click-based
   const [selectedRegion, setSelectedRegion] = useState(null)  // Changed from hoveredRegion to selectedRegion (click-based)
   const [regionsVisible, setRegionsVisible] = useState(false)
   const [zoomRegion, setZoomRegion] = useState(null) // For zoom effect
   const [isZooming, setIsZooming] = useState(false) // Animation state
+  const [glitchInput, setGlitchInput] = useState('') // For Glitch chat input
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -91,25 +101,50 @@ const MapView = ({ onRegionClick }) => {
     // Play select sound effect
     playSelectSound()
     
+    // If already zoomed to this region, just toggle the card
+    if (zoomRegion === regionId && !isZooming) {
+      setSelectedRegion(selectedRegion === regionId ? null : regionId)
+      return
+    }
+    
     // Start zoom effect
     setZoomRegion(regionId)
     setIsZooming(true)
     
-    // After zoom animation, show the region card
+    // After zoom animation, show the region card and stay zoomed
     setTimeout(() => {
       setIsZooming(false)
-      // Toggle: if clicking same region, keep it open; otherwise switch to new region
-      if (selectedRegion === regionId) {
-        // Keep open, do nothing (user can click GO to proceed)
-      } else {
-        setSelectedRegion(regionId)
-      }
+      setSelectedRegion(regionId)
     }, 800) // Animation duration
+  }
+
+  // Handle close button - zoom out and hide card
+  const handleCloseCard = () => {
+    playSelectSound()
+    setSelectedRegion(null)
+    setZoomRegion(null)
+  }
+
+  // Handle Glitch chat send
+  const handleGlitchSend = () => {
+    if (glitchInput.trim()) {
+      playSelectSound()
+      console.log('User message to Glitch:', glitchInput)
+      // Here you can add logic to handle the user's message
+      setGlitchInput('') // Clear input after sending
+    }
+  }
+
+  // Handle Enter key in input
+  const handleGlitchInputKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleGlitchSend()
+    }
   }
 
   // Get zoom transform based on region
   const getZoomTransform = (regionId) => {
-    if (!isZooming || zoomRegion !== regionId) return 'scale(1) translate(0, 0)'
+    if (!zoomRegion) return 'scale(1) translate(0, 0)'
     
     switch (regionId) {
       case 'island': // NEXUS ISLAND - 显示右上角
@@ -166,33 +201,116 @@ const MapView = ({ onRegionClick }) => {
       position: 'absolute',
       top: '20px',
       right: '150px',
-      padding: '12px 20px',
-      borderRadius: '15px',
-      background: 'rgba(255, 255, 255, 0.95)',
-      border: '3px solid',
-      borderImage: 'linear-gradient(90deg, #5170FF, #FF6B9D) 1',
+      padding: '20px',
+      borderRadius: '20px',
+      background: 'rgba(255, 255, 255, 0.98)',
+      border: '3px solid #af4dca',
       zIndex: 10,
-      maxWidth: '200px',
-      boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+      minWidth: '280px',
+      maxWidth: '320px',
+      boxShadow: '0 4px 20px rgba(175, 77, 202, 0.3)',
+    },
+    npcDialogueHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      marginBottom: '15px',
+    },
+    npcDialogueAvatar: {
+      width: '40px',
+      height: '40px',
+      borderRadius: '50%',
+      backgroundColor: '#af4dca',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+    },
+    npcDialogueAvatarIcon: {
+      fontSize: '24px',
+    },
+    npcDialogueName: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '16px',
+      fontWeight: 700,
+      color: '#af4dca',
+      margin: 0,
     },
     npcDialogueText: {
       fontFamily: "'Roboto', sans-serif",
       fontSize: '14px',
       color: '#333',
-      lineHeight: 1.5,
-      margin: 0,
+      lineHeight: 1.6,
+      margin: '0 0 15px 0',
     },
-    // Region label button
+    npcDialogueInputContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      backgroundColor: '#d9d7de',
+      borderRadius: '20px',
+      border: '2px solid #d9d7de',
+      overflow: 'hidden',
+      transition: 'border-color 0.2s',
+    },
+    npcDialogueInput: {
+      flex: 1,
+      padding: '10px 15px',
+      border: 'none',
+      backgroundColor: 'transparent',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '13px',
+      color: '#333',
+      outline: 'none',
+    },
+    npcDialogueDivider: {
+      width: '2px',
+      height: '24px',
+      backgroundColor: '#af4dca',
+      margin: '0 8px',
+      flexShrink: 0,
+    },
+    npcDialogueSendButton: {
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '8px 12px',
+      transition: 'all 0.2s',
+      flexShrink: 0,
+    },
+    npcDialogueSendIcon: {
+      width: '24px',
+      height: '24px',
+      objectFit: 'contain',
+    },
+    npcDialogueCloseButton: {
+      position: 'absolute',
+      top: '15px',
+      right: '15px',
+      background: 'none',
+      border: 'none',
+      fontSize: '20px',
+      color: '#999',
+      cursor: 'pointer',
+      padding: '0',
+      width: '24px',
+      height: '24px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'all 0.2s',
+    },
+    // Region label button - New card style
     regionLabel: {
       position: 'absolute',
-      padding: '12px 30px',
-      borderRadius: '30px',
+      width: '280px',
+      padding: '15px 20px',
+      borderRadius: '20px',
       border: '3px solid transparent',
-      background: 'rgba(255, 255, 255, 0.9)',
+      background: 'rgba(255, 255, 255, 0.95)',
       fontFamily: "'Montserrat', sans-serif",
-      fontSize: '20px',
-      fontWeight: 800,
-      color: '#000',
       cursor: 'pointer',
       zIndex: 5,
       transition: 'all 0.3s ease',
@@ -201,14 +319,59 @@ const MapView = ({ onRegionClick }) => {
       backgroundOrigin: 'border-box',
       backgroundClip: 'padding-box, border-box',
     },
+    regionLabelHeader: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '8px',
+    },
+    regionLabelRegion: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '11px',
+      fontWeight: 600,
+      color: '#999',
+      textTransform: 'uppercase',
+      letterSpacing: '1px',
+    },
+    regionLabelStars: {
+      display: 'flex',
+      gap: '3px',
+    },
+    regionLabelStarIcon: {
+      width: '16px',
+      height: '16px',
+      objectFit: 'contain',
+    },
+    regionLabelTitle: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '20px',
+      fontWeight: 800,
+      color: '#000',
+      textTransform: 'uppercase',
+      marginBottom: '10px',
+      lineHeight: 1.2,
+    },
+    regionLabelProgressContainer: {
+      width: '100%',
+      height: '6px',
+      backgroundColor: '#E0E0E0',
+      borderRadius: '3px',
+      overflow: 'hidden',
+    },
+    regionLabelProgressFill: {
+      height: '100%',
+      backgroundColor: '#777777',
+      borderRadius: '3px',
+      transition: 'width 0.3s ease',
+    },
     // Region info card
     regionCard: {
       position: 'absolute',
-      width: '350px',
-      padding: '20px',
-      paddingBottom: '25px', // 从70px减少到25px，减少下方留白
-      borderRadius: '20px',
-      background: 'rgba(255, 255, 255, 0.95)',
+      width: '450px',
+      padding: '30px',
+      paddingBottom: '30px',
+      borderRadius: '25px',
+      background: 'rgba(255, 255, 255, 0.98)',
       border: '3px solid transparent',
       backgroundImage: 'linear-gradient(white, white), linear-gradient(90deg, #5170FF, #FF6B9D)',
       backgroundOrigin: 'border-box',
@@ -217,70 +380,134 @@ const MapView = ({ onRegionClick }) => {
       boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
       animation: 'fadeInUp 0.3s ease-out',
     },
+    cardHeader: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      marginBottom: '12px',
+    },
+    cardHeaderLeft: {
+      flex: 1,
+    },
+    cardCloseButton: {
+      background: 'none',
+      border: 'none',
+      fontSize: '24px',
+      color: '#999',
+      cursor: 'pointer',
+      padding: '0',
+      width: '30px',
+      height: '30px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'all 0.2s',
+      marginLeft: '10px',
+      flexShrink: 0,
+    },
+    cardRegionLabel: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '13px',
+      fontWeight: 600,
+      color: '#999',
+      textTransform: 'uppercase',
+      letterSpacing: '1.5px',
+      marginBottom: '5px',
+    },
+    cardStars: {
+      display: 'flex',
+      gap: '6px',
+    },
+    starIcon: {
+      width: '24px',
+      height: '24px',
+      objectFit: 'contain',
+    },
     cardTitle: {
       fontFamily: "'Montserrat', sans-serif",
-      fontSize: '18px',
-      fontWeight: 700,
-      color: '#333',
-      marginBottom: '15px',
-      textAlign: 'center',
+      fontSize: '32px',
+      fontWeight: 900,
+      color: '#000',
+      marginBottom: '18px',
       textTransform: 'uppercase',
+      lineHeight: 1.1,
+      letterSpacing: '1px',
+    },
+    progressBarContainer: {
+      width: '100%',
+      height: '10px',
+      backgroundColor: '#E0E0E0',
+      borderRadius: '5px',
+      overflow: 'hidden',
+      marginBottom: '20px',
+    },
+    progressBarFill: {
+      height: '100%',
+      backgroundColor: '#777777',
+      borderRadius: '5px',
+      transition: 'width 0.3s ease',
     },
     cardDescription: {
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '15px',
+      fontSize: '16px',
       color: '#333',
-      lineHeight: 1.6,
-      marginBottom: '10px', // 从12px减少到10px
-      textAlign: 'center',
+      lineHeight: 1.7,
+      marginBottom: '12px',
+      textAlign: 'left',
     },
     cardDifficulty: {
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '14px',
+      fontSize: '15px',
       color: '#666',
-      marginBottom: '12px', // 从15px减少到12px
-      textAlign: 'center',
+      marginBottom: '20px',
+      textAlign: 'left',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
     },
     goButton: {
       display: 'block',
-      width: '80%',
-      margin: '0 auto 8px auto', // 从10px减少到8px
-      padding: '12px 0',
-      borderRadius: '8px',
+      width: '100%',
+      margin: '0 auto 12px auto',
+      padding: '16px 0',
+      borderRadius: '12px',
       border: 'none',
       background: '#000',
       fontFamily: "'Montserrat', sans-serif",
-      fontSize: '18px',
+      fontSize: '20px',
       fontWeight: 700,
       color: '#fff',
       cursor: 'pointer',
       transition: 'all 0.2s ease',
+      textTransform: 'uppercase',
+      letterSpacing: '1px',
     },
     startOverButton: {
       display: 'block',
-      width: '80%',
-      margin: '0 auto', // 移除上边距，让按钮更紧凑
-      padding: '6px 0',
-      borderRadius: '6px',
+      width: '100%',
+      margin: '0 auto',
+      padding: '8px 0',
+      borderRadius: '8px',
       border: 'none',
       background: 'transparent',
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '14px',
+      fontSize: '15px',
       fontWeight: 500,
-      color: '#333',
+      color: '#666',
       cursor: 'pointer',
       transition: 'all 0.2s ease',
+      textAlign: 'center',
     },
     lockedButton: {
       display: 'block',
-      width: '80%',
+      width: '100%',
       margin: '0 auto',
-      padding: '12px 0',
-      borderRadius: '8px',
+      padding: '16px 0',
+      borderRadius: '12px',
       border: 'none',
       background: '#999',
       fontFamily: "'Montserrat', sans-serif",
-      fontSize: '16px',
+      fontSize: '18px',
       fontWeight: 600,
       color: '#fff',
       cursor: 'not-allowed',
@@ -288,10 +515,10 @@ const MapView = ({ onRegionClick }) => {
     // NPC state 2 at bottom-left of card
     cardNpc: {
       position: 'absolute',
-      top: '40px', // 从50px调整到40px，适应更紧凑的卡片
-      left: '-50px',
-      width: '100px',
-      height: '100px',
+      bottom: '20px',
+      left: '-60px',
+      width: '140px',
+      height: '140px',
       objectFit: 'contain',
       zIndex: 21,
     },
@@ -321,33 +548,46 @@ const MapView = ({ onRegionClick }) => {
   const getCardTitle = (regionData) => {
     if (!regionData) return ''
     
+    // Use translation keys for region names
     switch (regionData.id) {
       case 'island':
-        return 'NEXUS ISLAND · Start Card'
+        return t('island')
       case 'desert':
-        return 'AETHER DESERT · Mission Card'
+        return t('desert')
       case 'fungi':
-        return 'FUNGI JUNGLE · Mission Card'
+        return t('fungiJungle')
       case 'glacier':
-        return 'GLACIER PEAKS'
+        return t('glacier')
       default:
         return regionData.name
     }
+  }
+
+  // Render stars based on region
+  const renderStars = (count) => {
+    return Array.from({ length: count }).map((_, index) => (
+      <img 
+        key={index}
+        src="/icon/star.png" 
+        alt="star" 
+        style={styles.starIcon}
+      />
+    ))
   }
 
   return (
     <div style={styles.container}>
       <style>{styles.keyframes}</style>
       
-      {/* Language Toggle Button */}
-      {!isZooming && <LanguageToggle position="topLeft" />}
+      {/* Settings Panel */}
+      {!isZooming && <SettingsPanel position="topLeft" />}
       
       <img 
         src="/background/map.gif" 
         alt="Map Background" 
         style={{
           ...styles.backgroundGif,
-          transform: isZooming ? getZoomTransform(zoomRegion) : 'scale(1) translate(0, 0)'
+          transform: zoomRegion ? getZoomTransform(zoomRegion) : 'scale(1) translate(0, 0)'
         }}
       />
       
@@ -358,11 +598,12 @@ const MapView = ({ onRegionClick }) => {
           opacity: (isCardShowing || isZooming) ? 0 : 1,
           pointerEvents: (isCardShowing || isZooming) ? 'none' : 'auto',
         }}
-        onMouseEnter={() => {
-          setHoveredNpc(true)
-          playHumSound() // 添加hum音效
-        }}
+        onMouseEnter={() => setHoveredNpc(true)}
         onMouseLeave={() => setHoveredNpc(false)}
+        onClick={() => {
+          playHumSound()
+          setShowGlitchDialogue(true)
+        }}
       >
         <img 
           src="/npc/npc1.png" 
@@ -371,31 +612,124 @@ const MapView = ({ onRegionClick }) => {
         />
       </div>
       
-      {/* NPC Dialogue (shows on hover) */}
-      {hoveredNpc && !isCardShowing && !isZooming && (
+      {/* NPC Dialogue (shows on click) */}
+      {showGlitchDialogue && !isCardShowing && !isZooming && (
         <div style={styles.npcDialogue}>
+          {/* Close button */}
+          <button
+            style={styles.npcDialogueCloseButton}
+            onClick={() => setShowGlitchDialogue(false)}
+            onMouseOver={(e) => {
+              e.target.style.color = '#333'
+              e.target.style.transform = 'scale(1.1)'
+            }}
+            onMouseOut={(e) => {
+              e.target.style.color = '#999'
+              e.target.style.transform = 'scale(1)'
+            }}
+          >
+            ✕
+          </button>
+          
+          {/* Header with avatar and name */}
+          <div style={styles.npcDialogueHeader}>
+            <div style={styles.npcDialogueAvatar}>
+              <span style={styles.npcDialogueAvatarIcon}>👾</span>
+            </div>
+            <h4 style={styles.npcDialogueName}>Glitch</h4>
+          </div>
+          
+          {/* Message content */}
           <p style={styles.npcDialogueText}>
             I suggest go to the Fungi Jungle first.
           </p>
+          
+          {/* Input container */}
+          <div 
+            style={styles.npcDialogueInputContainer}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = '#af4dca'
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = '#d9d7de'
+            }}
+          >
+            <input
+              type="text"
+              placeholder="Ask Glitch anything..."
+              value={glitchInput}
+              onChange={(e) => setGlitchInput(e.target.value)}
+              onKeyPress={handleGlitchInputKeyPress}
+              style={styles.npcDialogueInput}
+            />
+            <div style={styles.npcDialogueDivider}></div>
+            <button
+              onClick={handleGlitchSend}
+              style={styles.npcDialogueSendButton}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'scale(1)'
+              }}
+            >
+              <img 
+                src="/icon/send.png" 
+                alt="Send" 
+                style={styles.npcDialogueSendIcon}
+              />
+            </button>
+          </div>
         </div>
       )}
       
-      {/* Region Labels */}
+      {/* Region Labels - New Card Style */}
       {regions.map((region, index) => (
         <div
           key={region.id}
           style={{
             ...styles.regionLabel,
             ...region.position,
-            opacity: regionsVisible && !isZooming ? 1 : 0,
-            transform: regionsVisible ? 'translateY(0)' : 'translateY(20px)',
+            opacity: regionsVisible && !zoomRegion ? 1 : 0,
+            transform: regionsVisible && !zoomRegion ? 'translateY(0)' : 'translateY(20px)',
             transitionDelay: `${index * 0.1}s`,
-            pointerEvents: isZooming ? 'none' : 'auto',
-            ...(selectedRegion === region.id ? { background: 'rgba(81, 112, 255, 0.2)' } : {}),
+            pointerEvents: zoomRegion ? 'none' : 'auto',
+            ...(selectedRegion === region.id ? { 
+              boxShadow: '0 8px 25px rgba(81, 112, 255, 0.4)',
+              transform: 'scale(1.02)'
+            } : {}),
           }}
           onClick={() => handleRegionClick(region.id)}
         >
-          {region.name}
+          {/* Header with Region and Stars */}
+          <div style={styles.regionLabelHeader}>
+            <div style={styles.regionLabelRegion}>
+              REGION {region.regionNumber}
+            </div>
+            <div style={styles.regionLabelStars}>
+              {Array.from({ length: region.stars }).map((_, i) => (
+                <img 
+                  key={i}
+                  src="/icon/star.png" 
+                  alt="star" 
+                  style={styles.regionLabelStarIcon}
+                />
+              ))}
+            </div>
+          </div>
+          
+          {/* Title */}
+          <div style={styles.regionLabelTitle}>
+            {getCardTitle({ id: region.id })}
+          </div>
+          
+          {/* Progress Bar */}
+          <div style={styles.regionLabelProgressContainer}>
+            <div style={{
+              ...styles.regionLabelProgressFill,
+              width: '40%' // Can be dynamic based on actual progress
+            }} />
+          </div>
         </div>
       ))}
       
@@ -407,14 +741,51 @@ const MapView = ({ onRegionClick }) => {
             ...getHoveredRegionData()?.cardPosition,
           }}
         >
+          {/* Card Header with Region Label, Stars, and Close Button */}
+          <div style={styles.cardHeader}>
+            <div style={{flex: 1}}>
+              <div style={styles.cardRegionLabel}>
+                REGION {getHoveredRegionData()?.regionNumber}
+              </div>
+            </div>
+            <div style={styles.cardStars}>
+              {renderStars(getHoveredRegionData()?.stars)}
+            </div>
+            <button
+              style={styles.cardCloseButton}
+              onClick={handleCloseCard}
+              onMouseOver={(e) => {
+                e.target.style.color = '#333'
+                e.target.style.transform = 'scale(1.1)'
+              }}
+              onMouseOut={(e) => {
+                e.target.style.color = '#999'
+                e.target.style.transform = 'scale(1)'
+              }}
+            >
+              ✕
+            </button>
+          </div>
+          
+          {/* Card Title */}
           <h3 style={styles.cardTitle}>
             {getCardTitle(getHoveredRegionData())}
           </h3>
+          
+          {/* Progress Bar */}
+          <div style={styles.progressBarContainer}>
+            <div style={{
+              ...styles.progressBarFill,
+              width: '40%' // This can be dynamic based on actual progress
+            }} />
+          </div>
+          
           <p style={styles.cardDescription}>
             {getHoveredRegionData()?.description}
           </p>
           <p style={styles.cardDifficulty}>
-            Difficulty: {getHoveredRegionData()?.difficulty}
+            <span>Difficulty: </span>
+            <span>{getHoveredRegionData()?.difficulty}</span>
           </p>
           
           {getHoveredRegionData()?.available ? (
@@ -422,7 +793,7 @@ const MapView = ({ onRegionClick }) => {
               <button 
                 style={styles.goButton}
                 onClick={() => {
-                  playSelectSound() // 添加音效
+                  playSelectSound()
                   onRegionClick(selectedRegion)
                 }}
                 onMouseOver={(e) => {
@@ -441,8 +812,8 @@ const MapView = ({ onRegionClick }) => {
                 <button 
                   style={styles.startOverButton}
                   onClick={() => {
-                    playSelectSound() // 添加音效
-                    onRegionClick(selectedRegion, true) // Pass true for startOver
+                    playSelectSound()
+                    onRegionClick(selectedRegion, true)
                   }}
                   onMouseOver={(e) => {
                     e.target.style.color = '#666'
