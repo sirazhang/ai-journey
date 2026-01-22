@@ -3416,7 +3416,7 @@ const IslandMap = ({ onExit }) => {
     },
     conversationTestProfile: {
       background: '#162d3b',
-      margin: '20px',
+      margin: '0',
       padding: '20px',
       borderRadius: '12px',
       display: 'flex',
@@ -3882,44 +3882,47 @@ const IslandMap = ({ onExit }) => {
                   if (msg.speaker === 'you') {
                     return (
                       <div key={index} style={styles.conversationMessageYou}>
+                        <div style={styles.conversationMessageYouTime}>{msg.timestamp} ● You</div>
                         <div style={styles.conversationMessageYouBubble}>
                           {displayText}
                           {isTyping && <span style={{ opacity: 0.5 }}>|</span>}
                         </div>
-                        <div style={styles.conversationMessageYouTime}>{msg.timestamp} ● You</div>
                       </div>
                     )
                   } else {
                     return (
                       <div key={index} style={styles.conversationMessageNpc}>
+                        <div style={styles.conversationMessageNpcTime}>{msg.timestamp} ● {currentMissionNpc.id.toUpperCase()}</div>
                         <div style={styles.conversationMessageNpcBubble}>
                           {displayText}
                           {isTyping && <span style={{ opacity: 0.5 }}>|</span>}
-                          {msg.hasImage && !isTyping && (
+                        </div>
+                        {/* Show image after text, not inside bubble */}
+                        {msg.hasImage && !isTyping && (
+                          <div style={{position: 'relative', marginTop: '8px'}}>
                             <img 
                               src={msg.image} 
                               alt="Work" 
                               style={styles.conversationMessageImage}
                             />
-                          )}
-                        </div>
-                        <div style={styles.conversationMessageNpcTime}>{msg.timestamp} ● {currentMissionNpc.id.toUpperCase()}</div>
-                        
-                        {/* Stamp overlay on image */}
-                        {msg.hasImage && showStamp && (
-                          <img 
-                            src={stampType === 'passed' ? '/island/icon/passed.png' : '/island/icon/failed.png'}
-                            alt={stampType}
-                            style={{
-                              position: 'absolute',
-                              width: '150px',
-                              height: 'auto',
-                              marginTop: '-100px',
-                              marginLeft: '25px',
-                              zIndex: 10,
-                              pointerEvents: 'none',
-                            }}
-                          />
+                            {/* Stamp overlay on image */}
+                            {showStamp && (
+                              <img 
+                                src={stampType === 'passed' ? '/island/icon/passed.png' : '/island/icon/failed.png'}
+                                alt={stampType}
+                                style={{
+                                  position: 'absolute',
+                                  top: '50%',
+                                  left: '50%',
+                                  transform: 'translate(-50%, -50%)',
+                                  width: '150px',
+                                  height: 'auto',
+                                  zIndex: 10,
+                                  pointerEvents: 'none',
+                                }}
+                              />
+                            )}
+                          </div>
                         )}
                       </div>
                     )
