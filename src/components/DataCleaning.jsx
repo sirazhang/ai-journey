@@ -1048,47 +1048,47 @@ const DataCleaning = ({ onComplete, onExit }) => {
       position: 'absolute',
       top: '100px',
       left: '30px',
-      width: '60%',
-      maxWidth: '700px',
+      width: '80%', // Increased from 60%
+      maxWidth: '2100px', // Increased from 700px (3x)
       zIndex: 50,
     },
     card: {
-      width: '550px',
-      padding: '30px',
-      borderRadius: '25px',
+      width: '1650px', // Increased from 550px (3x)
+      padding: '90px', // Increased from 30px (3x)
+      borderRadius: '75px', // Increased from 25px (3x)
       background: 'rgba(255, 255, 255, 0.98)',
-      border: '4px solid transparent',
+      border: '12px solid transparent', // Increased from 4px (3x)
       backgroundImage: 'linear-gradient(rgba(255,255,255,0.98), rgba(255,255,255,0.98)), linear-gradient(135deg, #7B68EE, #FFB6C1)',
       backgroundOrigin: 'border-box',
       backgroundClip: 'padding-box, border-box',
     },
     cardTitle: {
       fontFamily: "'Montserrat', sans-serif",
-      fontSize: '26px',
+      fontSize: '78px', // Increased from 26px (3x)
       fontWeight: 700,
       color: '#333',
       textAlign: 'center',
-      marginBottom: '10px',
+      marginBottom: '30px', // Increased from 10px (3x)
     },
     cardSubtitle: {
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '14px',
+      fontSize: '42px', // Increased from 14px (3x)
       color: '#666',
       textAlign: 'center',
-      marginBottom: '25px',
+      marginBottom: '75px', // Increased from 25px (3x)
     },
     itemGrid: {
       display: 'grid',
       gridTemplateColumns: 'repeat(4, 1fr)',
-      gap: '15px',
-      marginBottom: '20px',
+      gap: '45px', // Increased from 15px (3x)
+      marginBottom: '60px', // Increased from 20px (3x)
     },
     itemCard: {
-      width: '110px',
-      height: '110px',
-      borderRadius: '15px',
+      width: '330px', // Increased from 110px (3x)
+      height: '330px', // Increased from 110px (3x)
+      borderRadius: '45px', // Increased from 15px (3x)
       background: '#fff',
-      border: '3px solid transparent',
+      border: '9px solid transparent', // Increased from 3px (3x)
       backgroundImage: 'linear-gradient(#fff, #fff), linear-gradient(135deg, #7B68EE, #FFB6C1)',
       backgroundOrigin: 'border-box',
       backgroundClip: 'padding-box, border-box',
@@ -1105,19 +1105,19 @@ const DataCleaning = ({ onComplete, onExit }) => {
       border: '3px solid #444',
     },
     itemImage: {
-      width: '80px',
-      height: '80px',
+      width: '240px', // Increased from 80px (3x)
+      height: '240px', // Increased from 80px (3x)
       objectFit: 'contain',
     },
     trashArea: {
       display: 'flex',
       justifyContent: 'center',
-      gap: '15px',
-      marginTop: '15px',
+      gap: '45px', // Increased from 15px (3x)
+      marginTop: '45px', // Increased from 15px (3x)
     },
     trashSlot: {
-      width: '80px',
-      height: '80px',
+      width: '240px', // Increased from 80px (3x)
+      height: '240px', // Increased from 80px (3x)
       borderRadius: '12px',
       background: '#1a1a2e',
       border: '3px solid transparent',
@@ -1130,10 +1130,10 @@ const DataCleaning = ({ onComplete, onExit }) => {
     },
     nextButton: {
       display: 'block',
-      margin: '20px auto 0',
-      padding: '12px 40px',
+      margin: '60px auto 0', // Increased from 20px (3x)
+      padding: '36px 120px', // Increased from 12px 40px (3x)
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '16px',
+      fontSize: '48px', // Increased from 16px (3x)
       fontWeight: 600,
       color: '#333',
       background: 'transparent',

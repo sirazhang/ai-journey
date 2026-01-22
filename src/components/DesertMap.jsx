@@ -906,12 +906,11 @@ const DesertMap = ({ onExit }) => {
     })
     
     if (!isCorrect) {
-      // Show Glitch warning but keep the card visible
+      // Show Glitch warning and keep the interface visible
       setShowGlitchWarning(true)
       setTimeout(() => {
         setShowGlitchWarning(false)
-        // Don't proceed to next image, let user try again
-        // Remove the incorrect result so they can try again
+        // Remove the incorrect result so they can try again, but keep the interface
         setMission2Results(prev => prev.filter(r => r.imageId !== currentImage.id))
       }, 3000)
     } else {
@@ -1195,16 +1194,16 @@ const DesertMap = ({ onExit }) => {
     backgroundImage: {
       position: 'absolute',
       top: 0,
-      left: getBackgroundPosition(),
-      width: currentView === 'desert' ? '5200px' : '1980px',
-      height: '1080px',
-      objectFit: 'none',
-      objectPosition: 'top left',
+      left: currentView === 'desert' ? getBackgroundPosition() : 0, // Only apply positioning for desert view
+      width: currentView === 'desert' ? '5200px' : '100vw', // Full width for castle/gate views
+      height: currentView === 'desert' ? '1080px' : '100vh', // Full height for castle/gate views
+      objectFit: currentView === 'desert' ? 'none' : 'cover', // Cover for castle/gate views
+      objectPosition: currentView === 'desert' ? 'top left' : 'center',
       zIndex: 0,
       transition: 'left 0.5s ease-in-out',
-      imageRendering: 'crisp-edges', // 使用crisp-edges而不是pixelated
-      transform: 'scale(0.8)', // 直接缩放图片到80%
-      transformOrigin: 'top left',
+      imageRendering: 'crisp-edges',
+      transform: currentView === 'desert' ? 'scale(0.8)' : 'scale(1)', // No scaling for castle/gate views
+      transformOrigin: currentView === 'desert' ? 'top left' : 'center',
     },
     exitButton: {
       position: 'absolute',
@@ -1525,7 +1524,7 @@ const DesertMap = ({ onExit }) => {
     },
     cameraIcon: {
       width: '200px',
-      height: '200px',
+      height: 'auto', // 自动高度以保持原始比例
       animation: 'pulse 1.5s ease-in-out',
     },
     // Photo display
@@ -1543,8 +1542,8 @@ const DesertMap = ({ onExit }) => {
     },
     photoFrame: {
       position: 'relative',
-      width: '400px',
-      height: '500px',
+      width: '1200px', // Increased from 400px (3x)
+      height: '1500px', // Increased from 500px (3x)
       backgroundImage: 'url(/desert/icon/photo.png)',
       backgroundSize: 'contain',
       backgroundRepeat: 'no-repeat',
@@ -1553,16 +1552,16 @@ const DesertMap = ({ onExit }) => {
       flexDirection: 'column',
       justifyContent: 'center',
       alignItems: 'center',
-      padding: '60px 40px 80px 40px', // 调整内边距以适应相框
+      padding: '180px 120px 240px 120px', // Increased from 60px 40px 80px 40px (3x)
     },
     photoBackground: {
-      width: '280px',
-      height: '200px',
+      width: '840px', // Increased from 280px (3x)
+      height: '600px', // Increased from 200px (3x)
       background: 'transparent',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: '20px',
+      marginBottom: '60px', // Increased from 20px (3x)
       overflow: 'hidden',
     },
     photoObjectImage: {
@@ -1572,25 +1571,25 @@ const DesertMap = ({ onExit }) => {
     },
     photoDescription: {
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '14px',
+      fontSize: '42px', // Increased from 14px (3x)
       color: '#333',
       textAlign: 'center',
       lineHeight: 1.4,
-      maxWidth: '280px',
+      maxWidth: '840px', // Increased from 280px (3x)
       background: 'rgba(255, 255, 255, 0.9)',
-      padding: '10px',
-      borderRadius: '5px',
+      padding: '30px', // Increased from 10px (3x)
+      borderRadius: '15px', // Increased from 5px (3x)
     },
     photoCloseButton: {
       position: 'absolute',
-      top: '10px',
-      right: '10px',
+      top: '30px', // Increased from 10px (3x)
+      right: '30px', // Increased from 10px (3x)
       background: 'rgba(255, 255, 255, 0.8)',
       border: 'none',
       borderRadius: '50%',
-      width: '30px',
-      height: '30px',
-      fontSize: '16px',
+      width: '90px', // Increased from 30px (3x)
+      height: '90px', // Increased from 30px (3x)
+      fontSize: '48px', // Increased from 16px (3x)
       cursor: 'pointer',
       color: '#333',
       display: 'flex',
@@ -1992,8 +1991,8 @@ const DesertMap = ({ onExit }) => {
       transition: 'transform 0.2s ease',
     },
     mission2ButtonIconInDialogueNew: {
-      width: '91px', // Maintain aspect ratio (width slightly less than height)
-      height: '100px',
+      width: '100px', // 设置宽度
+      height: 'auto', // 自动高度以保持原始比例
       marginBottom: '15px',
     },
     mission2ButtonTextInDialogueNew: {
@@ -3052,7 +3051,7 @@ const DesertMap = ({ onExit }) => {
             color: '#333',
             lineHeight: 1.6
           }}>
-            "Look carefully at these confusing photos. They might be plants, or maybe not; they might be rocks, or maybe not. Check again!"
+            Look it careful！！
           </div>
         </div>
       )}

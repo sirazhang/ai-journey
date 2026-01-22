@@ -245,9 +245,9 @@ const puzzleData = {
     arguments: "Alina: \"My box is Pink. It does not have dresses.\"\nViktor: \"My box is Green. It might have flowers too.\"",
     question: "Who is logically correct based ONLY on the rules?",
     options: [
-      { text: "A) Alina only", correct: true },
+      { text: "A) Alina only", correct: false },
       { text: "B) Viktor only", correct: false },
-      { text: "C) Both", correct: false },
+      { text: "C) Both", correct: true },
       { text: "D) Neither", correct: false }
     ]
   }
@@ -634,6 +634,18 @@ const GlacierMap = ({ onExit }) => {
       nextIndex += 1
     }
     
+    // If answer is incorrect, don't advance - stay on current quiz to allow retry
+    if (!option.correct) {
+      // Show error feedback but keep quiz visible for retry
+      setSummaryDialogueHistory(prev => [...prev, { 
+        speaker: 'momo', 
+        text: 'Try again! Think carefully about the answer.',
+        isError: true 
+      }])
+      setSummaryWaitingForInput(true) // Keep waiting for input to allow retry
+      return
+    }
+    
     setSummaryDialogueIndex(nextIndex)
     setSummaryWaitingForInput(false)
   }
@@ -989,7 +1001,7 @@ const GlacierMap = ({ onExit }) => {
       case 'outside':
         return { right: '0px', top: '0px', size: '400px' } // 增大到400px
       case 'inside':
-        return { right: '0px', top: '0px', size: '80px' } // Glitch NPC 80px in top right
+        return { right: '0px', top: '0px', size: '120px' } // 统一为120px与其他组件一致
       case 'court':
         return { right: '0px', top: '0px', size: '120px' } // Glitch NPC 120px in top right for court
       case 'rooftop':
@@ -1653,8 +1665,8 @@ const GlacierMap = ({ onExit }) => {
       transition: 'transform 0.2s',
     },
     judgmentIcon: {
-      width: '123px', // Maintain aspect ratio (slightly less than height)
-      height: '135px', // Original ratio height
+      width: '135px', // 设置宽度
+      height: 'auto', // 自动高度以保持原始比例
       marginBottom: '-5px', // -5px distance from icon to text
       objectFit: 'contain', // Maintain aspect ratio
     },

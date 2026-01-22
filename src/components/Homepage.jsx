@@ -51,7 +51,7 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
 
   const styles = {
     container: {
-      width: '100%',
+      width: '100vw',
       height: '100vh',
       position: 'relative',
       display: 'flex',
@@ -59,6 +59,8 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
       alignItems: 'center',
       justifyContent: 'center',
       overflow: 'hidden',
+      margin: 0,
+      padding: 0,
     },
     backgroundGif: {
       position: 'absolute',

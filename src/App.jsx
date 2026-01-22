@@ -272,7 +272,7 @@ function App() {
 
   return (
     <LanguageProvider>
-      <div style={{ width: '100%', height: '100vh', overflow: 'hidden', position: 'relative' }}>
+      <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative', margin: 0, padding: 0 }}>
         {currentScreen === 'home' && (
           <Homepage 
             key={userLoggedIn ? 'logged-in' : 'logged-out'} // Force re-render when login status changes

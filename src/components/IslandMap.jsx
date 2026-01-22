@@ -960,6 +960,46 @@ const getSparkyDialogueFlow = (t) => [
 
 const IslandMap = ({ onExit }) => {
   const { t } = useLanguage()
+  
+  // 获取当前时间戳
+  const getCurrentTimestamp = () => {
+    const now = new Date()
+    return now.toLocaleTimeString('en-US', { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    })
+  }
+  
+  // NPC颜色主题
+  const getNpcTheme = (npcName) => {
+    switch(npcName.toLowerCase()) {
+      case 'sparky':
+        return {
+          borderColor: '#4A90E2',
+          progressColor: '#4A90E2',
+          avatar: '/island/npc/spark.png'
+        }
+      case 'momo':
+        return {
+          borderColor: '#333333',
+          progressColor: '#333333',
+          avatar: '/glacier/npc/momo.png'
+        }
+      case 'alpha':
+        return {
+          borderColor: '#FFD700',
+          progressColor: '#FFD700',
+          avatar: '/desert/npc/npc4.png'
+        }
+      default:
+        return {
+          borderColor: '#4A90E2',
+          progressColor: '#4A90E2',
+          avatar: '/island/npc/spark.png'
+        }
+    }
+  }
   const [currentIsland, setCurrentIsland] = useState(ISLANDS.ISLAND_1) // 改为从Island 1开始
   const [showDialogue, setShowDialogue] = useState(false)
   const [currentDialogue, setCurrentDialogue] = useState(null)
@@ -1028,6 +1068,15 @@ const IslandMap = ({ onExit }) => {
   const [phase2Completed, setPhase2Completed] = useState(false) // Track if Phase 2 is completed
   const [showFinalSparkyDialogue, setShowFinalSparkyDialogue] = useState(false) // Final Sparky dialogue
   const [finalDialogueStep, setFinalDialogueStep] = useState(0) // Track final dialogue progress
+  
+  // New Conversation Test states for Mission 1
+  const [conversationMessages, setConversationMessages] = useState([]) // Messages displayed in conversation
+  const [currentConvMessageIndex, setCurrentConvMessageIndex] = useState(0) // Current message being typed
+  const [convTypingText, setConvTypingText] = useState('') // Text being typed
+  const [isConvTyping, setIsConvTyping] = useState(false) // Is typing animation active
+  const [showConvButtons, setShowConvButtons] = useState(false) // Show judgment buttons
+  const [shakeWorkerBtn, setShakeWorkerBtn] = useState(false) // Shake worker button on wrong answer
+  const [shakeGenAIBtn, setShakeGenAIBtn] = useState(false) // Shake GenAI button on wrong answer
   const [showReloading, setShowReloading] = useState(false) // Show reloading screen
   const [islandRestored, setIslandRestored] = useState(false) // Track if island is restored to color
 
@@ -1419,6 +1468,17 @@ const IslandMap = ({ onExit }) => {
     console.log('Setting up mission dialogue for:', npc.question)
     setCurrentMissionNpc(npc)
     setShowMissionDialogue(true)
+    
+    // Initialize new conversation system
+    setConversationMessages([])
+    setCurrentConvMessageIndex(0)
+    setConvTypingText('')
+    setIsConvTyping(false)
+    setShowConvButtons(false)
+    setShowStamp(false)
+    setStampType(null)
+    
+    // Reset old system states
     setShowMissionImage(false)
     setShowNpcResponse(false)
     setNpcResponseText('')
@@ -1507,23 +1567,22 @@ const IslandMap = ({ onExit }) => {
         setIsNpcTyping(false)
       }, 2000)
     } else {
-      // Wrong judgment - show Glitch error message
-      setShowMissionImage(false)
-      setShowMissionDialogue(false)
-      setShowNpcResponse(false)
-      setCurrentMissionNpc(null)
-      setCurrentMissionImage(null)
-      setNpcResponseText('')
-      setIsNpcTyping(false)
+      // Wrong judgment - show Glitch error message but keep interface available for retry
+      setStampType('wrong') // Show wrong stamp
+      setShowStamp(true)
       
-      // Show Glitch error dialogue
+      // Hide stamp after 2 seconds and show error dialogue
       setTimeout(() => {
+        setShowStamp(false)
         setCurrentDialogue({
           text: currentMissionNpc.errorMessage,
           speaker: 'Glitch'
         })
         setShowDialogue(true)
-      }, 500)
+        
+        // Keep mission interface visible for retry - don't reset states
+        // User can try again by clicking the same buttons
+      }, 2000)
     }
   }
 
@@ -1930,6 +1989,105 @@ const IslandMap = ({ onExit }) => {
 
     return () => clearInterval(typingInterval)
   }, [currentDialogue, showDialogue])
+  
+  // New Conversation Test typing effect
+  useEffect(() => {
+    if (!showMissionDialogue || !currentMissionNpc) return
+    if (currentConvMessageIndex >= 2) {
+      // All messages displayed, show buttons
+      setShowConvButtons(true)
+      return
+    }
+    
+    // Prepare messages based on NPC data
+    const messages = [
+      { speaker: 'you', text: currentMissionNpc.question, timestamp: getCurrentTimestamp() },
+      { speaker: 'npc', text: 'Sure! Let me show you...', timestamp: getCurrentTimestamp(), hasImage: true, image: currentMissionNpc.missionImage }
+    ]
+    
+    const currentMessage = messages[currentConvMessageIndex]
+    if (!currentMessage) return
+    
+    // Add message to history immediately
+    if (!conversationMessages.find(m => m.text === currentMessage.text)) {
+      setConversationMessages(prev => [...prev, currentMessage])
+    }
+    
+    // Start typing animation
+    let charIndex = 0
+    setConvTypingText('')
+    setIsConvTyping(true)
+    
+    const typingInterval = setInterval(() => {
+      if (charIndex < currentMessage.text.length) {
+        setConvTypingText(currentMessage.text.substring(0, charIndex + 1))
+        charIndex++
+      } else {
+        setIsConvTyping(false)
+        clearInterval(typingInterval)
+        
+        // Move to next message after delay
+        setTimeout(() => {
+          setCurrentConvMessageIndex(currentConvMessageIndex + 1)
+        }, 800)
+      }
+    }, 30)
+    
+    return () => clearInterval(typingInterval)
+  }, [showMissionDialogue, currentMissionNpc, currentConvMessageIndex])
+  
+  // Handle conversation judgment
+  const handleConversationJudgment = (judgment) => {
+    if (!currentMissionNpc) return
+    
+    const isCorrect = (judgment === 'worker' && currentMissionNpc.correctAnswer === 'passed') ||
+                      (judgment === 'genai' && currentMissionNpc.correctAnswer === 'failed')
+    
+    if (!isCorrect) {
+      // Wrong answer - shake button and play wrong sound
+      const wrongAudio = new Audio('/sound/wrong.mp3')
+      wrongAudio.play().catch(e => console.log('Audio play failed:', e))
+      
+      if (judgment === 'worker') {
+        setShakeWorkerBtn(true)
+        setTimeout(() => setShakeWorkerBtn(false), 500)
+      } else {
+        setShakeGenAIBtn(true)
+        setTimeout(() => setShakeGenAIBtn(false), 500)
+      }
+      return
+    }
+    
+    // Correct answer - show stamp
+    setStampType(currentMissionNpc.correctAnswer)
+    setShowStamp(true)
+    
+    // Play stamp sound
+    const stampAudio = new Audio('/sound/stamp.mp3')
+    stampAudio.play().catch(e => console.log('Audio play failed:', e))
+    
+    // Add to completed missions
+    setCompletedMissions(prev => [...prev, currentMissionNpc.id])
+    setCompletedNpcs(prev => new Set([...prev, currentMissionNpc.id]))
+    
+    // Close dialogue after delay
+    setTimeout(() => {
+      setShowStamp(false)
+      setShowMissionDialogue(false)
+      setCurrentMissionNpc(null)
+      setConversationMessages([])
+      setCurrentConvMessageIndex(0)
+      setShowConvButtons(false)
+      setStampType(null)
+      
+      // Check if mission is completed
+      if (completedMissions.length + 1 >= 9 && !phase2Active) {
+        setMissionCompleted(true)
+        setShowSparkyDebrief(true)
+        setDebriefStep(0)
+      }
+    }, 2000)
+  }
 
   // Get background image based on current island
   const getBackgroundImage = () => {
@@ -2417,6 +2575,188 @@ const IslandMap = ({ onExit }) => {
       color: '#666',
       padding: '5px',
     },
+    
+    // 新的现代化NPC对话框设计
+    modernDialogueContainer: {
+      position: 'fixed',
+      top: '5%',
+      left: '5%',
+      width: '90%',
+      height: '85%',
+      zIndex: 1000,
+      background: 'rgba(128, 128, 128, 0.95)', // 灰色磨砂背景
+      backdropFilter: 'blur(10px)',
+      borderRadius: '20px',
+      display: 'flex',
+      flexDirection: 'column',
+      boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+    },
+    modernDialogueHeader: {
+      padding: '20px 30px 15px 30px',
+      borderBottom: 'none',
+    },
+    modernProgressContainer: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '20px',
+    },
+    modernMissionTitle: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '16px',
+      fontWeight: 600,
+      color: '#333',
+      textTransform: 'uppercase',
+      letterSpacing: '1px',
+    },
+    modernStepIndicator: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      color: '#666',
+    },
+    modernProgressBar: {
+      width: '100%',
+      height: '6px',
+      backgroundColor: 'rgba(255,255,255,0.3)',
+      borderRadius: '3px',
+      overflow: 'hidden',
+      marginTop: '10px',
+    },
+    modernProgressFill: {
+      height: '100%',
+      borderRadius: '3px',
+      transition: 'width 0.3s ease',
+    },
+    modernNpcInfo: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '15px',
+      marginBottom: '20px',
+    },
+    modernNpcAvatar: {
+      width: '60px',
+      height: '60px',
+      borderRadius: '50%',
+      objectFit: 'cover',
+      border: '3px solid white',
+      boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+    },
+    modernNpcName: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '18px',
+      fontWeight: 600,
+      color: '#333',
+    },
+    modernNpcStatus: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      color: '#666',
+    },
+    modernCloseButton: {
+      position: 'absolute',
+      top: '20px',
+      right: '20px',
+      background: 'none',
+      border: 'none',
+      fontSize: '24px',
+      color: '#666',
+      cursor: 'pointer',
+      padding: '5px',
+      borderRadius: '50%',
+      width: '40px',
+      height: '40px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'all 0.2s',
+    },
+    modernDialogueContent: {
+      flex: 1,
+      padding: '0 30px 30px 30px',
+      overflowY: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '15px',
+    },
+    modernNpcMessage: {
+      alignSelf: 'flex-start',
+      maxWidth: '80%',
+    },
+    modernNpcBubble: {
+      background: 'white',
+      padding: '15px 20px',
+      borderRadius: '20px 20px 20px 5px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      marginBottom: '5px',
+    },
+    modernNpcText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '16px',
+      color: '#333',
+      lineHeight: 1.5,
+      margin: 0,
+    },
+    modernNpcSpeaker: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      fontWeight: 700,
+      color: '#333',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
+      marginBottom: '8px',
+    },
+    modernTimestamp: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '12px',
+      color: '#999',
+      marginTop: '5px',
+    },
+    modernUserMessage: {
+      alignSelf: 'flex-end',
+      maxWidth: '80%',
+    },
+    modernUserBubble: {
+      background: '#4A90E2',
+      padding: '15px 20px',
+      borderRadius: '20px 20px 5px 20px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      marginBottom: '5px',
+    },
+    modernUserText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '16px',
+      color: 'white',
+      lineHeight: 1.5,
+      margin: 0,
+    },
+    modernUserSpeaker: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      fontWeight: 700,
+      color: 'white',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
+      marginBottom: '8px',
+      textAlign: 'right',
+    },
+    modernActionButton: {
+      alignSelf: 'center',
+      background: 'rgba(255,255,255,0.9)',
+      border: 'none',
+      borderRadius: '25px',
+      padding: '12px 30px',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      fontWeight: 600,
+      color: '#333',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+      marginTop: '10px',
+    },
     // Mission dialogue styles
     missionDialogueContainer: {
       position: 'absolute',
@@ -2691,8 +3031,8 @@ const IslandMap = ({ onExit }) => {
       padding: '5px',
     },
     qaButtonIcon: {
-      width: '73px', // Maintain aspect ratio (width slightly less than height)
-      height: '80px',
+      width: '80px', // 设置宽度
+      height: 'auto', // 自动高度以保持原始比例
       marginBottom: '5px',
     },
     qaButtonText: {
@@ -2745,7 +3085,7 @@ const IslandMap = ({ onExit }) => {
     },
     youLabel: {
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '18px', // 改为18px
+      fontSize: '24px', // 改为24px
       fontWeight: 'bold',
       color: '#333',
       marginBottom: '5px',
@@ -2777,14 +3117,14 @@ const IslandMap = ({ onExit }) => {
     },
     npcLabel: {
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '18px', // 改为18px
+      fontSize: '24px', // 改为24px
       fontWeight: 'bold',
       color: '#333',
       marginBottom: '8px',
     },
     npcResponseText: {
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '18px', // 改为18px
+      fontSize: '24px', // 改为24px
       color: '#333',
       lineHeight: 1.6,
       padding: '10px 15px',
@@ -2844,8 +3184,8 @@ const IslandMap = ({ onExit }) => {
       padding: '5px',
     },
     imageButtonIcon: {
-      width: '91px', // Maintain aspect ratio (width slightly less than height)
-      height: '100px',
+      width: '100px', // 设置宽度
+      height: 'auto', // 自动高度以保持原始比例
       marginBottom: '5px',
     },
     imageStamp: {
@@ -2854,7 +3194,7 @@ const IslandMap = ({ onExit }) => {
       left: '50%',
       transform: 'translate(-50%, -50%)',
       width: '200px',
-      height: '200px',
+      height: 'auto', // 自动高度以保持原始比例
       zIndex: 200,
       pointerEvents: 'none',
     },
@@ -2891,7 +3231,7 @@ const IslandMap = ({ onExit }) => {
       background: 'rgba(76, 175, 80, 0.1)',
       color: '#4CAF50',
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '18px', // 改为18px
+      fontSize: '24px', // 改为24px
       fontWeight: 500,
       cursor: 'pointer',
       transition: 'all 0.2s',
@@ -2935,10 +3275,212 @@ const IslandMap = ({ onExit }) => {
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
-      width: '250px', // 250px as requested
-      height: '250px',
+      width: '250px', // 保持250px宽度
+      height: 'auto', // 自动高度以保持原始比例
       zIndex: 200,
       pointerEvents: 'none',
+    },
+    
+    // New Conversation Test Card Styles
+    conversationTestCard: {
+      position: 'absolute',
+      top: '12.5%',
+      left: '20%',
+      width: '60%',
+      height: '75%',
+      zIndex: 100,
+      background: 'white',
+      borderRadius: '15px',
+      boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    conversationTestHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '20px',
+      borderBottom: '2px solid #e0e0e0',
+      position: 'relative',
+    },
+    conversationTestTitle: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      fontFamily: "'Rajdhani', sans-serif",
+      fontSize: '24px',
+      fontWeight: 700,
+      color: '#333',
+    },
+    conversationTestIcon: {
+      width: '30px',
+      height: '30px',
+    },
+    conversationTestClose: {
+      position: 'absolute',
+      right: '20px',
+      top: '20px',
+      background: 'none',
+      border: 'none',
+      fontSize: '28px',
+      cursor: 'pointer',
+      color: '#666',
+      lineHeight: 1,
+    },
+    conversationTestBody: {
+      display: 'flex',
+      flex: 1,
+      overflow: 'hidden',
+    },
+    conversationTestLeft: {
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      borderRight: '2px solid #e0e0e0',
+    },
+    conversationTestLeftTitle: {
+      fontFamily: "'Rajdhani', sans-serif",
+      fontSize: '18px',
+      fontWeight: 600,
+      padding: '15px 20px',
+      borderBottom: '1px solid #e0e0e0',
+      color: '#333',
+    },
+    conversationTestMessages: {
+      flex: 1,
+      background: '#f8fae4',
+      padding: '20px',
+      overflowY: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '15px',
+    },
+    conversationMessageYou: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-end',
+    },
+    conversationMessageYouBubble: {
+      background: '#4f7f30',
+      color: 'white',
+      padding: '10px 15px',
+      borderRadius: '12px',
+      maxWidth: '70%',
+      fontFamily: "'Rajdhani', sans-serif",
+      wordWrap: 'break-word',
+    },
+    conversationMessageYouTime: {
+      fontSize: '11px',
+      color: '#4f7f30',
+      marginTop: '4px',
+      fontFamily: "'Rajdhani', sans-serif",
+    },
+    conversationMessageNpc: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-start',
+    },
+    conversationMessageNpcBubble: {
+      background: 'white',
+      color: 'black',
+      padding: '10px 15px',
+      borderRadius: '12px',
+      maxWidth: '70%',
+      fontFamily: "'Rajdhani', sans-serif",
+      wordWrap: 'break-word',
+    },
+    conversationMessageNpcTime: {
+      fontSize: '11px',
+      color: '#666',
+      marginTop: '4px',
+      fontFamily: "'Rajdhani', sans-serif",
+    },
+    conversationMessageImage: {
+      maxWidth: '200px',
+      maxHeight: '200px',
+      borderRadius: '8px',
+      marginTop: '8px',
+    },
+    conversationTestRight: {
+      width: '280px',
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    conversationTestRightTitle: {
+      fontFamily: "'Rajdhani', sans-serif",
+      fontSize: '18px',
+      fontWeight: 600,
+      padding: '15px 20px',
+      borderBottom: '1px solid #e0e0e0',
+      color: '#333',
+    },
+    conversationTestProfile: {
+      background: '#162d3b',
+      margin: '20px',
+      padding: '20px',
+      borderRadius: '12px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '12px',
+    },
+    conversationTestProfileImage: {
+      width: '120px',
+      height: '120px',
+      borderRadius: '50%',
+      objectFit: 'cover',
+      border: '3px solid white',
+    },
+    conversationTestProfileText: {
+      fontFamily: "'Rajdhani', sans-serif",
+      color: 'white',
+      textAlign: 'center',
+      fontSize: '14px',
+    },
+    conversationTestProfileName: {
+      fontWeight: 700,
+      fontSize: '16px',
+    },
+    conversationTestButtons: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '15px',
+      padding: '0 20px 20px 20px',
+    },
+    conversationTestButtonWorker: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '15px',
+      border: '3px solid #4CAF50',
+      borderRadius: '12px',
+      background: 'white',
+      cursor: 'pointer',
+      transition: 'all 0.3s',
+    },
+    conversationTestButtonGenAI: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '15px',
+      border: '3px solid #F44336',
+      borderRadius: '12px',
+      background: 'white',
+      cursor: 'pointer',
+      transition: 'all 0.3s',
+    },
+    conversationTestButtonIcon: {
+      width: '60px',
+      height: '60px',
+      marginBottom: '8px',
+    },
+    conversationTestButtonText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      fontWeight: 700,
+      textAlign: 'center',
     }
   }
   return (
@@ -2953,6 +3495,12 @@ const IslandMap = ({ onExit }) => {
             to {
               box-shadow: 0 0 30px rgba(81, 112, 255, 0.8), 0 0 60px rgba(81, 112, 255, 0.6), 0 0 90px rgba(81, 112, 255, 0.4);
             }
+          }
+          
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+            20%, 40%, 60%, 80% { transform: translateX(10px); }
           }
         `}
       </style>
@@ -3214,7 +3762,7 @@ const IslandMap = ({ onExit }) => {
                             e.target.style.transform = 'scale(1)'
                           }}
                         >
-                          [{choice.id}] {choice.text}
+                          {choice.text}
                         </button>
                       ))}
                     </div>
@@ -3273,156 +3821,154 @@ const IslandMap = ({ onExit }) => {
         </div>
       )}
 
-      {/* Mission Dialogue */}
+      {/* New Conversation Test Card */}
       {showMissionDialogue && currentMissionNpc && (
-        <div style={styles.missionDialogueContainer}>
-          <div style={styles.sparkyDialogueHeader}>
-            <h3 style={styles.sparkyDialogueTitle}>{t('npcConversation')}</h3>
-            <button style={styles.sparkyCloseButton} onClick={() => setShowMissionDialogue(false)}>
-              ✕
+        <div style={styles.conversationTestCard}>
+          {/* Header */}
+          <div style={styles.conversationTestHeader}>
+            <img src="/island/icon/worker.svg" alt="Worker" style={styles.conversationTestIcon} />
+            <div style={styles.conversationTestTitle}>Worker or GenAI?</div>
+            <img src="/island/icon/ai.svg" alt="AI" style={styles.conversationTestIcon} />
+            <button 
+              style={styles.conversationTestClose}
+              onClick={() => {
+                setShowMissionDialogue(false)
+                setConversationMessages([])
+                setCurrentConvMessageIndex(0)
+                setShowConvButtons(false)
+              }}
+            >
+              ×
             </button>
           </div>
           
-          <div style={styles.missionDialogueContent}>
-            <div style={styles.youSection}>
-              <div style={styles.youLabel}>YOU:</div>
-              <button 
-                style={styles.questionButton}
-                onClick={handleShowMissionImage}
-                disabled={showNpcResponse}
-                onMouseOver={(e) => {
-                  if (!showNpcResponse) {
-                    e.target.style.background = 'rgba(76, 175, 80, 0.2)'
-                    e.target.style.transform = 'scale(1.02)'
+          {/* Body */}
+          <div style={styles.conversationTestBody}>
+            {/* Left: Conversation Test */}
+            <div style={styles.conversationTestLeft}>
+              <div style={styles.conversationTestLeftTitle}>Conversation Test</div>
+              <div style={styles.conversationTestMessages}>
+                {conversationMessages.map((msg, index) => {
+                  const isLastMessage = index === conversationMessages.length - 1
+                  const isTyping = isLastMessage && isConvTyping
+                  const displayText = isTyping ? convTypingText : msg.text
+                  
+                  if (msg.speaker === 'you') {
+                    return (
+                      <div key={index} style={styles.conversationMessageYou}>
+                        <div style={styles.conversationMessageYouBubble}>
+                          {displayText}
+                          {isTyping && <span style={{ opacity: 0.5 }}>|</span>}
+                        </div>
+                        <div style={styles.conversationMessageYouTime}>{msg.timestamp} ● You</div>
+                      </div>
+                    )
+                  } else {
+                    return (
+                      <div key={index} style={styles.conversationMessageNpc}>
+                        <div style={styles.conversationMessageNpcBubble}>
+                          {displayText}
+                          {isTyping && <span style={{ opacity: 0.5 }}>|</span>}
+                          {msg.hasImage && !isTyping && (
+                            <img 
+                              src={msg.image} 
+                              alt="Work" 
+                              style={styles.conversationMessageImage}
+                            />
+                          )}
+                        </div>
+                        <div style={styles.conversationMessageNpcTime}>{msg.timestamp} ● {currentMissionNpc.id.toUpperCase()}</div>
+                        
+                        {/* Stamp overlay on image */}
+                        {msg.hasImage && showStamp && (
+                          <img 
+                            src={stampType === 'passed' ? '/island/icon/passed.png' : '/island/icon/failed.png'}
+                            alt={stampType}
+                            style={{
+                              position: 'absolute',
+                              width: '150px',
+                              height: 'auto',
+                              marginTop: '-100px',
+                              marginLeft: '25px',
+                              zIndex: 10,
+                              pointerEvents: 'none',
+                            }}
+                          />
+                        )}
+                      </div>
+                    )
                   }
-                }}
-                onMouseOut={(e) => {
-                  if (!showNpcResponse) {
-                    e.target.style.background = 'rgba(76, 175, 80, 0.1)'
-                    e.target.style.transform = 'scale(1)'
-                  }
-                }}
-              >
-                {currentMissionNpc.question}
-              </button>
+                })}
+              </div>
             </div>
             
-            {showNpcResponse && (
-              <div style={styles.npcResponse}>
-                <strong>NPC:</strong> {npcResponseText}
-                {isNpcTyping && <span style={{ opacity: 0.5 }}>|</span>}
+            {/* Right: Profile & Buttons */}
+            <div style={styles.conversationTestRight}>
+              <div style={styles.conversationTestRightTitle}>Profile</div>
+              <div style={styles.conversationTestProfile}>
+                <img 
+                  src={currentMissionNpc.image} 
+                  alt={currentMissionNpc.id}
+                  style={styles.conversationTestProfileImage}
+                />
+                <div style={styles.conversationTestProfileText}>
+                  <div style={styles.conversationTestProfileName}>Name: {currentMissionNpc.id.toUpperCase()}</div>
+                  <div>Age: {Math.floor(Math.random() * 10) + 1} years old</div>
+                  <div>Declaration Role: {currentIsland === ISLANDS.ISLAND_1 ? 'Artist' : currentIsland === ISLANDS.ISLAND_2 ? 'Editor' : 'Reviewer'}</div>
+                </div>
               </div>
-            )}
-            
-            {showMissionImage && (
-              <div style={{
-                position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginTop: '-15px', // 大幅缩小，使用更大的负margin
-              }}>
-                {/* Center image */}
-                <div style={{ position: 'relative', marginBottom: '-15px' }}> {/* 大幅缩小，使用更大的负margin */}
-                  <img 
-                    src={currentMissionNpc.missionImage}
-                    alt="Mission Image"
+              
+              {/* Judgment Buttons */}
+              {showConvButtons && (
+                <div style={styles.conversationTestButtons}>
+                  <div 
                     style={{
-                      width: '480px',
-                      height: '450px',
-                      objectFit: 'contain',
-                      borderRadius: '8px',
+                      ...styles.conversationTestButtonWorker,
+                      animation: shakeWorkerBtn ? 'shake 0.5s' : 'none',
                     }}
-                  />
+                    onClick={() => handleConversationJudgment('worker')}
+                    onMouseOver={(e) => {
+                      if (!shakeWorkerBtn) {
+                        e.currentTarget.style.transform = 'scale(1.05)'
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(76, 175, 80, 0.3)'
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if (!shakeWorkerBtn) {
+                        e.currentTarget.style.transform = 'scale(1)'
+                        e.currentTarget.style.boxShadow = 'none'
+                      }
+                    }}
+                  >
+                    <img src="/desert/icon/correct.png" alt="Worker" style={styles.conversationTestButtonIcon} />
+                    <div style={{...styles.conversationTestButtonText, color: '#4CAF50'}}>Verified as Worker</div>
+                  </div>
                   
-                  {/* Stamp overlay */}
-                  {showStamp && (
-                    <img 
-                      src={stampType === 'passed' ? '/island/icon/passed.png' : '/island/icon/failed.png'}
-                      alt={stampType}
-                      style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '200px',
-                        height: '200px',
-                        zIndex: 200,
-                        pointerEvents: 'none',
-                      }}
-                    />
-                  )}
-                </div>
-
-                {/* Buttons container */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  width: '480px', // 与图片宽度一致
-                  paddingLeft: '15px', // passed距离左边15px
-                  paddingRight: '15px', // failed距离右边15px
-                }}>
-                  {/* Left PASSED button */}
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                    zIndex: 10,
-                  }}
-                  onClick={() => handleMissionJudgment('passed')}
+                  <div 
+                    style={{
+                      ...styles.conversationTestButtonGenAI,
+                      animation: shakeGenAIBtn ? 'shake 0.5s' : 'none',
+                    }}
+                    onClick={() => handleConversationJudgment('genai')}
+                    onMouseOver={(e) => {
+                      if (!shakeGenAIBtn) {
+                        e.currentTarget.style.transform = 'scale(1.05)'
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(244, 67, 54, 0.3)'
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if (!shakeGenAIBtn) {
+                        e.currentTarget.style.transform = 'scale(1)'
+                        e.currentTarget.style.boxShadow = 'none'
+                      }
+                    }}
                   >
-                    <img 
-                      src="/desert/icon/correct.png" 
-                      alt="Correct" 
-                      style={{
-                        width: '91px', // Maintain aspect ratio
-                        height: '100px',
-                        marginBottom: '5px',
-                      }}
-                    />
-                    <span style={{
-                      fontFamily: "'Roboto', sans-serif",
-                      fontSize: '16px',
-                      fontWeight: 'bold',
-                      color: '#4CAF50',
-                    }}>
-                      {t('passed')}
-                    </span>
-                  </div>
-
-                  {/* Right FAILED button */}
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                    zIndex: 10,
-                  }}
-                  onClick={() => handleMissionJudgment('failed')}
-                  >
-                    <img 
-                      src="/desert/icon/wrong.png" 
-                      alt="Wrong" 
-                      style={{
-                        width: '91px', // Maintain aspect ratio
-                        height: '100px',
-                        marginBottom: '5px',
-                      }}
-                    />
-                    <span style={{
-                      fontFamily: "'Roboto', sans-serif",
-                      fontSize: '16px',
-                      fontWeight: 'bold',
-                      color: '#F44336',
-                    }}>
-                      {t('failed')}
-                    </span>
+                    <img src="/desert/icon/wrong.png" alt="GenAI" style={styles.conversationTestButtonIcon} />
+                    <div style={{...styles.conversationTestButtonText, color: '#F44336'}}>Identified as GenAI</div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}

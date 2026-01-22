@@ -265,8 +265,8 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
       border: 'none',
     },
     arrowImage: {
-      width: '30px',
-      height: '30px',
+      width: '80px',
+      height: '80px',
       objectFit: 'contain',
       filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.5))',
     },
