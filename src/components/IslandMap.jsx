@@ -3626,201 +3626,227 @@ const IslandMap = ({ onExit }) => {
         </div>
       )}
 
-      {/* Sparky Dialogue */}
-      {showSparkyDialogue && (
-        <div style={styles.sparkyDialogueContainer}>
-          <div style={styles.sparkyDialogueHeader}>
-            <h3 style={styles.sparkyDialogueTitle}>{t('sparkyEnergyManager')}</h3>
-            <button style={styles.sparkyCloseButton} onClick={() => {
-              setShowSparkyDialogue(false)
-              setShowSparkyDebrief(false)
-            }}>
-              ✕
-            </button>
-          </div>
-          
-          <div style={styles.sparkyDialogueContent}>
-            {sparkyMessages.map((message, index) => (
-              <div key={index}>
-                {message.type === 'message' && (
-                  <div style={{...styles.sparkyDialogueMessage, position: 'relative'}}>
-                    <strong>{message.speaker}:</strong> 
-                    <span dangerouslySetInnerHTML={{ 
-                      __html: index === sparkyMessages.length - 1 && sparkyIsTyping ? 
-                        sparkyTypingText : 
-                        message.text.replace(
-                          /<span class='highlight'>(.*?)<\/span>/g, 
-                          '<span style="background: linear-gradient(90deg, #5170FF, #FFBBC4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: bold;">$1</span>'
-                        )
-                    }} />
-                    {index === sparkyMessages.length - 1 && !waitingForChoice && (
-                      <button
-                        style={styles.continueButton}
-                        onClick={handleSparkyContinue}
-                      >
-                        {sparkyIsTyping ? t('skip') : t('continue')}
-                      </button>
-                    )}
-                  </div>
-                )}
-                {message.type === 'animation' && (
-                  <div style={{...styles.sparkyDialogueMessage, textAlign: 'center', background: '#f0f8ff'}}>
-                    <div style={{marginBottom: '10px', fontWeight: 'bold', color: '#5170FF'}}>Animation Sequence</div>
-                    <img 
-                      src={message.src} 
-                      alt={message.alt}
-                      style={{maxWidth: '100%', height: 'auto', borderRadius: '8px'}}
-                    />
-                  </div>
-                )}
-                {message.type === 'image' && (
-                  <div style={{...styles.sparkyDialogueMessage, textAlign: 'center', background: '#fff8f0'}}>
-                    <div style={{marginBottom: '10px', fontWeight: 'bold', color: '#FF6B35'}}>Image Display</div>
-                    <img 
-                      src={message.src} 
-                      alt={message.alt}
-                      style={{maxWidth: '100%', height: 'auto', borderRadius: '8px'}}
-                    />
-                  </div>
-                )}
-                {message.type === 'user_choice' && (
-                  <div style={{...styles.sparkyDialogueMessage, background: '#e3f2fd', textAlign: 'right'}}>
-                    <strong>You:</strong> {message.text}
-                  </div>
-                )}
-                {message.type === 'quiz_feedback' && (
-                  <div style={{...styles.sparkyDialogueMessage, background: message.isCorrect ? '#e8f5e8' : '#ffe8e8'}}>
-                    <strong>Sparky:</strong> {message.text}
-                  </div>
-                )}
+      {/* Sparky Dialogue - Modern Design */}
+      {showSparkyDialogue && (() => {
+        const theme = {
+          borderColor: '#5170FF', // Sparky blue
+          progressColor: '#5170FF',
+          avatar: '/island/npc/sparky.gif'
+        }
+        
+        // Calculate progress
+        const totalSteps = 3 // Initial dialogue / Mission 1 / Mission 2
+        const currentStep = missionActive ? (phase2Active ? 3 : 2) : 1
+        const progressPercent = (currentStep / totalSteps) * 100
+        
+        return (
+          <div style={{
+            ...styles.modernDialogueContainer,
+            background: 'rgba(245, 245, 245, 0.98)',
+            border: `3px solid ${theme.borderColor}`,
+            top: '12.5%',
+            left: '10%',
+            width: '40%',
+            height: '70%',
+          }}>
+            {/* Header with Progress */}
+            <div style={styles.modernDialogueHeader}>
+              <div style={styles.modernProgressContainer}>
+                <div style={styles.modernMissionTitle}>SPARKY</div>
+                <div style={styles.modernStepIndicator}>STEP {currentStep}/{totalSteps}</div>
               </div>
-            ))}
+              <div style={styles.modernProgressBar}>
+                <div style={{
+                  ...styles.modernProgressFill,
+                  width: `${progressPercent}%`,
+                  background: theme.progressColor,
+                }} />
+              </div>
+              
+              <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                <div style={styles.modernNpcInfo}>
+                  <img src={theme.avatar} alt="Sparky" style={styles.modernNpcAvatar} />
+                  <div>
+                    <div style={styles.modernNpcName}>SPARKY:</div>
+                  </div>
+                </div>
+                <button 
+                  style={styles.modernCloseButton}
+                  onClick={() => {
+                    setShowSparkyDialogue(false)
+                    setShowSparkyDebrief(false)
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.color = '#333'}
+                  onMouseOut={(e) => e.currentTarget.style.color = '#999'}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
             
-            {/* Quiz Choice Buttons */}
-            {showQuizChoice && (
-              (() => {
-                if (showFinalSparkyDialogue) {
-                  // Final dialogue quiz
-                  const finalDialogueFlow = getFinalSparkyDialogueFlow(t)
-                  const currentItem = finalDialogueFlow[finalDialogueStep]
-                  return currentItem && currentItem.quiz ? (
-                    <div style={{marginTop: '20px'}}>
-                      <div style={{...styles.sparkyDialogueMessage, background: '#f0f8ff', marginBottom: '15px'}}>
+            {/* Messages Content */}
+            <div style={styles.modernDialogueContent}>
+              {sparkyMessages.map((message, index) => {
+                const timestamp = getCurrentTimestamp()
+                const isLastMessage = index === sparkyMessages.length - 1
+                
+                if (message.type === 'message') {
+                  return (
+                    <div key={index} style={styles.modernNpcMessage}>
+                      <div style={styles.modernNpcSpeaker}>SPARKY:</div>
+                      <p style={styles.modernNpcText}
+                        dangerouslySetInnerHTML={{ 
+                          __html: (isLastMessage && sparkyIsTyping ? sparkyTypingText : message.text).replace(
+                            /<span class='highlight'>(.*?)<\/span>/g, 
+                            `<span style="color: ${theme.borderColor}; font-weight: 600;">$1</span>`
+                          )
+                        }} 
+                      />
+                      {isLastMessage && sparkyIsTyping && <span style={{ opacity: 0.5 }}>|</span>}
+                      <div style={styles.modernTimestamp}>{timestamp}</div>
+                    </div>
+                  )
+                }
+                
+                if (message.type === 'user_choice') {
+                  return (
+                    <div key={index} style={styles.modernUserMessage}>
+                      <div style={styles.modernUserSpeaker}>YOU:</div>
+                      <div style={{
+                        ...styles.modernUserBubble,
+                        background: theme.borderColor
+                      }}>
+                        <p style={styles.modernUserText}>{message.text}</p>
+                      </div>
+                      <div style={{...styles.modernTimestamp, textAlign: 'right'}}>{timestamp}</div>
+                    </div>
+                  )
+                }
+                
+                if (message.type === 'animation' || message.type === 'image') {
+                  return (
+                    <div key={index} style={{...styles.modernNpcMessage, textAlign: 'center'}}>
+                      <img 
+                        src={message.src} 
+                        alt={message.alt}
+                        style={{maxWidth: '100%', height: 'auto', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'}}
+                      />
+                    </div>
+                  )
+                }
+                
+                if (message.type === 'quiz_feedback') {
+                  return (
+                    <div key={index} style={styles.modernNpcMessage}>
+                      <div style={styles.modernNpcSpeaker}>SPARKY:</div>
+                      <p style={{
+                        ...styles.modernNpcText,
+                        padding: '12px 16px',
+                        background: message.isCorrect ? '#e8f5e8' : '#ffe8e8',
+                        borderRadius: '10px',
+                        border: `2px solid ${message.isCorrect ? '#4caf50' : '#f44336'}`
+                      }}>
+                        {message.text}
+                      </p>
+                      <div style={styles.modernTimestamp}>{timestamp}</div>
+                    </div>
+                  )
+                }
+                
+                return null
+              })}
+              
+              {/* Quiz Choice Buttons */}
+              {showQuizChoice && (() => {
+                const flow = showFinalSparkyDialogue ? getFinalSparkyDialogueFlow(t) : getSparkyDebriefFlow(t)
+                const currentItem = flow[showFinalSparkyDialogue ? finalDialogueStep : debriefStep]
+                
+                if (currentItem && currentItem.quiz) {
+                  return (
+                    <div style={{marginTop: '15px'}}>
+                      <div style={{
+                        ...styles.modernNpcMessage,
+                        background: '#f0f8ff',
+                        padding: '15px',
+                        borderRadius: '12px',
+                        marginBottom: '15px'
+                      }}>
                         <strong>Question:</strong> {currentItem.quiz.question}
                       </div>
                       {currentItem.quiz.choices.map((choice) => (
                         <button
                           key={choice.id}
                           style={{
-                            ...styles.sparkyUserChoice,
-                            marginBottom: '10px',
-                            background: 'rgba(255, 193, 7, 0.1)',
-                            border: '2px solid #FFC107',
-                            color: '#F57C00'
+                            ...styles.modernActionButton,
+                            border: `2px solid ${theme.borderColor}`,
+                            color: theme.borderColor,
                           }}
                           onClick={() => handleQuizChoice(choice.id, choice.correct)}
                           onMouseOver={(e) => {
-                            e.target.style.background = 'rgba(255, 193, 7, 0.2)'
-                            e.target.style.transform = 'scale(1.02)'
+                            e.currentTarget.style.background = `rgba(81, 112, 255, 0.1)`
+                            e.currentTarget.style.transform = 'translateY(-2px)'
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(81, 112, 255, 0.2)'
                           }}
                           onMouseOut={(e) => {
-                            e.target.style.background = 'rgba(255, 193, 7, 0.1)'
-                            e.target.style.transform = 'scale(1)'
+                            e.currentTarget.style.background = 'white'
+                            e.currentTarget.style.transform = 'translateY(0)'
+                            e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)'
                           }}
                         >
                           {choice.text}
                         </button>
                       ))}
                     </div>
-                  ) : null
-                } else {
-                  // Debrief dialogue quiz
-                  const debriefFlow = getSparkyDebriefFlow(t)
-                  const currentItem = debriefFlow[debriefStep]
-                  return currentItem && currentItem.quiz ? (
-                    <div style={{marginTop: '20px'}}>
-                      <div style={{...styles.sparkyDialogueMessage, background: '#f0f8ff', marginBottom: '15px'}}>
-                        <strong>Question:</strong> {currentItem.quiz.question}
-                      </div>
-                      {currentItem.quiz.choices.map((choice) => (
-                        <button
-                          key={choice.id}
-                          style={{
-                            ...styles.sparkyUserChoice,
-                            marginBottom: '10px',
-                            background: 'rgba(255, 193, 7, 0.1)',
-                            border: '2px solid #FFC107',
-                            color: '#F57C00'
-                          }}
-                          onClick={() => handleQuizChoice(choice.id, choice.correct)}
-                          onMouseOver={(e) => {
-                            e.target.style.background = 'rgba(255, 193, 7, 0.2)'
-                            e.target.style.transform = 'scale(1.02)'
-                          }}
-                          onMouseOut={(e) => {
-                            e.target.style.background = 'rgba(255, 193, 7, 0.1)'
-                            e.target.style.transform = 'scale(1)'
-                          }}
-                        >
-                          {choice.text}
-                        </button>
-                      ))}
-                    </div>
-                  ) : null
+                  )
                 }
-              })()
-            )}
-            
-            {/* Choice Button */}
-            {waitingForChoice && !showQuizChoice && (
-              (() => {
-                if (showFinalSparkyDialogue) {
-                  // Final dialogue choice
-                  const finalDialogueFlow = getFinalSparkyDialogueFlow(t)
-                  const currentDialogueItem = finalDialogueFlow.find(item => item.id === finalDialogueStep)
-                  return currentDialogueItem && currentDialogueItem.nextChoice ? (
-                    <button 
-                      style={styles.sparkyUserChoice}
-                      onClick={() => handleSparkyChoice(currentDialogueItem.nextChoice.text, currentDialogueItem.nextChoice.choiceId)}
+                return null
+              })()}
+              
+              {/* User Choice Buttons */}
+              {waitingForChoice && (() => {
+                const flow = showFinalSparkyDialogue ? getFinalSparkyDialogueFlow(t) : 
+                             showSparkyDebrief ? getSparkyDebriefFlow(t) : getSparkyDialogueFlow(t)
+                const currentItem = flow[showFinalSparkyDialogue ? finalDialogueStep : 
+                                         showSparkyDebrief ? debriefStep : currentSparkyStep]
+                
+                if (currentItem && currentItem.nextChoice) {
+                  return (
+                    <button
+                      style={{
+                        ...styles.modernActionButton,
+                        background: theme.borderColor,
+                        color: 'white',
+                        border: 'none',
+                      }}
+                      onClick={() => {
+                        if (showFinalSparkyDialogue) {
+                          handleSparkyChoice(currentItem.nextChoice.text, currentItem.nextChoice.choiceId)
+                        } else if (showSparkyDebrief) {
+                          handleSparkyChoice(currentItem.nextChoice.text, currentItem.nextChoice.choiceId)
+                        } else {
+                          handleSparkyChoice(currentItem.nextChoice.text, currentItem.nextChoice.choiceId)
+                        }
+                      }}
                       onMouseOver={(e) => {
-                        e.target.style.background = 'rgba(81, 112, 255, 0.2)'
-                        e.target.style.transform = 'scale(1.02)'
+                        e.currentTarget.style.transform = 'translateY(-2px)'
+                        e.currentTarget.style.boxShadow = '0 6px 16px rgba(81, 112, 255, 0.3)'
                       }}
                       onMouseOut={(e) => {
-                        e.target.style.background = 'rgba(81, 112, 255, 0.1)'
-                        e.target.style.transform = 'scale(1)'
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)'
                       }}
                     >
-                      👉 {currentDialogueItem.nextChoice.text}
+                      👉 {currentItem.nextChoice.text}
                     </button>
-                  ) : null
-                } else {
-                  // Original dialogue choice
-                  const sparkyDialogueFlow = showSparkyDebrief ? getSparkyDebriefFlow(t) : getSparkyDialogueFlow(t)
-                  const currentDialogueItem = sparkyDialogueFlow.find(item => item.id === (showSparkyDebrief ? debriefStep : currentSparkyStep))
-                  return currentDialogueItem && currentDialogueItem.nextChoice ? (
-                    <button 
-                      style={styles.sparkyUserChoice}
-                      onClick={() => handleSparkyChoice(currentDialogueItem.nextChoice.text, currentDialogueItem.nextChoice.choiceId)}
-                      onMouseOver={(e) => {
-                        e.target.style.background = 'rgba(81, 112, 255, 0.2)'
-                        e.target.style.transform = 'scale(1.02)'
-                      }}
-                      onMouseOut={(e) => {
-                        e.target.style.background = 'rgba(81, 112, 255, 0.1)'
-                        e.target.style.transform = 'scale(1)'
-                      }}
-                    >
-                      👉 {currentDialogueItem.nextChoice.text}
-                    </button>
-                  ) : null
+                  )
                 }
-              })()
-            )}
+                return null
+              })()}
+            </div>
           </div>
-        </div>
-      )}
-
+        )
+      })()}
+                            background: 'rgba(255, 193, 7, 0.1)',
       {/* New Conversation Test Card */}
       {showMissionDialogue && currentMissionNpc && (
         <div style={styles.conversationTestCard}>
