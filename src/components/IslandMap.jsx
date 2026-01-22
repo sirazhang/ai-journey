@@ -3338,14 +3338,6 @@ const IslandMap = ({ onExit }) => {
       flexDirection: 'column',
       borderRight: '2px solid #e0e0e0',
     },
-    conversationTestLeftTitle: {
-      fontFamily: "'Rajdhani', sans-serif",
-      fontSize: '18px',
-      fontWeight: 600,
-      padding: '15px 20px',
-      borderBottom: '1px solid #e0e0e0',
-      color: '#333',
-    },
     conversationTestMessages: {
       flex: 1,
       background: '#f8fae4',
@@ -3405,14 +3397,7 @@ const IslandMap = ({ onExit }) => {
       width: '280px',
       display: 'flex',
       flexDirection: 'column',
-    },
-    conversationTestRightTitle: {
-      fontFamily: "'Rajdhani', sans-serif",
-      fontSize: '18px',
-      fontWeight: 600,
-      padding: '15px 20px',
-      borderBottom: '1px solid #e0e0e0',
-      color: '#333',
+      padding: '20px',
     },
     conversationTestProfile: {
       background: '#162d3b',
@@ -3423,6 +3408,16 @@ const IslandMap = ({ onExit }) => {
       flexDirection: 'column',
       alignItems: 'center',
       gap: '12px',
+      marginBottom: '30px', // Add space between profile and buttons
+    },
+    conversationTestProfileLabel: {
+      fontFamily: "'Rajdhani', sans-serif",
+      fontSize: '12px',
+      fontWeight: 600,
+      color: 'white',
+      textTransform: 'uppercase',
+      letterSpacing: '1px',
+      marginBottom: '8px',
     },
     conversationTestProfileImage: {
       width: '120px',
@@ -3872,7 +3867,6 @@ const IslandMap = ({ onExit }) => {
           <div style={styles.conversationTestBody}>
             {/* Left: Conversation Test */}
             <div style={styles.conversationTestLeft}>
-              <div style={styles.conversationTestLeftTitle}>Conversation Test</div>
               <div style={styles.conversationTestMessages}>
                 {conversationMessages.map((msg, index) => {
                   const isLastMessage = index === conversationMessages.length - 1
@@ -3933,8 +3927,8 @@ const IslandMap = ({ onExit }) => {
             
             {/* Right: Profile & Buttons */}
             <div style={styles.conversationTestRight}>
-              <div style={styles.conversationTestRightTitle}>Profile</div>
               <div style={styles.conversationTestProfile}>
+                <div style={styles.conversationTestProfileLabel}>Profile</div>
                 <img 
                   src={currentMissionNpc.image} 
                   alt={currentMissionNpc.id}
