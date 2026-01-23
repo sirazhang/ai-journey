@@ -3649,20 +3649,25 @@ const IslandMap = ({ onExit }) => {
       {/* Sparky Dialogue - Modern Design */}
       {showSparkyDialogue && (() => {
         const theme = {
-          borderColor: '#5170FF', // Sparky blue
-          progressColor: '#5170FF',
+          borderColor: '#008dda', // 蓝色边框
+          progressColor: '#008dda',
+          backgroundColor: '#f1f2ed', // 对话框底色
+          userBubbleColor: '#008dda', // 用户对话框底色
           avatar: '/island/npc/sparky.gif'
         }
         
-        // Calculate progress
+        // Calculate progress and mission name
         const totalSteps = 3 // Initial dialogue / Mission 1 / Mission 2
         const currentStep = missionActive ? (phase2Active ? 3 : 2) : 1
         const progressPercent = (currentStep / totalSteps) * 100
+        const missionName = currentStep === 1 ? 'INITIAL BRIEFING' : 
+                           currentStep === 2 ? 'MISSION: IDENTIFY AI HALLUCINATIONS' : 
+                           'MISSION: DETECT HOMOGENIZATION'
         
         return (
           <div style={{
             ...styles.modernDialogueContainer,
-            background: 'rgba(245, 245, 245, 0.98)',
+            background: theme.backgroundColor,
             border: `3px solid ${theme.borderColor}`,
             top: '12.5%',
             left: '10%',
@@ -3671,11 +3676,41 @@ const IslandMap = ({ onExit }) => {
           }}>
             {/* Header with Progress */}
             <div style={styles.modernDialogueHeader}>
-              {/* Progress bar at top */}
+              {/* Mission name and step indicator */}
               <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px'}}>
-                <div style={styles.modernStepIndicator}>STEP {currentStep}/{totalSteps}</div>
+                <div style={{
+                  fontFamily: "'Roboto', sans-serif",
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: '#333',
+                  letterSpacing: '0.5px',
+                }}>{missionName}</div>
+                <div style={{
+                  fontFamily: "'Roboto', sans-serif",
+                  fontSize: '14px',
+                  fontWeight: 400,
+                  color: '#999',
+                }}>Step {currentStep} of {totalSteps}</div>
+              </div>
+              
+              {/* Progress bar with close button */}
+              <div style={{position: 'relative', marginBottom: '15px'}}>
+                <div style={{...styles.modernProgressBar, background: '#e0e0e0'}}>
+                  <div style={{
+                    ...styles.modernProgressFill,
+                    width: `${progressPercent}%`,
+                    background: theme.progressColor,
+                  }} />
+                </div>
+                
+                {/* Close button - positioned at bottom right of progress bar */}
                 <button 
-                  style={styles.modernCloseButton}
+                  style={{
+                    ...styles.modernCloseButton,
+                    position: 'absolute',
+                    bottom: '-25px',
+                    right: '0px',
+                  }}
                   onClick={() => {
                     setShowSparkyDialogue(false)
                     setShowSparkyDebrief(false)
@@ -3686,18 +3721,19 @@ const IslandMap = ({ onExit }) => {
                   ✕
                 </button>
               </div>
-              <div style={styles.modernProgressBar}>
-                <div style={{
-                  ...styles.modernProgressFill,
-                  width: `${progressPercent}%`,
-                  background: theme.progressColor,
-                }} />
-              </div>
               
               {/* NPC info below progress bar */}
               <div style={{...styles.modernNpcInfo, marginTop: '15px'}}>
                 <img src={theme.avatar} alt="Sparky" style={styles.modernNpcAvatar} />
-                <div style={styles.modernNpcName}>SPARKY:</div>
+                <div>
+                  <div style={styles.modernNpcName}>Sparky</div>
+                  <div style={{
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '12px',
+                    fontWeight: 400,
+                    color: '#999',
+                  }}>Island Manager</div>
+                </div>
               </div>
             </div>
             
@@ -3710,6 +3746,13 @@ const IslandMap = ({ onExit }) => {
                 if (message.type === 'message') {
                   return (
                     <div key={index} style={styles.modernNpcMessage}>
+                      <div style={{
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        color: '#333',
+                        marginBottom: '8px',
+                      }}>SPARKY:</div>
                       <p style={styles.modernNpcText}
                         dangerouslySetInnerHTML={{ 
                           __html: (isLastMessage && sparkyIsTyping ? sparkyTypingText : message.text).replace(
@@ -3729,9 +3772,10 @@ const IslandMap = ({ onExit }) => {
                     <div key={index} style={styles.modernUserMessage}>
                       <div style={{
                         ...styles.modernUserBubble,
-                        background: theme.borderColor
+                        background: theme.userBubbleColor, // 使用新的用户对话框颜色
+                        color: 'white',
                       }}>
-                        <p style={styles.modernUserText}>{message.text}</p>
+                        <p style={{...styles.modernUserText, color: 'white'}}>{message.text}</p>
                       </div>
                       <div style={{...styles.modernTimestamp, textAlign: 'right'}}>{timestamp}</div>
                     </div>
@@ -3816,7 +3860,7 @@ const IslandMap = ({ onExit }) => {
                 return null
               })()}
               
-              {/* User Choice Buttons - aligned to left */}
+              {/* User Choice Buttons - aligned to left, white background with black text */}
               {waitingForChoice && (() => {
                 const flow = showFinalSparkyDialogue ? getFinalSparkyDialogueFlow(t) : 
                              showSparkyDebrief ? getSparkyDebriefFlow(t) : getSparkyDialogueFlow(t)
@@ -3829,10 +3873,13 @@ const IslandMap = ({ onExit }) => {
                       <button
                         style={{
                           ...styles.modernActionButton,
-                          background: theme.borderColor,
-                          color: 'white',
-                          border: 'none',
+                          background: 'white',
+                          color: '#333',
+                          border: '2px solid #e0e0e0',
                           marginLeft: '0',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
                         }}
                         onClick={() => {
                           if (showFinalSparkyDialogue) {
@@ -3844,15 +3891,18 @@ const IslandMap = ({ onExit }) => {
                           }
                         }}
                         onMouseOver={(e) => {
+                          e.currentTarget.style.background = '#f5f5f5'
                           e.currentTarget.style.transform = 'translateY(-2px)'
-                          e.currentTarget.style.boxShadow = '0 6px 16px rgba(81, 112, 255, 0.3)'
+                          e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
                         }}
                         onMouseOut={(e) => {
+                          e.currentTarget.style.background = 'white'
                           e.currentTarget.style.transform = 'translateY(0)'
                           e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)'
                         }}
                       >
-                        👉 {currentItem.nextChoice.text}
+                        <span style={{fontSize: '16px'}}>→</span>
+                        {currentItem.nextChoice.text}
                       </button>
                     </div>
                   )

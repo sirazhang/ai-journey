@@ -356,15 +356,13 @@ const courtCases = {
 }
 const getDialogueSequences = (t) => ({
   hallway: [
-    "Brrr… it's freezing out here! You might think this place looks empty and desolate, but actually—",
-    "this is the most advanced region of all four zones.",
-    "The Glacier Zone has always encouraged rational thinking, common sense, and the use of the latest technologies. Almost every industry here relies on GenAI to boost efficiency.",
-    "Let's move forward and see what's really going on."
+    "Brrr… it's freezing out here. At first glance, this place looks empty and desolate—but appearances can be misleading. This is actually the most advanced region among all four zones.",
+    "That's because the Glacier Zone has always valued rational thinking, common sense, and cutting-edge technology. Almost every industry here relies on GenAI to boost efficiency.",
+    "So, put on something warm and follow me down the corridor. Let's see what lies ahead."
   ],
   outside: [
     "Huh? That's strange… Why is there no one around?",
     "The automated systems have stopped. The factories are idle. Nothing seems to be running.",
-    "If this place is so advanced, why does the entire region look like it's shut down?",
     "Honestly… I don't know either. Let's go ask the local supervisor, Momo. He should be inside."
   ],
   inside: [
@@ -1208,7 +1206,7 @@ const GlacierMap = ({ onExit }) => {
   const getNpcPosition = () => {
     switch (currentScene) {
       case 'hallway':
-        return { left: '5px', bottom: '5px', size: '400px' } // 修改为400px
+        return { left: '5px', bottom: '5px', size: '400px' } // 保持400px
       case 'outside':
         return { right: '0px', top: '0px', size: '400px' } // 增大到400px
       case 'inside':
@@ -1242,13 +1240,13 @@ const GlacierMap = ({ onExit }) => {
   const getDialoguePosition = () => {
     switch (currentScene) {
       case 'hallway':
-        return { left: '420px', bottom: '150px', width: '700px', minHeight: '200px' } // 调整到NPC右侧贴近位置
+        return { left: '430px', bottom: '150px', width: '700px', minHeight: '200px' } // 缩小距离，从420px改为430px
       case 'outside':
-        return { right: '420px', top: '150px', width: '500px', minHeight: '120px' } // 向下向左移动，贴近400px的NPC
+        return { right: '430px', top: '150px', width: '500px', minHeight: '120px' } // 缩小距离，从420px改为430px
       case 'inside':
         return { right: '50%', top: '15%', width: '40%', height: '70%' } // Align with Momo's top (15% from top), reduce height to 70%
       default:
-        return { left: '420px', bottom: '150px', width: '700px', minHeight: '200px' }
+        return { left: '430px', bottom: '150px', width: '700px', minHeight: '200px' }
     }
   }
 
@@ -1287,6 +1285,7 @@ const GlacierMap = ({ onExit }) => {
       position: 'absolute',
       zIndex: 30,
       transition: 'transform 0.2s',
+      filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3))', // 添加轻微阴影
     },
     npcImage: {
       width: '100%',
@@ -1402,15 +1401,15 @@ const GlacierMap = ({ onExit }) => {
     dialogueContainer: {
       position: 'absolute',
       zIndex: 1000,
-      background: 'rgba(240, 248, 255, 0.8)',
+      background: 'rgba(240, 248, 255, 0.95)', // 提高不透明度
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
-      border: '1px solid rgba(100, 149, 237, 0.4)',
-      borderRadius: '20px',
+      border: '2px solid rgba(100, 149, 237, 0.5)', // 加粗边框
+      borderRadius: '25px', // 增加圆角
       padding: '25px 30px',
       display: 'flex',
       flexDirection: 'column',
-      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(100, 149, 237, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1)',
+      boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(100, 149, 237, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.5)', // 增强阴影和悬浮感
       minWidth: '400px',
       maxWidth: '800px',
     },
@@ -2530,10 +2529,16 @@ const GlacierMap = ({ onExit }) => {
             ...getDialoguePosition(),
           }}
         >
-          <p style={styles.dialogueText}>
-            {displayedText}
-            {isTyping && <span style={{ opacity: 0.5 }}>|</span>}
-          </p>
+          <p 
+            style={styles.dialogueText}
+            dangerouslySetInnerHTML={{
+              __html: displayedText
+                .replace(/^(Brrr…[^.]*\.)/g, '<span style="font-weight: 700; color: #4A90E2;">$1</span>') // 蓝色加粗"Brrr…"开头的句子
+                .replace(/^(Huh\?[^.]*\.)/g, '<span style="font-weight: 700; color: #E24A4A;">$1</span>') // 红色加粗"Huh?"开头的句子
+                .replace(/^(Honestly…[^.]*\.)/g, '<span style="font-weight: 700; color: #9B59B6;">$1</span>') // 紫色加粗"Honestly…"开头的句子
+            }}
+          />
+          {isTyping && <span style={{ opacity: 0.5, marginLeft: '4px' }}>|</span>}
           
           <div style={styles.dialogueButtons}>
             <button 
