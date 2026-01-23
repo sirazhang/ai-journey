@@ -223,17 +223,117 @@ const npc6DialogueSequence = [
   }
 ]
 
-// Creativity challenges data
-const creativityChallenges = [
+// NPC 9 dialogue sequence
+const npc9DialogueSequence = [
   {
-    title: "List at least 9 creative uses for a Shipping Bag 🛍️ within 2 Minutes",
-    requiredCount: 9,
-    timeLimit: 120 // 2 minutes in seconds
+    speaker: 'npc9',
+    text: "Hi there! I'm… I used to be a super worker, but then I started outsourcing my own thinking to... AI well.",
+    autoAdvance: true
   },
   {
-    title: "List at least 9 creative uses for a Toothbrush 🪥 within 2 Minutes",
+    speaker: 'npc9',
+    text: "Now my attention span is shorter than a... —Oh, look! A snowflake! It's so shiny! ...Wait, where was I?",
+    autoAdvance: true
+  },
+  {
+    speaker: 'npc9',
+    text: "Right. Unemployment. I completely forgot to show up on Monday. So, now I need to reboot my brain. Can you help me?",
+    showButton: true
+  },
+  {
+    speaker: 'user',
+    text: "Let's do it!",
+    isButton: true,
+    startChallenge: true
+  }
+]
+
+// Creativity challenges data - randomized question pool
+const creativityChallengesPool = [
+  {
+    id: 1,
+    en: "If there were no mobile phones, what are 5 different ways people could contact each other?",
+    zh: "如果没有手机，人们可以用哪 5 种不同方式联系彼此？",
+    requiredCount: 5,
+    timeLimit: 120,
+    hints: {
+      en: [
+        "Think about how people communicated before mobile phones existed.",
+        "Consider face-to-face, written, voice-based, or signal-based methods."
+      ],
+      zh: [
+        "想想在手机出现之前人们是如何交流的。",
+        "考虑面对面、书面、语音或信号方式。"
+      ]
+    }
+  },
+  {
+    id: 2,
+    en: "List at least 9 uses for a shopping bag 🛍️",
+    zh: "列举 9 种以上购物袋🛍️的用途。",
     requiredCount: 9,
-    timeLimit: 120
+    timeLimit: 120,
+    hints: {
+      en: [
+        "Think beyond carrying purchases.",
+        "Consider home, school, travel, or creative uses."
+      ],
+      zh: [
+        "不仅仅是用来购物。",
+        "考虑家庭、学校、旅行或创意用途。"
+      ]
+    }
+  },
+  {
+    id: 3,
+    en: "List at least 9 uses for a cardboard box 📦",
+    zh: "列举 9 种以上纸箱子📦的用途。",
+    requiredCount: 9,
+    timeLimit: 120,
+    hints: {
+      en: [
+        "A cardboard box can be reused or transformed.",
+        "Think about storage, play, or craft activities."
+      ],
+      zh: [
+        "纸箱可以重复使用或改造。",
+        "考虑储物、游戏或手工活动。"
+      ]
+    }
+  },
+  {
+    id: 4,
+    en: "List at least 9 uses for a toothbrush 🪥",
+    zh: "列举 9 种以上牙刷🪥的其他用途。",
+    requiredCount: 9,
+    timeLimit: 120,
+    hints: {
+      en: [
+        "Focus on the toothbrush's small size and bristles.",
+        "What tasks require gentle or detailed cleaning?"
+      ],
+      zh: [
+        "关注牙刷的小尺寸和刷毛。",
+        "什么任务需要温和或细致的清洁？"
+      ]
+    }
+  },
+  {
+    id: 5,
+    en: "List at least 9 things in the world that can make sound 🔊",
+    zh: "列举 9 种以上\"可以发出声音🔊的东西\"",
+    requiredCount: 9,
+    timeLimit: 120,
+    hints: {
+      en: [
+        "Not only musical instruments make sounds.",
+        "Think about both natural and man-made sources."
+      ],
+      zh: [
+        "不仅仅是乐器会发出声音。",
+        "考虑自然和人造的声源。"
+      ]
+    }
   }
 ]
 
@@ -556,10 +656,32 @@ const GlacierMap = ({ onExit }) => {
   const [npc6ShowButton, setNpc6ShowButton] = useState(false) // Track if button should be shown
   const [showCreativityChallenge, setShowCreativityChallenge] = useState(false)
   const [currentChallenge, setCurrentChallenge] = useState(0)
+  const [selectedChallenges, setSelectedChallenges] = useState([]) // Store 2 random challenges
   const [challengeTimer, setChallengeTimer] = useState(120)
   const [userInputs, setUserInputs] = useState([])
   const [currentInput, setCurrentInput] = useState('')
+  const [showHint, setShowHint] = useState(false)
   const [npc6Completed, setNpc6Completed] = useState(false)
+  
+  // NPC9 states
+  const [showNpc9Dialogue, setShowNpc9Dialogue] = useState(false)
+  const [npc9DialogueIndex, setNpc9DialogueIndex] = useState(0)
+  const [npc9TypedText, setNpc9TypedText] = useState('')
+  const [npc9IsTyping, setNpc9IsTyping] = useState(false)
+  const [npc9ShowButton, setNpc9ShowButton] = useState(false)
+  const [showMemoryChallenge, setShowMemoryChallenge] = useState(false)
+  const [memoryPhase, setMemoryPhase] = useState('snowPath') // 'snowPath' or 'footstepRecall'
+  const [snowPathRound, setSnowPathRound] = useState(0) // 0, 1, 2 (3 rounds total)
+  const [snowPathFootprints, setSnowPathFootprints] = useState([]) // Array of positions (0-15)
+  const [snowPathUserSelections, setSnowPathUserSelections] = useState([]) // User's selections
+  const [snowPathMemorizing, setSnowPathMemorizing] = useState(true) // true during memorization phase
+  const [snowPathTimer, setSnowPathTimer] = useState(30) // 30 seconds to memorize
+  const [footstepRound, setFootstepRound] = useState(0) // 0, 1, 2 (3 rounds total)
+  const [footstepSequence, setFootstepSequence] = useState([]) // Array of footprint indices
+  const [footstepUserSequence, setFootstepUserSequence] = useState([]) // User's tapped sequence
+  const [footstepShowingSequence, setFootstepShowingSequence] = useState(false) // true during sequence display
+  const [footstepCurrentHighlight, setFootstepCurrentHighlight] = useState(-1) // Currently highlighted footprint
+  const [npc9Completed, setNpc9Completed] = useState(false)
   
   // Glitch dialogue states (for inside, court, rooftop scenes)
   const [showGlitchDialogue, setShowGlitchDialogue] = useState(false)
@@ -951,17 +1073,39 @@ const GlacierMap = ({ onExit }) => {
     }
   }
 
+  // Handle NPC 9 click
+  const handleNpc9Click = () => {
+    if (npc9Completed) {
+      // Show completion message
+      setShowNpc9Dialogue(true)
+      setNpc9DialogueIndex(-1)
+    } else {
+      // Start normal dialogue with typing animation
+      setShowNpc9Dialogue(true)
+      setNpc9DialogueIndex(0)
+      setNpc9TypedText('')
+      setNpc9IsTyping(true)
+      setNpc9ShowButton(false)
+    }
+  }
+
   // Handle NPC 6 dialogue
   const handleNpc6UserChoice = () => {
     const currentDialogue = npc6DialogueSequence[npc6DialogueIndex]
     
     // Check if this button should start the challenge
     if (currentDialogue.isButton && currentDialogue.startChallenge) {
+      // Randomly select 2 challenges from the pool
+      const shuffled = [...creativityChallengesPool].sort(() => Math.random() - 0.5)
+      const selected = shuffled.slice(0, 2)
+      setSelectedChallenges(selected)
+      
       setShowCreativityChallenge(true)
       setCurrentChallenge(0)
       setChallengeTimer(120)
       setUserInputs([])
       setCurrentInput('')
+      setShowHint(false)
       setShowNpc6Dialogue(false)
       return
     }
@@ -972,21 +1116,184 @@ const GlacierMap = ({ onExit }) => {
     }
   }
 
+  // Handle NPC 9 dialogue
+  const handleNpc9UserChoice = () => {
+    const currentDialogue = npc9DialogueSequence[npc9DialogueIndex]
+    
+    // Check if this button should start the challenge
+    if (currentDialogue.isButton && currentDialogue.startChallenge) {
+      // Start memory challenge - Snow Path first
+      setShowMemoryChallenge(true)
+      setMemoryPhase('snowPath')
+      setSnowPathRound(0)
+      initializeSnowPathRound(0)
+      setShowNpc9Dialogue(false)
+      return
+    }
+    
+    // Advance to next dialogue
+    if (npc9DialogueIndex < npc9DialogueSequence.length - 1) {
+      setNpc9DialogueIndex(npc9DialogueIndex + 1)
+    }
+  }
+
+  // Initialize Snow Path round with random footprints
+  const initializeSnowPathRound = (round) => {
+    const footprintCount = 4 + round // Round 0: 4, Round 1: 5, Round 2: 6
+    const positions = []
+    while (positions.length < footprintCount) {
+      const pos = Math.floor(Math.random() * 16)
+      if (!positions.includes(pos)) {
+        positions.push(pos)
+      }
+    }
+    setSnowPathFootprints(positions)
+    setSnowPathUserSelections([])
+    setSnowPathMemorizing(true)
+    setSnowPathTimer(15) // Changed from 30 to 15 seconds
+  }
+
+  // Handle Snow Path tile click
+  const handleSnowPathTileClick = (index) => {
+    if (snowPathMemorizing) return // Can't click during memorization
+    
+    // Check if already selected
+    if (snowPathUserSelections.includes(index)) return
+    
+    const newSelections = [...snowPathUserSelections, index]
+    setSnowPathUserSelections(newSelections)
+    
+    // Check if correct
+    if (snowPathFootprints.includes(index)) {
+      // Correct selection
+      const correctSound = new Audio('/sound/correct.wav')
+      correctSound.play().catch(err => console.log('Sound play failed:', err))
+      
+      // Check if all footprints found
+      if (newSelections.filter(s => snowPathFootprints.includes(s)).length === snowPathFootprints.length) {
+        // Round complete
+        setTimeout(() => {
+          if (snowPathRound < 2) {
+            // Move to next round
+            setSnowPathRound(snowPathRound + 1)
+            initializeSnowPathRound(snowPathRound + 1)
+          } else {
+            // Snow Path complete, move to Footstep Recall
+            setMemoryPhase('footstepRecall')
+            setFootstepRound(0)
+            initializeFootstepRound(0)
+          }
+        }, 1000)
+      }
+    } else {
+      // Wrong selection
+      const wrongSound = new Audio('/sound/wrong.mp3')
+      wrongSound.play().catch(err => console.log('Sound play failed:', err))
+      
+      // Restart round after delay
+      setTimeout(() => {
+        initializeSnowPathRound(snowPathRound)
+      }, 1000)
+    }
+  }
+
+  // Initialize Footstep Recall round
+  const initializeFootstepRound = (round) => {
+    const sequenceLength = 3 + round // Round 0: 3, Round 1: 4, Round 2: 5
+    const sequence = []
+    for (let i = 0; i < sequenceLength; i++) {
+      sequence.push(Math.floor(Math.random() * 6)) // 6 footprints total
+    }
+    setFootstepSequence(sequence)
+    setFootstepUserSequence([])
+    setFootstepShowingSequence(true)
+    setFootstepCurrentHighlight(-1)
+    
+    // Show sequence with delays
+    let currentIndex = 0
+    const showNext = () => {
+      if (currentIndex < sequence.length) {
+        setFootstepCurrentHighlight(sequence[currentIndex])
+        
+        // Play completion sound for each highlight
+        const snowSound = new Audio('/sound/snowwav.wav')
+        snowSound.play().catch(err => console.log('Sound play failed:', err))
+        
+        setTimeout(() => {
+          setFootstepCurrentHighlight(-1)
+          currentIndex++
+          setTimeout(showNext, 200) // 0.2s interval between highlights
+        }, 700) // Each highlight lasts 0.7s
+      } else {
+        // Sequence shown, now user's turn
+        setFootstepShowingSequence(false)
+      }
+    }
+    
+    setTimeout(showNext, 500) // Start after 0.5s delay
+  }
+
+  // Handle Footstep click
+  const handleFootstepClick = (index) => {
+    if (footstepShowingSequence) return // Can't click during sequence display
+    
+    const newSequence = [...footstepUserSequence, index]
+    setFootstepUserSequence(newSequence)
+    
+    // Check if correct so far
+    const expectedIndex = footstepSequence[newSequence.length - 1]
+    if (index !== expectedIndex) {
+      // Wrong footstep
+      const wrongSound = new Audio('/sound/wrong.mp3')
+      wrongSound.play().catch(err => console.log('Sound play failed:', err))
+      
+      // Restart round after delay
+      setTimeout(() => {
+        initializeFootstepRound(footstepRound)
+      }, 1000)
+      return
+    }
+    
+    // Correct so far
+    const correctSound = new Audio('/sound/correct.wav')
+    correctSound.play().catch(err => console.log('Sound play failed:', err))
+    
+    // Check if sequence complete
+    if (newSequence.length === footstepSequence.length) {
+      // Round complete
+      setTimeout(() => {
+        if (footstepRound < 2) {
+          // Move to next round
+          setFootstepRound(footstepRound + 1)
+          initializeFootstepRound(footstepRound + 1)
+        } else {
+          // All challenges complete
+          setShowMemoryChallenge(false)
+          setNpc9Completed(true)
+          setRooftopCompletedTasks(prev => [...prev, 'npc9'])
+        }
+      }, 1000)
+    }
+  }
+
   // Handle creativity challenge input
   const handleChallengeSubmit = () => {
-    if (currentInput.trim()) {
+    if (currentInput.trim() && selectedChallenges.length > 0) {
       const newInputs = [...userInputs, currentInput.trim()]
       setUserInputs(newInputs)
       setCurrentInput('')
       
+      const currentChallengeData = selectedChallenges[currentChallenge]
+      
       // Check if user has entered enough items
-      if (newInputs.length >= creativityChallenges[currentChallenge].requiredCount) {
+      if (newInputs.length >= currentChallengeData.requiredCount) {
         // Move to next challenge or complete
         setTimeout(() => {
-          if (currentChallenge < creativityChallenges.length - 1) {
+          if (currentChallenge < selectedChallenges.length - 1) {
             setCurrentChallenge(currentChallenge + 1)
             setChallengeTimer(120)
             setUserInputs([])
+            setShowHint(false)
           } else {
             // All challenges completed
             setShowCreativityChallenge(false)
@@ -995,6 +1302,12 @@ const GlacierMap = ({ onExit }) => {
           }
         }, 500)
       }
+    }
+  }
+  
+  const handleChallengeInputKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleChallengeSubmit()
     }
   }
   
@@ -1020,15 +1333,25 @@ const GlacierMap = ({ onExit }) => {
     }
   }
 
-  // Challenge timer countdown
+  // Challenge timer countdown with timeout handling
   useEffect(() => {
     if (showCreativityChallenge && challengeTimer > 0) {
       const timer = setTimeout(() => {
         setChallengeTimer(challengeTimer - 1)
       }, 1000)
       return () => clearTimeout(timer)
+    } else if (showCreativityChallenge && challengeTimer === 0 && selectedChallenges.length > 0) {
+      // Time's up - check if user completed the challenge
+      const currentChallengeData = selectedChallenges[currentChallenge]
+      if (userInputs.length < currentChallengeData.requiredCount) {
+        // Not completed - close challenge and allow restart
+        setTimeout(() => {
+          setShowCreativityChallenge(false)
+          setNpc6Completed(false) // Allow user to try again
+        }, 1000)
+      }
     }
-  }, [showCreativityChallenge, challengeTimer])
+  }, [showCreativityChallenge, challengeTimer, selectedChallenges, currentChallenge, userInputs.length])
 
   // Handle NPC 5 dialogue
   const handleNpc5UserChoice = (choiceText) => {
@@ -1109,7 +1432,10 @@ const GlacierMap = ({ onExit }) => {
     setSelectedAnswer(optionIndex)
     
     if (option.correct) {
-      // Correct answer - show teaching dialogue
+      // Correct answer - play correct sound and show teaching dialogue
+      const correctSound = new Audio('/sound/correct.wav')
+      correctSound.play().catch(err => console.log('Sound play failed:', err))
+      
       setTimeout(() => {
         setShowTeachingDialogue(true)
       }, 500)
@@ -1237,6 +1563,52 @@ const GlacierMap = ({ onExit }) => {
     }
   }, [showNpc6Dialogue, npc6DialogueIndex])
 
+  // Typing animation and auto-advance for NPC9
+  useEffect(() => {
+    if (showNpc9Dialogue && npc9DialogueIndex >= 0 && npc9DialogueIndex < npc9DialogueSequence.length) {
+      const currentDialogue = npc9DialogueSequence[npc9DialogueIndex]
+      
+      // Skip typing for button dialogues
+      if (currentDialogue.isButton) {
+        setNpc9IsTyping(false)
+        return
+      }
+      
+      const fullText = currentDialogue.text
+      let currentIndex = 0
+      setNpc9TypedText('')
+      setNpc9IsTyping(true)
+      
+      // Typing animation
+      const typingInterval = setInterval(() => {
+        if (currentIndex < fullText.length) {
+          setNpc9TypedText(fullText.substring(0, currentIndex + 1))
+          currentIndex++
+        } else {
+          clearInterval(typingInterval)
+          setNpc9IsTyping(false)
+          
+          // If this dialogue should show button, show it
+          if (currentDialogue.showButton) {
+            setTimeout(() => {
+              setNpc9ShowButton(true)
+            }, 500) // Wait 500ms after typing completes before showing button
+          }
+          // Auto-advance if autoAdvance flag is set
+          else if (currentDialogue.autoAdvance) {
+            setTimeout(() => {
+              if (npc9DialogueIndex < npc9DialogueSequence.length - 1) {
+                setNpc9DialogueIndex(npc9DialogueIndex + 1)
+              }
+            }, 800) // Wait 800ms after typing completes before advancing
+          }
+        }
+      }, 30) // 30ms per character for typing speed
+      
+      return () => clearInterval(typingInterval)
+    }
+  }, [showNpc9Dialogue, npc9DialogueIndex])
+
   // Timer countdown - pause when teaching dialogue is shown
   useEffect(() => {
     if (showPuzzle && puzzleTimer > 0 && !showTeachingDialogue) {
@@ -1252,6 +1624,19 @@ const GlacierMap = ({ onExit }) => {
       }, 1000)
     }
   }, [showPuzzle, puzzleTimer, showTeachingDialogue])
+
+  // Snow Path timer countdown
+  useEffect(() => {
+    if (showMemoryChallenge && memoryPhase === 'snowPath' && snowPathMemorizing && snowPathTimer > 0) {
+      const timer = setTimeout(() => {
+        setSnowPathTimer(snowPathTimer - 1)
+      }, 1000)
+      return () => clearTimeout(timer)
+    } else if (showMemoryChallenge && memoryPhase === 'snowPath' && snowPathMemorizing && snowPathTimer === 0) {
+      // Time's up - switch to recall phase
+      setSnowPathMemorizing(false)
+    }
+  }, [showMemoryChallenge, memoryPhase, snowPathMemorizing, snowPathTimer])
 
   // Format timer display
   const formatTimer = (seconds) => {
@@ -1785,7 +2170,7 @@ const GlacierMap = ({ onExit }) => {
     npc6: {
       position: 'absolute',
       left: '150px',
-      bottom: '300px',
+      bottom: '250px',
       width: '250px',
       height: '270px',
       cursor: 'pointer',
@@ -1795,9 +2180,9 @@ const GlacierMap = ({ onExit }) => {
     npc6DialogueContainer: {
       position: 'absolute',
       left: 'calc(150px + 250px)',
-      bottom: '300px',
+      bottom: '250px',
       width: '700px',
-      minHeight: '200px',
+      minHeight: '150px',
       background: 'rgba(240, 248, 255, 0.8)',
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
@@ -2065,87 +2450,212 @@ const GlacierMap = ({ onExit }) => {
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
-      width: '1100px',
-      height: '700px',
-      background: 'rgba(50, 50, 50, 0.95)',
-      border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(50,50,50,0.95), rgba(50,50,50,0.95)), linear-gradient(90deg, #5170FF, #FFBBC4)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
+      width: '900px',
+      height: '650px',
+      background: 'rgba(40, 40, 40, 0.95)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
       borderRadius: '20px',
-      padding: '40px',
+      padding: '50px',
       zIndex: 2000,
       color: '#fff',
       display: 'flex',
       flexDirection: 'column',
+      alignItems: 'center',
     },
     creativityTimer: {
-      fontSize: '48px',
+      fontSize: '60px',
       fontWeight: 'bold',
       textAlign: 'center',
       marginBottom: '30px',
-      fontFamily: 'monospace',
+      fontFamily: "'Roboto Mono', monospace",
+      letterSpacing: '4px',
+    },
+    creativityTimerRed: {
+      color: '#ff4444',
     },
     creativityTitle: {
-      fontSize: '24px',
+      fontSize: '22px',
       fontWeight: 'bold',
       textAlign: 'center',
-      marginBottom: '40px',
-      lineHeight: 1.4,
+      marginBottom: '30px',
+      lineHeight: 1.5,
+      color: '#a0d8ff',
     },
     creativityTagsContainer: {
+      width: '100%',
       flex: 1,
       display: 'flex',
       flexWrap: 'wrap',
       alignContent: 'flex-start',
-      gap: '15px',
-      marginBottom: '30px',
+      gap: '12px',
+      marginBottom: '20px',
       overflowY: 'auto',
+      padding: '10px 0',
     },
     creativityTag: {
-      padding: '12px 20px',
-      borderRadius: '25px',
-      border: '2px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(50,50,50,0.95), rgba(50,50,50,0.95)), linear-gradient(90deg, #5170FF, #FFBBC4)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
+      padding: '10px 20px',
+      borderRadius: '20px',
+      border: 'none',
       fontSize: '16px',
-      color: '#fff',
+      color: '#000',
       whiteSpace: 'nowrap',
+      fontWeight: '500',
+    },
+    creativityTagYellow: {
+      background: '#f0d32d',
+    },
+    creativityTagRed: {
+      background: '#ab3a2c',
+    },
+    creativityInputSection: {
+      width: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '15px',
+    },
+    creativityHintButton: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      background: 'none',
+      border: 'none',
+      color: '#a0d8ff',
+      fontSize: '16px',
+      cursor: 'pointer',
+      padding: '8px 0',
+      fontWeight: '600',
+      transition: 'all 0.2s',
+    },
+    creativityHintIcon: {
+      width: '20px',
+      height: '20px',
     },
     creativityInputContainer: {
       position: 'relative',
       display: 'flex',
       alignItems: 'center',
-      gap: '10px',
+      backgroundColor: '#1f2937',
+      borderRadius: '15px',
+      border: '2px solid #a0d8ff',
+      overflow: 'hidden',
+      transition: 'border-color 0.2s',
     },
     creativityInput: {
       flex: 1,
       padding: '15px 20px',
-      borderRadius: '10px',
-      border: '2px solid transparent',
-      backgroundImage: 'linear-gradient(white, white), linear-gradient(90deg, #5170FF, #FFBBC4)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
+      border: 'none',
+      backgroundColor: 'transparent',
+      fontFamily: "'Roboto', sans-serif",
       fontSize: '16px',
+      color: '#fff',
       outline: 'none',
     },
+    creativityDivider: {
+      width: '2px',
+      height: '24px',
+      backgroundColor: '#a0d8ff',
+      margin: '0 8px',
+      flexShrink: 0,
+    },
     creativitySendButton: {
-      width: '50px',
-      height: '50px',
-      borderRadius: '10px',
+      background: 'none',
       border: 'none',
-      background: 'linear-gradient(90deg, #5170FF, #FFBBC4)',
       cursor: 'pointer',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      transition: 'transform 0.2s',
+      padding: '8px 12px',
+      transition: 'all 0.2s',
     },
     creativitySendIcon: {
       width: '24px',
       height: '24px',
       objectFit: 'contain',
+    },
+    creativityProgress: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '10px',
+      marginTop: '10px',
+    },
+    creativityProgressDot: {
+      width: '12px',
+      height: '12px',
+      borderRadius: '50%',
+      background: '#666566',
+      transition: 'all 0.3s',
+    },
+    creativityProgressDotActive: {
+      background: '#a0d8ff',
+    },
+    creativityProgressText: {
+      fontSize: '16px',
+      fontWeight: 'bold',
+      color: '#a0d8ff',
+      marginLeft: '10px',
+    },
+    creativityHintModal: {
+      position: 'fixed',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: '600px',
+      background: 'rgba(30, 40, 50, 0.95)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      borderRadius: '20px',
+      padding: '40px',
+      zIndex: 2100,
+      boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+    },
+    creativityHintHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '15px',
+      marginBottom: '30px',
+      paddingBottom: '20px',
+      borderBottom: '1px solid rgba(160, 216, 255, 0.3)',
+    },
+    creativityHintTitle: {
+      fontSize: '28px',
+      fontWeight: 'bold',
+      color: '#fff',
+      flex: 1,
+    },
+    creativityHintClose: {
+      background: 'none',
+      border: 'none',
+      fontSize: '32px',
+      cursor: 'pointer',
+      color: '#a0d8ff',
+      padding: '0',
+      width: '40px',
+      height: '40px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'all 0.2s',
+    },
+    creativityHintContent: {
+      color: '#fff',
+      fontSize: '16px',
+      lineHeight: 1.8,
+    },
+    creativityHintItem: {
+      marginBottom: '25px',
+      padding: '20px',
+      background: 'rgba(255, 255, 255, 0.05)',
+      border: '2px solid rgba(160, 216, 255, 0.3)',
+      borderRadius: '15px',
+      position: 'relative',
+    },
+    creativityHintLabel: {
+      fontWeight: 'bold',
+      color: '#a0d8ff',
+      marginBottom: '8px',
+      display: 'block',
     },
     // Court scene styles
     progressContainer: {
@@ -3099,7 +3609,7 @@ const GlacierMap = ({ onExit }) => {
       {/* Rooftop Progress Circles */}
       {currentScene === 'rooftop' && (
         <div style={styles.progressContainer}>
-          {['npc5', 'npc6', 'npc7'].map((npcId, index) => (
+          {['npc5', 'npc6', 'npc9'].map((npcId, index) => (
             <div
               key={npcId}
               style={{
@@ -3722,50 +4232,437 @@ const GlacierMap = ({ onExit }) => {
       )}
 
       {/* Creativity Challenge */}
-      {showCreativityChallenge && (
+      {showCreativityChallenge && selectedChallenges.length > 0 && (
         <div style={styles.creativityContainer}>
-          <div style={styles.creativityTimer}>
+          {/* Timer */}
+          <div style={{
+            ...styles.creativityTimer,
+            ...(challengeTimer < 15 ? styles.creativityTimerRed : {})
+          }}>
             {formatTimer(challengeTimer)}
           </div>
           
+          {/* Title */}
           <div style={styles.creativityTitle}>
-            {creativityChallenges[currentChallenge].title}
+            {selectedChallenges[currentChallenge].en}
           </div>
           
+          {/* Tags Container */}
           <div style={styles.creativityTagsContainer}>
             {userInputs.map((input, index) => (
-              <div key={index} style={styles.creativityTag}>
+              <div 
+                key={index} 
+                style={{
+                  ...styles.creativityTag,
+                  ...(index % 2 === 0 ? styles.creativityTagYellow : styles.creativityTagRed)
+                }}
+              >
                 {input}
               </div>
             ))}
           </div>
           
-          <div style={styles.creativityInputContainer}>
-            <input
-              type="text"
-              value={currentInput}
-              onChange={(e) => setCurrentInput(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleChallengeSubmit()
-                }
-              }}
-              placeholder="Type… and Enter"
-              style={styles.creativityInput}
-              autoFocus
-            />
+          {/* Input Section */}
+          <div style={styles.creativityInputSection}>
+            {/* Hint Button */}
             <button
-              style={styles.creativitySendButton}
-              onClick={handleChallengeSubmit}
-              onMouseOver={(e) => e.target.style.transform = 'scale(1.1)'}
-              onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+              style={styles.creativityHintButton}
+              onClick={() => setShowHint(true)}
+              onMouseOver={(e) => e.currentTarget.style.opacity = '0.8'}
+              onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
             >
-              <img 
-                src="/glacier/icon/send.png"
-                alt="Send"
-                style={styles.creativitySendIcon}
-              />
+              <svg style={styles.creativityHintIcon} viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+              </svg>
+              Hint
             </button>
+            
+            {/* Input Container */}
+            <div style={styles.creativityInputContainer}>
+              <input
+                type="text"
+                value={currentInput}
+                onChange={(e) => setCurrentInput(e.target.value)}
+                onKeyPress={handleChallengeInputKeyPress}
+                placeholder="Typing here..."
+                style={styles.creativityInput}
+                autoFocus
+              />
+              
+              {/* Divider */}
+              <div style={styles.creativityDivider}></div>
+              
+              {/* Send Button */}
+              <button
+                style={styles.creativitySendButton}
+                onClick={handleChallengeSubmit}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <img 
+                  src="/glacier/icon/send.png"
+                  alt="Send"
+                  style={styles.creativitySendIcon}
+                />
+              </button>
+            </div>
+            
+            {/* Progress Indicator */}
+            <div style={styles.creativityProgress}>
+              {Array.from({ length: selectedChallenges[currentChallenge].requiredCount }).map((_, index) => (
+                <div
+                  key={index}
+                  style={{
+                    ...styles.creativityProgressDot,
+                    ...(index < userInputs.length ? styles.creativityProgressDotActive : {})
+                  }}
+                />
+              ))}
+              <span style={styles.creativityProgressText}>
+                {userInputs.length}/{selectedChallenges[currentChallenge].requiredCount}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Hint Modal */}
+      {showHint && selectedChallenges.length > 0 && (
+        <div style={styles.creativityHintModal}>
+          <div style={styles.creativityHintHeader}>
+            <svg style={{ width: '40px', height: '40px' }} viewBox="0 0 24 24" fill="#a0d8ff">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+            </svg>
+            <span style={styles.creativityHintTitle}>Hint</span>
+            <button
+              style={styles.creativityHintClose}
+              onClick={() => setShowHint(false)}
+              onMouseOver={(e) => e.currentTarget.style.opacity = '0.7'}
+              onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+            >
+              ×
+            </button>
+          </div>
+          <div style={styles.creativityHintContent}>
+            {selectedChallenges[currentChallenge].hints.en.map((hint, index) => (
+              <div key={index} style={styles.creativityHintItem}>
+                <span style={styles.creativityHintLabel}>Prompt {index + 1}:</span>
+                {hint}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Rooftop NPC 9 */}
+      {currentScene === 'rooftop' && (
+        <div 
+          style={{
+            position: 'absolute',
+            top: '150px',
+            left: '750px',
+            width: '200px',
+            height: '200px',
+            cursor: 'pointer',
+            zIndex: 50,
+            transition: 'transform 0.2s',
+          }}
+          onMouseOver={() => {
+            if (!showNpc9Dialogue && !npc9Completed) {
+              handleNpc9Click()
+            }
+          }}
+        >
+          <img 
+            src="/glacier/npc/npc9.png"
+            alt="NPC 9"
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          />
+        </div>
+      )}
+
+      {/* NPC 9 Dialogue */}
+      {showNpc9Dialogue && (
+        <div style={{
+          position: 'absolute',
+          left: 'calc(750px + 200px)',
+          top: '150px',
+          width: '700px',
+          minHeight: '150px',
+          background: 'rgba(240, 248, 255, 0.8)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(100, 149, 237, 0.4)',
+          borderRadius: '20px',
+          padding: '25px 30px',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(100, 149, 237, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1)',
+          zIndex: 1000,
+        }}>
+          {/* Completion message */}
+          {npc9DialogueIndex === -1 ? (
+            <>
+              <div style={{ marginBottom: '15px', flex: 1 }}>
+                <div style={styles.dialogueText}>
+                  Wow! My brain feels... rebooted! I can focus again. Thank you!
+                </div>
+              </div>
+              <button 
+                style={styles.npc6ContinueButton}
+                onClick={() => setShowNpc9Dialogue(false)}
+                onMouseOver={(e) => {
+                  e.target.style.background = 'rgba(50, 50, 80, 0.95)'
+                  e.target.style.boxShadow = '0 0 25px rgba(100, 149, 237, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15)'
+                  e.target.style.transform = 'scale(1.05)'
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = 'rgba(30, 30, 50, 0.9)'
+                  e.target.style.boxShadow = '0 0 15px rgba(100, 149, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                  e.target.style.transform = 'scale(1)'
+                }}
+              >
+                CLOSE
+              </button>
+            </>
+          ) : (
+            <>
+              {/* NPC9 text with typing animation */}
+              <div style={{ marginBottom: '20px', flex: 1 }}>
+                <div style={styles.dialogueText}>
+                  {npc9TypedText}
+                </div>
+              </div>
+
+              {/* "Let's do it!" Button - show when npc9ShowButton is true */}
+              {npc9ShowButton && (
+                <button 
+                  style={{
+                    padding: '15px 40px',
+                    background: 'rgba(30, 30, 50, 0.85)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    border: '2px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '12px',
+                    color: '#fff',
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s',
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+                  }}
+                  onClick={handleNpc9UserChoice}
+                  onMouseOver={(e) => {
+                    e.target.style.background = 'rgba(50, 50, 80, 0.9)'
+                    e.target.style.transform = 'scale(1.05)'
+                    e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.background = 'rgba(30, 30, 50, 0.85)'
+                    e.target.style.transform = 'scale(1)'
+                    e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)'
+                  }}
+                >
+                  {npc9DialogueSequence[3].text}
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Memory Challenge */}
+      {showMemoryChallenge && (
+        <div style={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: memoryPhase === 'footstepRecall' ? '70vw' : '800px',
+          height: '90vh',
+          background: 'rgba(20, 20, 30, 0.95)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: 'none',
+          borderRadius: '20px',
+          padding: '30px',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 12px 48px rgba(0, 0, 0, 0.6)',
+          zIndex: 2000,
+        }}>
+          {/* Header */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '20px',
+            flexShrink: 0,
+          }}>
+            <div style={{
+              fontFamily: "'Roboto', sans-serif",
+              fontSize: '22px',
+              fontWeight: '700',
+              color: '#a0d8ff',
+            }}>
+              Mission: {memoryPhase === 'snowPath' ? 'Snow Path' : 'Footstep Recall'}
+            </div>
+            {memoryPhase === 'snowPath' && (
+              <div style={{
+                fontFamily: "'Roboto Mono', monospace",
+                fontSize: '50px',
+                fontWeight: '700',
+                color: snowPathTimer < 5 ? '#ff4444' : '#a0d8ff',
+              }}>
+                {snowPathMemorizing ? formatTimer(snowPathTimer) : 'GO!'}
+              </div>
+            )}
+          </div>
+
+          {/* Instructions */}
+          <div style={{
+            fontFamily: "'Roboto', sans-serif",
+            fontSize: '16px',
+            color: '#fff',
+            marginBottom: '20px',
+            textAlign: 'center',
+            flexShrink: 0,
+          }}>
+            {memoryPhase === 'snowPath' 
+              ? "Memorize the footprints, then tap the correct tiles when they disappear."
+              : "Footprints light up in red one by one—after the sequence ends, tap them back in the same order."}
+          </div>
+
+          {/* Snow Path Grid */}
+          {memoryPhase === 'snowPath' && (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '12px',
+              width: '100%',
+              maxWidth: '600px',
+              maxHeight: '600px',
+              margin: '0 auto',
+              alignSelf: 'center',
+            }}>
+              {Array.from({ length: 16 }).map((_, index) => {
+                const hasFootprint = snowPathFootprints.includes(index)
+                const isSelected = snowPathUserSelections.includes(index)
+                const isCorrect = isSelected && hasFootprint
+                const isWrong = isSelected && !hasFootprint
+                
+                return (
+                  <div
+                    key={index}
+                    onClick={() => handleSnowPathTileClick(index)}
+                    style={{
+                      width: '100%',
+                      aspectRatio: '1',
+                      background: isWrong ? '#c62828' : (isCorrect ? '#2e7d32' : '#1f2937'),
+                      border: `3px solid ${isWrong ? '#f44336' : (isCorrect ? '#4caf50' : (hasFootprint && snowPathMemorizing ? '#a0d8ff' : 'transparent'))}`,
+                      borderRadius: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: snowPathMemorizing ? 'default' : 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {hasFootprint && snowPathMemorizing && (
+                      <img 
+                        src="/glacier/icon/footprint.svg"
+                        alt="Footprint"
+                        style={{ width: '60%', height: '60%', objectFit: 'contain' }}
+                      />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Footstep Recall - Staggered 2x6 Grid */}
+          {memoryPhase === 'footstepRecall' && (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(6, 1fr)',
+              gridTemplateRows: 'repeat(2, 1fr)',
+              gap: '30px',
+              flex: 1,
+              maxWidth: '90%',
+              margin: '0 auto',
+              alignItems: 'center',
+            }}>
+              {Array.from({ length: 6 }).map((_, index) => {
+                const isHighlighted = footstepCurrentHighlight === index
+                const isInUserSequence = footstepUserSequence.includes(index)
+                
+                // Stagger pattern: top row has indices 0, 2, 4; bottom row has 1, 3, 5
+                const row = index % 2 === 0 ? 1 : 2
+                const col = Math.floor(index / 2) * 2 + (index % 2 === 0 ? 1 : 2)
+                
+                return (
+                  <div
+                    key={index}
+                    onClick={() => handleFootstepClick(index)}
+                    style={{
+                      gridRow: row,
+                      gridColumn: col,
+                      aspectRatio: '1',
+                      background: 'transparent',
+                      border: 'none',
+                      borderRadius: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: footstepShowingSequence ? 'default' : 'pointer',
+                      transition: 'all 0.2s',
+                      transform: isInUserSequence ? 'scale(0.9)' : 'scale(1)',
+                    }}
+                  >
+                    <img 
+                      src={isHighlighted ? "/glacier/icon/foot_red.svg" : "/glacier/icon/foot.svg"}
+                      alt="Footprint"
+                      style={{ 
+                        width: '100%', 
+                        height: '100%', 
+                        objectFit: 'contain',
+                        filter: isInUserSequence ? 'brightness(0.7)' : 'brightness(1)',
+                      }}
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Progress Circles */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '15px',
+            marginTop: '20px',
+            flexShrink: 0,
+          }}>
+            {Array.from({ length: 3 }).map((_, index) => {
+              const currentRound = memoryPhase === 'snowPath' ? snowPathRound : footstepRound
+              const isComplete = index < currentRound
+              
+              return (
+                <div
+                  key={index}
+                  style={{
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '50%',
+                    background: isComplete ? '#a0d8ff' : '#666566',
+                    transition: 'all 0.3s',
+                  }}
+                />
+              )
+            })}
           </div>
         </div>
       )}
