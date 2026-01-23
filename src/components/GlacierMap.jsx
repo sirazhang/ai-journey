@@ -92,6 +92,73 @@ const summaryDialogueSequence = [
   },
   {
     speaker: 'momo',
+    text: "Good. Now let's move on actual GenAI-generated works' cases."
+  },
+  {
+    speaker: 'momo',
+    text: "Originality Principle: Using AI to replicate others' artwork or creative work constitutes infringement."
+  },
+  {
+    speaker: 'momo',
+    text: "An artist's work is clearly labeled 'All Rights Reserved - No Commercial Use.' However, a company uses AI tools to generate style-similar images by this artist for product advertising. This practice is...",
+    showUserButton: true // Show quiz options after this dialogue
+  },
+  {
+    speaker: 'quiz',
+    options: [
+      { 
+        id: 'originality_A',
+        text: "A. Legal, because AI generates \"new works\"", 
+        correct: false 
+      },
+      { 
+        id: 'originality_B',
+        text: "B. Legal, as long as it doesn't directly copy the original paintings", 
+        correct: false 
+      },
+      { 
+        id: 'originality_C',
+        text: "C. Illegal, constituting infringement and violation of copyright terms", 
+        correct: true 
+      }
+    ]
+  },
+  {
+    speaker: 'momo',
+    text: "Correct! This violates two principles: Commercial use violation - the original prohibits commercial purposes. Derivative work infringement - AI-generated content is still based on the original",
+    condition: 'correct'
+  },
+  {
+    speaker: 'momo',
+    text: "Authenticity Principle: Creators must take responsibility when spreading AI-generated false content."
+  },
+  {
+    speaker: 'momo',
+    text: "An influencer uses AI tools to generate a fake video of 'a city mayor drunkenly dancing at a charity event' and posts it on social media. After the video is widely shared, it causes public misunderstanding. In this situation...",
+    showUserButton: true // Show quiz options after this dialogue
+  },
+  {
+    speaker: 'quiz',
+    options: [
+      { 
+        id: 'authenticity_A',
+        text: "A. No responsibility—audiences should distinguish truth from falsehood themselves", 
+        correct: false 
+      },
+      { 
+        id: 'authenticity_B',
+        text: "B. Responsible—disclaimer statements cannot exempt one from consequences of spreading false information", 
+        correct: true 
+      }
+    ]
+  },
+  {
+    speaker: 'momo',
+    text: "Correct! Creators are responsible for AI-generated false content because: Foreseeable harm when spreading content involving real people. Labeling doesn't exempt responsibility - disclaimers can't offset misleading content. Legal consequences - may constitute defamation or misinformation",
+    condition: 'correct'
+  },
+  {
+    speaker: 'momo',
     text: "Excellent work!"
   },
   {
@@ -130,38 +197,27 @@ const summaryDialogueSequence = [
 const npc6DialogueSequence = [
   {
     speaker: 'npc6',
-    text: "It's gone. It's all gone. The spark... the vision... the soul."
-  },
-  {
-    speaker: 'user',
-    text: "Are you okay? You look like you've seen a ghost.",
-    isButton: true
+    text: "It's gone. It's all gone. The spark... the vision... the soul.",
+    autoAdvance: true
   },
   {
     speaker: 'npc6',
-    text: "I haven't seen a ghost. I've become one. I used to be a concept artist. A good one. But then... I got lazy. I started using 'MidJourney-X' for everything. Need a dragon? Click. Need a landscape? Click. It was so easy."
-  },
-  {
-    speaker: 'user',
-    text: "Continue",
-    isButton: true
+    text: "I used to be a concept artist. A good one. But then... I got lazy. I started using 'MidJourney-X' for everything. Need a dragon? Click. Need a landscape? Click. It was so easy.",
+    autoAdvance: true
   },
   {
     speaker: 'npc6',
-    text: "But last week, the studio fired me. They said, 'Your portfolio looks like everyone else's. Where is your voice?'"
-  },
-  {
-    speaker: 'user',
-    text: "That sounds tough. But you can start painting again, right?",
-    isButton: true
+    text: "But last week, the studio fired me. They said, 'Your portfolio looks like everyone else's. Where is your voice?'",
+    autoAdvance: true
   },
   {
     speaker: 'npc6',
-    text: "I can't! I tried! I sat here for three days, and I couldn't draw a single line."
+    text: "I tried! I sat here for three days, and I couldn't draw a single line.",
+    showButton: true
   },
   {
     speaker: 'user',
-    text: "Let's get that spark back！",
+    text: "Let's spark together",
     isButton: true,
     startChallenge: true
   }
@@ -185,39 +241,32 @@ const creativityChallenges = [
 const npc5DialogueSequence = [
   {
     speaker: 'npc5',
-    text: "P-please... help me... I used to be a Master Librarian. Or... I thought I was."
+    text: "P-please... help me... I used to be a Master Librarian. Or at least... I thought I was.",
+    autoAdvance: true
+  },
+  {
+    speaker: 'npc5',
+    text: "I relied on GenAI for everything—research, fact-checking, even basic recall.",
+    autoAdvance: true
+  },
+  {
+    speaker: 'npc5',
+    text: "Now I can't think critically anymore. My judgment... it's gone.",
+    autoAdvance: true
+  },
+  {
+    speaker: 'npc5',
+    text: "They're making me take a competency test. If I fail, I'll be unemployed forever.",
+    autoAdvance: true
+  },
+  {
+    speaker: 'npc5',
+    text: "Please... could you help me review it? I don't trust my own answers anymore.",
+    showButton: true // Show button after this text is fully typed
   },
   {
     speaker: 'user',
-    text: "What happened to you?",
-    isButton: true
-  },
-  {
-    speaker: 'npc5',
-    text: "I let the AI handle everything. Sorting, answering questions... I stopped thinking years ago. My logic circuits are... frozen.",
-    noContinue: true // Skip continue button, go directly to next
-  },
-  {
-    speaker: 'npc5',
-    text: "I have a job interview in five minutes. The interviewer sent me these two logic puzzles. Usually, I'd just feed them into the system and get the answer. But now? My mind is just... fog. A total blank.",
-    noContinue: true // Skip continue button, go directly to next
-  },
-  {
-    speaker: 'npc5',
-    text: "If I can't answer these on my own, I'm finished. I'll be unemployed forever. Please... can you be my brain for just a moment? Walk me through it?"
-  },
-  {
-    speaker: 'user',
-    text: "Show me the puzzles..",
-    isButton: true
-  },
-  {
-    speaker: 'npc5',
-    text: "Okay, here is the first one. It's about a dictionary. I can't figure out why the statement is wrong..."
-  },
-  {
-    speaker: 'user',
-    text: "Let's solve this together.",
+    text: "Let me help you",
     isButton: true,
     startPuzzle: true // This triggers puzzle 1
   }
@@ -231,10 +280,10 @@ const puzzleData = {
     statement: "If you tell me the word, I can tell you the exact meaning you want by looking it up in my dictionary.",
     question: "What is the mistake in NPC 5's thinking?",
     options: [
-      { text: "A) She doesn't know how to use a dictionary.", correct: false },
-      { text: "B) Words can have multiple meanings, so context is needed.", correct: true },
-      { text: "C) Words have different spellings.", correct: false },
-      { text: "D) Dictionaries aren't for meanings.", correct: false }
+      { text: "A She doesn't know how to use a dictionary.", correct: false },
+      { text: "B Words can have multiple meanings, so context is needed.", correct: true },
+      { text: "C Words have different spellings.", correct: false },
+      { text: "D Dictionaries aren't for meanings.", correct: false }
     ],
     correctResponse: "Context... right. Like how 'bank' can mean money or a river... I... I remember now! Okay, one more. This one is about boxes. It's making my head spin."
   },
@@ -245,10 +294,10 @@ const puzzleData = {
     arguments: "Alina: \"My box is Pink. It does not have dresses.\"\nViktor: \"My box is Green. It might have flowers too.\"",
     question: "Who is logically correct based ONLY on the rules?",
     options: [
-      { text: "A) Alina only", correct: false },
-      { text: "B) Viktor only", correct: false },
-      { text: "C) Both", correct: true },
-      { text: "D) Neither", correct: false }
+      { text: "A Alina only", correct: false },
+      { text: "B Viktor only", correct: false },
+      { text: "C Both", correct: true },
+      { text: "D Neither", correct: false }
     ]
   }
 }
@@ -304,7 +353,7 @@ const courtCases = {
       zh: "航行伦理争议"
     },
     npcRole: {
-      en: "Captain · 25 years of maritime experience · Awarded Safety Excellence",
+      en: "Captain · 25-year experience · Awarded Safety Excellence",
       zh: "船长 · 25年航海经验 · 安全卓越奖"
     },
     statementParts: [
@@ -479,22 +528,32 @@ const GlacierMap = ({ onExit }) => {
   const [summaryIsTyping, setSummaryIsTyping] = useState(false)
   const [summaryDialogueHistory, setSummaryDialogueHistory] = useState([])
   const [summaryWaitingForInput, setSummaryWaitingForInput] = useState(false)
+  const [wrongQuizOption, setWrongQuizOption] = useState(null) // Track wrong quiz option for red border
   const [showElevatorArrow, setShowElevatorArrow] = useState(false)
   
   // Rooftop states
   const [showNpc5Dialogue, setShowNpc5Dialogue] = useState(false)
   const [npc5DialogueIndex, setNpc5DialogueIndex] = useState(0)
   const [npc5DialogueHistory, setNpc5DialogueHistory] = useState([])
+  const [npc5TypedText, setNpc5TypedText] = useState('') // For typing animation
+  const [npc5IsTyping, setNpc5IsTyping] = useState(false) // Track if currently typing
+  const [npc5ShowButton, setNpc5ShowButton] = useState(false) // Track if button should be shown
   const [showPuzzle, setShowPuzzle] = useState(false)
   const [currentPuzzle, setCurrentPuzzle] = useState(1)
-  const [puzzleTimer, setPuzzleTimer] = useState(600) // 10 minutes in seconds
+  const [puzzleTimer, setPuzzleTimer] = useState(300) // 5 minutes in seconds per puzzle
   const [selectedAnswer, setSelectedAnswer] = useState(null) // Track selected answer for color feedback
+  const [showTeachingDialogue, setShowTeachingDialogue] = useState(false) // Show teaching dialogue after correct answer
+  const [userExplanation, setUserExplanation] = useState('') // User's explanation input
+  const [submittedExplanation, setSubmittedExplanation] = useState('') // User's submitted explanation
   const [npc5Completed, setNpc5Completed] = useState(false) // Track if NPC5 puzzles are completed
   const [rooftopCompletedTasks, setRooftopCompletedTasks] = useState([]) // Track completed rooftop tasks (npc5, npc6, npc7)
   
   // NPC6 states
   const [showNpc6Dialogue, setShowNpc6Dialogue] = useState(false)
   const [npc6DialogueIndex, setNpc6DialogueIndex] = useState(0)
+  const [npc6TypedText, setNpc6TypedText] = useState('') // For typing animation
+  const [npc6IsTyping, setNpc6IsTyping] = useState(false) // Track if currently typing
+  const [npc6ShowButton, setNpc6ShowButton] = useState(false) // Track if button should be shown
   const [showCreativityChallenge, setShowCreativityChallenge] = useState(false)
   const [currentChallenge, setCurrentChallenge] = useState(0)
   const [challengeTimer, setChallengeTimer] = useState(120)
@@ -619,7 +678,12 @@ const GlacierMap = ({ onExit }) => {
     if (!showSummaryDialogue) return
     
     const currentDialogue = summaryDialogueSequence[summaryDialogueIndex]
-    if (!currentDialogue) return
+    if (!currentDialogue) {
+      // Reached end of dialogue sequence, show elevator arrow
+      setShowSummaryDialogue(false)
+      setShowElevatorArrow(true)
+      return
+    }
     
     if (currentDialogue.isButton || currentDialogue.speaker === 'quiz') {
       setSummaryWaitingForInput(true)
@@ -649,7 +713,14 @@ const GlacierMap = ({ onExit }) => {
           // Auto-advance to next dialogue if no user input needed
           setTimeout(() => {
             setSummaryDialogueHistory(prev => [...prev, currentDialogue])
-            setSummaryDialogueIndex(summaryDialogueIndex + 1)
+            const nextIndex = summaryDialogueIndex + 1
+            if (nextIndex >= summaryDialogueSequence.length) {
+              // Reached end, show elevator arrow
+              setShowSummaryDialogue(false)
+              setShowElevatorArrow(true)
+            } else {
+              setSummaryDialogueIndex(nextIndex)
+            }
           }, 800) // Small delay before auto-advancing
         }
       }
@@ -772,17 +843,15 @@ const GlacierMap = ({ onExit }) => {
   const handleSummaryQuizChoice = (option) => {
     setSummaryDialogueHistory(prev => [...prev, { speaker: 'user', text: option.text }])
     
-    // Current index is at the Momo question, +1 is the quiz, +2 is the response
-    let nextIndex = summaryDialogueIndex + 2
-    const nextDialogue = summaryDialogueSequence[nextIndex]
-    
-    if (nextDialogue && nextDialogue.condition === 'correct' && !option.correct) {
-      // Skip correct response if answer was wrong
-      nextIndex += 1
-    }
-    
-    // If answer is incorrect, don't advance - stay on current quiz to allow retry
+    // If answer is incorrect, show error feedback
     if (!option.correct) {
+      // Play wrong sound
+      const wrongAudio = new Audio('/sound/wrong.mp3')
+      wrongAudio.play().catch(e => console.log('Wrong sound failed:', e))
+      
+      // Mark this option as wrong (for red border)
+      setWrongQuizOption(option.id)
+      
       // Show error feedback but keep quiz visible for retry
       setSummaryDialogueHistory(prev => [...prev, { 
         speaker: 'momo', 
@@ -791,6 +860,18 @@ const GlacierMap = ({ onExit }) => {
       }])
       setSummaryWaitingForInput(true) // Keep waiting for input to allow retry
       return
+    }
+    
+    // Correct answer - clear wrong option and proceed
+    setWrongQuizOption(null)
+    
+    // Current index is at the Momo question, +1 is the quiz, +2 is the response
+    let nextIndex = summaryDialogueIndex + 2
+    const nextDialogue = summaryDialogueSequence[nextIndex]
+    
+    if (nextDialogue && nextDialogue.condition === 'correct' && !option.correct) {
+      // Skip correct response if answer was wrong
+      nextIndex += 1
     }
     
     setSummaryDialogueIndex(nextIndex)
@@ -842,10 +923,13 @@ const GlacierMap = ({ onExit }) => {
       setShowNpc5Dialogue(true)
       setNpc5DialogueIndex(-1) // Special index for completion message
     } else {
-      // Start normal dialogue
+      // Start normal dialogue (or restart after timeout)
       setShowNpc5Dialogue(true)
       setNpc5DialogueIndex(0)
       setNpc5DialogueHistory([])
+      setNpc5TypedText('') // Reset typed text
+      setNpc5IsTyping(true) // Start typing
+      setNpc5ShowButton(false) // Hide button initially
     }
     // Close puzzle if it's open
     setShowPuzzle(false)
@@ -858,9 +942,12 @@ const GlacierMap = ({ onExit }) => {
       setShowNpc6Dialogue(true)
       setNpc6DialogueIndex(-1)
     } else {
-      // Start normal dialogue
+      // Start normal dialogue with typing animation
       setShowNpc6Dialogue(true)
       setNpc6DialogueIndex(0)
+      setNpc6TypedText('')
+      setNpc6IsTyping(true)
+      setNpc6ShowButton(false)
     }
   }
 
@@ -945,15 +1032,36 @@ const GlacierMap = ({ onExit }) => {
 
   // Handle NPC 5 dialogue
   const handleNpc5UserChoice = (choiceText) => {
+    // Check if button text is "Let me help you" - start puzzle directly
+    if (choiceText === "Let me help you") {
+      setShowPuzzle(true)
+      setCurrentPuzzle(1)
+      setPuzzleTimer(300) // 5 minutes per puzzle
+      setShowNpc5Dialogue(false)
+      setSelectedAnswer(null)
+      setShowTeachingDialogue(false)
+      setUserExplanation('')
+      setSubmittedExplanation('')
+      // Mark as completed when starting puzzle (user has engaged with NPC5)
+      setNpc5Completed(true)
+      if (!rooftopCompletedTasks.includes('npc5')) {
+        setRooftopCompletedTasks(prev => [...prev, 'npc5'])
+      }
+      return
+    }
+    
     const currentDialogue = npc5DialogueSequence[npc5DialogueIndex]
     
     // Check if this button should start the puzzle
     if (currentDialogue.isButton && currentDialogue.startPuzzle) {
       setShowPuzzle(true)
       setCurrentPuzzle(1)
-      setPuzzleTimer(600)
+      setPuzzleTimer(300) // 5 minutes per puzzle
       setShowNpc5Dialogue(false)
       setSelectedAnswer(null)
+      setShowTeachingDialogue(false)
+      setUserExplanation('')
+      setSubmittedExplanation('')
       // Mark as completed when starting puzzle (user has engaged with NPC5)
       setNpc5Completed(true)
       if (!rooftopCompletedTasks.includes('npc5')) {
@@ -977,53 +1085,173 @@ const GlacierMap = ({ onExit }) => {
     }
   }
 
+  // Helper function to render text with colored words
+  const renderColoredText = (text) => {
+    if (!text) return text
+    
+    // Replace "Pink" with pink colored span
+    // Replace "Green" with green colored span
+    const parts = text.split(/(\bPink\b|\bGreen\b)/g)
+    
+    return parts.map((part, index) => {
+      if (part === 'Pink') {
+        return <span key={index} style={{ color: '#ff69b4' }}>{part}</span>
+      } else if (part === 'Green') {
+        return <span key={index} style={{ color: '#4ade80' }}>{part}</span>
+      }
+      return part
+    })
+  }
+
   // Handle puzzle answer
   const handlePuzzleAnswer = (option, optionIndex) => {
     // Set selected answer for visual feedback
     setSelectedAnswer(optionIndex)
     
     if (option.correct) {
-      // Correct answer - wait 1 second then move to next puzzle or close
+      // Correct answer - show teaching dialogue
       setTimeout(() => {
+        setShowTeachingDialogue(true)
+      }, 500)
+    } else {
+      // Wrong answer - play wrong sound
+      const wrongSound = new Audio('/sound/wrong.mp3')
+      wrongSound.play().catch(err => console.log('Sound play failed:', err))
+    }
+  }
+
+  // Handle user explanation submission
+  const handleExplanationSubmit = () => {
+    if (userExplanation.trim()) {
+      // Set submitted explanation to show in bubble
+      setSubmittedExplanation(userExplanation)
+      
+      // User has provided explanation - wait for NPC response then move to next
+      setTimeout(() => {
+        setShowTeachingDialogue(false)
+        setUserExplanation('')
+        setSubmittedExplanation('')
+        setSelectedAnswer(null)
+        
         if (currentPuzzle === 1) {
           // Move to puzzle 2
           setCurrentPuzzle(2)
-          setSelectedAnswer(null)
+          setPuzzleTimer(300) // Reset timer to 5 minutes
         } else {
           // Puzzle 2 completed - close puzzle
           setShowPuzzle(false)
-          setSelectedAnswer(null)
         }
-      }, 1000)
+      }, 2000) // Wait 2 seconds to show NPC response
     }
-    // If wrong, just show red border (don't advance)
   }
 
-  // Auto-advance for noContinue dialogues
+  // Typing animation and auto-advance for NPC5
   useEffect(() => {
-    if (showNpc5Dialogue && npc5DialogueIndex < npc5DialogueSequence.length) {
+    if (showNpc5Dialogue && npc5DialogueIndex >= 0 && npc5DialogueIndex < npc5DialogueSequence.length) {
       const currentDialogue = npc5DialogueSequence[npc5DialogueIndex]
-      if (currentDialogue.noContinue && !currentDialogue.isButton) {
-        // Auto-advance after a short delay (1 second)
-        const timer = setTimeout(() => {
-          if (npc5DialogueIndex < npc5DialogueSequence.length - 1) {
-            setNpc5DialogueIndex(npc5DialogueIndex + 1)
-          }
-        }, 1000)
-        return () => clearTimeout(timer)
+      
+      // Skip typing for button dialogues
+      if (currentDialogue.isButton) {
+        setNpc5IsTyping(false)
+        return
       }
+      
+      const fullText = currentDialogue.text
+      let currentIndex = 0
+      setNpc5TypedText('')
+      setNpc5IsTyping(true)
+      
+      // Typing animation
+      const typingInterval = setInterval(() => {
+        if (currentIndex < fullText.length) {
+          setNpc5TypedText(fullText.substring(0, currentIndex + 1))
+          currentIndex++
+        } else {
+          clearInterval(typingInterval)
+          setNpc5IsTyping(false)
+          
+          // If this dialogue should show button, show it
+          if (currentDialogue.showButton) {
+            setTimeout(() => {
+              setNpc5ShowButton(true)
+            }, 500) // Wait 500ms after typing completes before showing button
+          }
+          // Auto-advance if autoAdvance flag is set
+          else if (currentDialogue.autoAdvance) {
+            setTimeout(() => {
+              if (npc5DialogueIndex < npc5DialogueSequence.length - 1) {
+                setNpc5DialogueIndex(npc5DialogueIndex + 1)
+              }
+            }, 800) // Wait 800ms after typing completes before advancing
+          }
+        }
+      }, 30) // 30ms per character for typing speed
+      
+      return () => clearInterval(typingInterval)
     }
   }, [showNpc5Dialogue, npc5DialogueIndex])
 
-  // Timer countdown
+  // Typing animation and auto-advance for NPC6
   useEffect(() => {
-    if (showPuzzle && puzzleTimer > 0) {
+    if (showNpc6Dialogue && npc6DialogueIndex >= 0 && npc6DialogueIndex < npc6DialogueSequence.length) {
+      const currentDialogue = npc6DialogueSequence[npc6DialogueIndex]
+      
+      // Skip typing for button dialogues
+      if (currentDialogue.isButton) {
+        setNpc6IsTyping(false)
+        return
+      }
+      
+      const fullText = currentDialogue.text
+      let currentIndex = 0
+      setNpc6TypedText('')
+      setNpc6IsTyping(true)
+      
+      // Typing animation
+      const typingInterval = setInterval(() => {
+        if (currentIndex < fullText.length) {
+          setNpc6TypedText(fullText.substring(0, currentIndex + 1))
+          currentIndex++
+        } else {
+          clearInterval(typingInterval)
+          setNpc6IsTyping(false)
+          
+          // If this dialogue should show button, show it
+          if (currentDialogue.showButton) {
+            setTimeout(() => {
+              setNpc6ShowButton(true)
+            }, 500) // Wait 500ms after typing completes before showing button
+          }
+          // Auto-advance if autoAdvance flag is set
+          else if (currentDialogue.autoAdvance) {
+            setTimeout(() => {
+              if (npc6DialogueIndex < npc6DialogueSequence.length - 1) {
+                setNpc6DialogueIndex(npc6DialogueIndex + 1)
+              }
+            }, 800) // Wait 800ms after typing completes before advancing
+          }
+        }
+      }, 30) // 30ms per character for typing speed
+      
+      return () => clearInterval(typingInterval)
+    }
+  }, [showNpc6Dialogue, npc6DialogueIndex])
+
+  // Timer countdown - pause when teaching dialogue is shown
+  useEffect(() => {
+    if (showPuzzle && puzzleTimer > 0 && !showTeachingDialogue) {
       const timer = setTimeout(() => {
         setPuzzleTimer(puzzleTimer - 1)
       }, 1000)
       return () => clearTimeout(timer)
+    } else if (showPuzzle && puzzleTimer === 0) {
+      // Time's up - close puzzle and allow restart
+      setTimeout(() => {
+        setShowPuzzle(false)
+        setNpc5Completed(false) // Allow user to try again
+      }, 1000)
     }
-  }, [showPuzzle, puzzleTimer])
+  }, [showPuzzle, puzzleTimer, showTeachingDialogue])
 
   // Format timer display
   const formatTimer = (seconds) => {
@@ -1639,49 +1867,60 @@ const GlacierMap = ({ onExit }) => {
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
-      width: '70vw', // Changed to 70% of viewport width
-      maxWidth: '1200px',
-      minHeight: '500px',
-      background: 'rgba(50, 50, 50, 0.95)',
-      border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(50,50,50,0.95), rgba(50,50,50,0.95)), linear-gradient(90deg, #5170FF, #FFBBC4)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
+      width: '85vw',
+      maxWidth: '1400px',
+      height: '75vh',
+      background: 'rgba(40, 40, 40, 0.95)',
       borderRadius: '20px',
-      padding: '40px',
+      padding: '0',
       zIndex: 2000,
       color: '#fff',
+      display: 'flex',
+      overflow: 'hidden',
+    },
+    puzzleLeftPanel: {
+      width: '33.33%',
+      background: 'rgba(20, 20, 20, 0.9)',
+      padding: '30px 20px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '30px',
+      position: 'relative',
     },
     puzzleTimer: {
-      position: 'absolute',
-      top: '30px',
-      left: '30px',
-      fontSize: '22px', // Increased from 18px
+      fontSize: '32px',
       fontWeight: 'bold',
+      fontFamily: "'Roboto Mono', monospace",
       color: '#fff',
-      background: 'rgba(0, 0, 0, 0.7)',
-      padding: '12px 20px', // Increased padding
-      borderRadius: '8px',
-    },
-    puzzleTitle: {
-      fontSize: '28px', // Increased from 20px
-      fontWeight: 'bold',
-      marginBottom: '30px',
-      textAlign: 'center',
-    },
-    puzzleContent: {
-      display: 'flex',
-      gap: '40px', // Increased gap
-      alignItems: 'flex-start',
+      background: 'rgba(255, 255, 255, 0.1)',
+      padding: '15px 30px',
+      borderRadius: '50px',
+      letterSpacing: '2px',
     },
     puzzleImageContainer: {
-      width: '250px', // Increased from 200px
-      flexShrink: 0,
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
     },
     puzzleImage: {
       width: '100%',
       height: 'auto',
       borderRadius: '10px',
+    },
+    puzzleRightPanel: {
+      width: '66.67%',
+      padding: '40px 50px',
+      display: 'flex',
+      flexDirection: 'column',
+      overflowY: 'auto',
+    },
+    puzzleTitle: {
+      fontSize: '28px',
+      fontWeight: 'bold',
+      marginBottom: '25px',
+      textAlign: 'left',
     },
     puzzleTextContainer: {
       flex: 1,
@@ -1690,43 +1929,135 @@ const GlacierMap = ({ onExit }) => {
       gap: '20px',
     },
     puzzleStatement: {
-      fontSize: '20px', // Increased from 16px
+      fontSize: '20px',
       marginBottom: '15px',
       fontStyle: 'italic',
-      lineHeight: 1.5,
+      lineHeight: 1.6,
+      textAlign: 'left',
     },
     puzzleQuestion: {
-      fontSize: '24px', // Increased from 18px
+      fontSize: '22px',
       fontWeight: 'bold',
       marginBottom: '25px',
       lineHeight: 1.4,
+      textAlign: 'left',
     },
     puzzleOptions: {
-      display: 'grid', // Changed from flex to grid
-      gridTemplateColumns: '1fr 1fr', // Two columns
-      gap: '15px', // Gap between options
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '15px',
       marginTop: '20px',
     },
     puzzleOption: {
-      padding: '15px 25px', // Increased padding
-      borderRadius: '8px',
-      border: '2px solid #5170FF',
-      background: 'rgba(81, 112, 255, 0.2)',
+      padding: '18px 25px',
+      borderRadius: '10px',
+      border: '2px solid #a0d8ff',
+      background: '#1f2937',
       color: '#fff',
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '18px', // Increased from 14px
+      fontSize: '18px',
       cursor: 'pointer',
       transition: 'all 0.2s',
       textAlign: 'left',
-      lineHeight: 1.4,
+      lineHeight: 1.5,
+      width: '100%',
+      boxSizing: 'border-box',
+      display: 'block',
     },
     puzzleOptionCorrect: {
-      borderColor: '#00ff00', // Green border for correct answer
-      background: 'rgba(0, 255, 0, 0.2)',
+      borderColor: '#4caf50',
+      background: '#2e7d32',
     },
     puzzleOptionWrong: {
-      background: 'rgba(255, 0, 0, 0.3)',
-      borderColor: '#ff0000',
+      background: '#c62828',
+      borderColor: '#f44336',
+    },
+    teachingDialogueOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '25%',
+      height: '100%',
+      background: 'rgba(0, 0, 0, 0.95)',
+      zIndex: 100,
+      display: 'flex',
+      flexDirection: 'column',
+      padding: '20px',
+      gap: '15px',
+    },
+    teachingNpcContainer: {
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: '10px',
+    },
+    teachingNpcAvatar: {
+      width: '50px',
+      height: '50px',
+      borderRadius: '50%',
+      flexShrink: 0,
+    },
+    teachingNpcBubble: {
+      background: '#fff',
+      color: '#000',
+      padding: '12px 18px',
+      borderRadius: '15px',
+      fontSize: '16px',
+      lineHeight: 1.4,
+      maxWidth: '200px',
+    },
+    teachingPrompt: {
+      color: '#fff',
+      fontSize: '14px',
+      fontWeight: 'bold',
+      marginTop: '10px',
+    },
+    teachingInputContainer: {
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '10px',
+    },
+    teachingInput: {
+      width: '100%',
+      minHeight: '100px',
+      padding: '12px',
+      borderRadius: '10px',
+      border: '2px solid rgba(255, 255, 255, 0.3)',
+      background: 'rgba(255, 255, 255, 0.1)',
+      color: '#fff',
+      fontSize: '14px',
+      fontFamily: "'Roboto', sans-serif",
+      resize: 'vertical',
+      outline: 'none',
+    },
+    teachingSendButton: {
+      width: '40px',
+      height: '40px',
+      borderRadius: '8px',
+      border: 'none',
+      background: 'rgba(81, 112, 255, 0.8)',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      alignSelf: 'flex-end',
+      transition: 'all 0.2s',
+    },
+    teachingSendIcon: {
+      width: '20px',
+      height: '20px',
+      objectFit: 'contain',
+    },
+    userExplanationBubble: {
+      background: 'rgba(81, 112, 255, 0.8)',
+      color: '#fff',
+      padding: '12px 18px',
+      borderRadius: '15px',
+      fontSize: '14px',
+      lineHeight: 1.4,
+      alignSelf: 'flex-end',
+      maxWidth: '80%',
+      marginTop: '10px',
     },
     // Creativity Challenge styles
     creativityContainer: {
@@ -3123,24 +3454,37 @@ const GlacierMap = ({ onExit }) => {
               {summaryWaitingForInput && summaryDialogueSequence[summaryDialogueIndex + 1] && 
                summaryDialogueSequence[summaryDialogueIndex + 1].speaker === 'quiz' && (
                 <div style={{width: '100%', marginTop: '10px'}}>
-                  {summaryDialogueSequence[summaryDialogueIndex + 1].options.map((option, idx) => (
-                    <button
-                      key={idx}
-                      style={styles.modernActionButton}
-                      onClick={() => handleSummaryQuizChoice(option)}
-                      onMouseOver={(e) => {
-                        e.target.style.borderColor = theme.borderColor
-                        e.target.style.transform = 'translateX(5px)'
-                      }}
-                      onMouseOut={(e) => {
-                        e.target.style.borderColor = '#E0E0E0'
-                        e.target.style.transform = 'translateX(0)'
-                      }}
-                    >
-                      <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
-                      {option.text}
-                    </button>
-                  ))}
+                  {summaryDialogueSequence[summaryDialogueIndex + 1].options.map((option, idx) => {
+                    const isWrong = wrongQuizOption === option.id
+                    return (
+                      <button
+                        key={idx}
+                        style={{
+                          ...styles.modernActionButton,
+                          borderColor: isWrong ? '#F44336' : '#E0E0E0',
+                          borderWidth: isWrong ? '3px' : '2px',
+                        }}
+                        onClick={() => handleSummaryQuizChoice(option)}
+                        onMouseOver={(e) => {
+                          if (!isWrong) {
+                            e.target.style.borderColor = theme.borderColor
+                          }
+                          e.target.style.transform = 'translateX(5px)'
+                        }}
+                        onMouseOut={(e) => {
+                          if (!isWrong) {
+                            e.target.style.borderColor = '#E0E0E0'
+                          } else {
+                            e.target.style.borderColor = '#F44336'
+                          }
+                          e.target.style.transform = 'translateX(0)'
+                        }}
+                      >
+                        <span style={{fontSize: '16px', color: isWrong ? '#F44336' : theme.borderColor}}>→</span>
+                        {option.text}
+                      </button>
+                    )
+                  })}
                 </div>
               )}
               
@@ -3188,14 +3532,23 @@ const GlacierMap = ({ onExit }) => {
       {currentScene === 'rooftop' && (
         <div 
           style={styles.npc5}
-          onClick={handleNpc5Click}
-          onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-          onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+          onClick={() => {
+            // Allow click to restart if not completed or if puzzle is not showing
+            if (!npc5Completed || !showPuzzle) {
+              handleNpc5Click()
+            }
+          }}
+          onMouseOver={() => {
+            // Auto-show on hover only if not completed and not already showing
+            if (!showNpc5Dialogue && !npc5Completed && !showPuzzle) {
+              handleNpc5Click()
+            }
+          }}
         >
           <img 
             src="/glacier/npc/npc5.png"
             alt="NPC 5"
-            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            style={{ width: '100%', height: '100%', objectFit: 'contain', cursor: 'pointer' }}
           />
         </div>
       )}
@@ -3204,9 +3557,11 @@ const GlacierMap = ({ onExit }) => {
       {currentScene === 'rooftop' && (
         <div 
           style={styles.npc6}
-          onClick={handleNpc6Click}
-          onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-          onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+          onMouseOver={() => {
+            if (!showNpc6Dialogue && !npc6Completed) {
+              handleNpc6Click()
+            }
+          }}
         >
           <img 
             src="/glacier/npc/npc6.png"
@@ -3246,45 +3601,45 @@ const GlacierMap = ({ onExit }) => {
             </>
           ) : (
             <>
-              {/* Current NPC5 Dialogue or User Button */}
-              <div style={{ marginBottom: '15px', flex: 1 }}>
+              {/* Current NPC5 Dialogue with typing animation */}
+              <div style={{ marginBottom: '20px', flex: 1 }}>
                 {npc5DialogueIndex < npc5DialogueSequence.length && !npc5DialogueSequence[npc5DialogueIndex].isButton && (
                   <div style={styles.dialogueText}>
-                    {npc5DialogueSequence[npc5DialogueIndex].text}
+                    {npc5TypedText}
                   </div>
-                )}
-
-                {npc5DialogueIndex < npc5DialogueSequence.length && npc5DialogueSequence[npc5DialogueIndex].isButton && (
-                  <button 
-                    style={styles.userChoiceButton}
-                    onClick={() => handleNpc5UserChoice(npc5DialogueSequence[npc5DialogueIndex].text)}
-                    onMouseOver={(e) => e.target.style.background = '#ff9fb0'}
-                    onMouseOut={(e) => e.target.style.background = '#FFBBC4'}
-                  >
-                    {npc5DialogueSequence[npc5DialogueIndex].text}
-                  </button>
                 )}
               </div>
 
-              {/* Continue Button - only show if NOT noContinue and NOT isButton */}
-              {npc5DialogueIndex < npc5DialogueSequence.length && 
-               !npc5DialogueSequence[npc5DialogueIndex].isButton && 
-               !npc5DialogueSequence[npc5DialogueIndex].noContinue && (
+              {/* "Let me help you" Button - show when npc5ShowButton is true */}
+              {npc5ShowButton && (
                 <button 
-                  style={styles.npc5ContinueButton}
-                  onClick={() => handleNpc5UserChoice(npc5DialogueSequence[npc5DialogueIndex].text)}
+                  style={{
+                    padding: '15px 40px',
+                    background: 'rgba(30, 30, 50, 0.85)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    border: '2px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '12px',
+                    color: '#fff',
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s',
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+                  }}
+                  onClick={() => handleNpc5UserChoice(npc5DialogueSequence[5].text)}
                   onMouseOver={(e) => {
-                    e.target.style.background = 'rgba(50, 50, 80, 0.95)'
-                    e.target.style.boxShadow = '0 0 25px rgba(100, 149, 237, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15)'
+                    e.target.style.background = 'rgba(50, 50, 80, 0.9)'
                     e.target.style.transform = 'scale(1.05)'
+                    e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)'
                   }}
                   onMouseOut={(e) => {
-                    e.target.style.background = 'rgba(30, 30, 50, 0.9)'
-                    e.target.style.boxShadow = '0 0 15px rgba(100, 149, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                    e.target.style.background = 'rgba(30, 30, 50, 0.85)'
                     e.target.style.transform = 'scale(1)'
+                    e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)'
                   }}
                 >
-                  CONTINUE
+                  {npc5DialogueSequence[5].text}
                 </button>
               )}
             </>
@@ -3322,44 +3677,43 @@ const GlacierMap = ({ onExit }) => {
             </>
           ) : (
             <>
-              {/* Current NPC6 Dialogue or User Button */}
-              <div style={{ marginBottom: '15px', flex: 1 }}>
-                {npc6DialogueIndex < npc6DialogueSequence.length && !npc6DialogueSequence[npc6DialogueIndex].isButton && (
-                  <div style={styles.dialogueText}>
-                    {npc6DialogueSequence[npc6DialogueIndex].text}
-                  </div>
-                )}
-
-                {npc6DialogueIndex < npc6DialogueSequence.length && npc6DialogueSequence[npc6DialogueIndex].isButton && (
-                  <button 
-                    style={styles.userChoiceButton}
-                    onClick={handleNpc6UserChoice}
-                    onMouseOver={(e) => e.target.style.background = '#ff9fb0'}
-                    onMouseOut={(e) => e.target.style.background = '#FFBBC4'}
-                  >
-                    {npc6DialogueSequence[npc6DialogueIndex].text}
-                  </button>
-                )}
+              {/* NPC6 text with typing animation */}
+              <div style={{ marginBottom: '20px', flex: 1 }}>
+                <div style={styles.dialogueText}>
+                  {npc6TypedText}
+                </div>
               </div>
 
-              {/* Continue Button */}
-              {npc6DialogueIndex < npc6DialogueSequence.length && 
-               !npc6DialogueSequence[npc6DialogueIndex].isButton && (
+              {/* "Let's spark together" Button - show when npc6ShowButton is true */}
+              {npc6ShowButton && (
                 <button 
-                  style={styles.npc6ContinueButton}
+                  style={{
+                    padding: '15px 40px',
+                    background: 'rgba(30, 30, 50, 0.85)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    border: '2px solid rgba(255, 255, 255, 0.2)',
+                    borderRadius: '12px',
+                    color: '#fff',
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s',
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+                  }}
                   onClick={handleNpc6UserChoice}
                   onMouseOver={(e) => {
-                    e.target.style.background = 'rgba(50, 50, 80, 0.95)'
-                    e.target.style.boxShadow = '0 0 25px rgba(100, 149, 237, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15)'
+                    e.target.style.background = 'rgba(50, 50, 80, 0.9)'
                     e.target.style.transform = 'scale(1.05)'
+                    e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)'
                   }}
                   onMouseOut={(e) => {
-                    e.target.style.background = 'rgba(30, 30, 50, 0.9)'
-                    e.target.style.boxShadow = '0 0 15px rgba(100, 149, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                    e.target.style.background = 'rgba(30, 30, 50, 0.85)'
                     e.target.style.transform = 'scale(1)'
+                    e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.3)'
                   }}
                 >
-                  CONTINUE
+                  {npc6DialogueSequence[4].text}
                 </button>
               )}
             </>
@@ -3419,85 +3773,257 @@ const GlacierMap = ({ onExit }) => {
       {/* Puzzle Interface */}
       {showPuzzle && (
         <div style={styles.puzzleContainer}>
-          <div style={styles.puzzleTimer}>
-            {formatTimer(puzzleTimer)}
-          </div>
-          
-          <div style={styles.puzzleTitle}>
-            {puzzleData[currentPuzzle].title}
-          </div>
-          
-          <div style={styles.puzzleContent}>
-            <div style={styles.puzzleImageContainer}>
-              <img 
-                src={puzzleData[currentPuzzle].image}
-                alt={`Puzzle ${currentPuzzle}`}
-                style={styles.puzzleImage}
-              />
-            </div>
-            
-            <div style={styles.puzzleTextContainer}>
-              <div>
-                {puzzleData[currentPuzzle].statement && (
-                  <div style={styles.puzzleStatement}>
-                    NPC 5: "{puzzleData[currentPuzzle].statement}"
-                  </div>
-                )}
-                
-                {puzzleData[currentPuzzle].premise && (
-                  <div style={styles.puzzleStatement}>
-                    Premise:<br />
-                    {puzzleData[currentPuzzle].premise}
-                  </div>
-                )}
-                
-                {puzzleData[currentPuzzle].arguments && (
-                  <div style={styles.puzzleStatement}>
-                    Arguments:<br />
-                    {puzzleData[currentPuzzle].arguments}
-                  </div>
-                )}
-                
-                <div style={styles.puzzleQuestion}>
-                  Question: {puzzleData[currentPuzzle].question}
+          {/* Left Panel - 25% */}
+          <div style={styles.puzzleLeftPanel}>
+            {/* Timer - only show when not in teaching mode */}
+            {!showTeachingDialogue && (
+              <>
+                <div style={styles.puzzleTimer}>
+                  {formatTimer(puzzleTimer)}
                 </div>
-              </div>
-              
-              <div style={styles.puzzleOptions}>
-                {puzzleData[currentPuzzle].options.map((option, index) => {
-                  // Determine style based on selection
-                  let optionStyle = styles.puzzleOption
-                  if (selectedAnswer === index) {
-                    if (option.correct) {
-                      optionStyle = { ...styles.puzzleOption, ...styles.puzzleOptionCorrect }
-                    } else {
-                      optionStyle = { ...styles.puzzleOption, ...styles.puzzleOptionWrong }
-                    }
-                  }
-                  
-                  return (
-                    <button
-                      key={index}
-                      style={optionStyle}
-                      onClick={() => handlePuzzleAnswer(option, index)}
-                      onMouseOver={(e) => {
-                        if (selectedAnswer === null) {
-                          e.target.style.background = 'rgba(81, 112, 255, 0.4)'
-                          e.target.style.transform = 'scale(1.02)'
+                
+                {/* Image */}
+                <div style={styles.puzzleImageContainer}>
+                  <img 
+                    src={puzzleData[currentPuzzle].image}
+                    alt={`Puzzle ${currentPuzzle}`}
+                    style={styles.puzzleImage}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Teaching Dialogue - replaces timer and image */}
+            {showTeachingDialogue && (
+              <div style={{ 
+                width: '100%', 
+                height: '100%',
+                display: 'flex', 
+                flexDirection: 'column', 
+                justifyContent: 'space-between',
+                padding: '20px 15px' 
+              }}>
+                {/* Top section - NPC dialogues */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', flex: 1, overflowY: 'auto' }}>
+                  {/* NPC Question */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                    <img 
+                      src="/glacier/npc/npc5.png"
+                      alt="NPC 5"
+                      style={{ width: '50px', height: '50px', borderRadius: '50%', flexShrink: 0 }}
+                    />
+                    <div style={{
+                      background: '#fff',
+                      color: '#000',
+                      padding: '12px 18px',
+                      borderRadius: '15px',
+                      fontSize: '16px',
+                      lineHeight: 1.4,
+                      maxWidth: '180px',
+                    }}>
+                      Could you... could you teach me?
+                    </div>
+                  </div>
+
+                  {/* User's explanation bubble (shown ONLY after submission) */}
+                  {submittedExplanation && (
+                    <div style={{
+                      background: '#5170FF',
+                      color: '#fff',
+                      padding: '12px 18px',
+                      borderRadius: '15px',
+                      fontSize: '14px',
+                      lineHeight: 1.4,
+                      alignSelf: 'flex-end',
+                      maxWidth: '85%',
+                      wordWrap: 'break-word',
+                    }}>
+                      {submittedExplanation}
+                    </div>
+                  )}
+
+                  {/* NPC Response (shown after user submits) */}
+                  {submittedExplanation && (
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                      <img 
+                        src="/glacier/npc/npc5.png"
+                        alt="NPC 5"
+                        style={{ width: '50px', height: '50px', borderRadius: '50%', flexShrink: 0 }}
+                      />
+                      <div style={{
+                        background: '#fff',
+                        color: '#000',
+                        padding: '12px 18px',
+                        borderRadius: '15px',
+                        fontSize: '16px',
+                        lineHeight: 1.4,
+                        maxWidth: '180px',
+                      }}>
+                        Got it, Let's move to next one
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Bottom section - Prompt and Input */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {/* Prompt */}
+                  <div style={{
+                    color: '#fff',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    lineHeight: 1.4,
+                  }}>
+                    Teach them<br />
+                    "How did you solve this?"
+                  </div>
+
+                  {/* Input container with send button inside */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                    borderRadius: '15px',
+                    border: '2px solid rgba(255, 255, 255, 0.3)',
+                    overflow: 'hidden',
+                    transition: 'border-color 0.2s',
+                  }}>
+                    <input
+                      type="text"
+                      style={{
+                        flex: 1,
+                        padding: '12px 15px',
+                        border: 'none',
+                        backgroundColor: 'transparent',
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: '14px',
+                        color: '#fff',
+                        outline: 'none',
+                      }}
+                      placeholder="Explain here..."
+                      value={userExplanation}
+                      onChange={(e) => setUserExplanation(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          handleExplanationSubmit()
                         }
+                      }}
+                    />
+                    
+                    {/* Divider */}
+                    <div style={{
+                      width: '2px',
+                      height: '24px',
+                      backgroundColor: '#5170FF',
+                      margin: '0 8px',
+                      flexShrink: 0,
+                    }}></div>
+                    
+                    {/* Send button inside input */}
+                    <button
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '8px 12px',
+                        transition: 'all 0.2s',
+                      }}
+                      onClick={handleExplanationSubmit}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.transform = 'scale(1.1)'
                       }}
                       onMouseOut={(e) => {
-                        if (selectedAnswer === null) {
-                          e.target.style.background = 'rgba(81, 112, 255, 0.2)'
-                          e.target.style.transform = 'scale(1)'
-                        }
+                        e.currentTarget.style.transform = 'scale(1)'
                       }}
                     >
-                      {option.text}
+                      <img 
+                        src="/glacier/icon/send.png"
+                        alt="Send"
+                        style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+                      />
                     </button>
-                  )
-                })}
+                  </div>
+                </div>
               </div>
+            )}
+          </div>
+
+          {/* Right Panel - 75% */}
+          <div style={styles.puzzleRightPanel}>
+            {/* Title */}
+            <div style={styles.puzzleTitle}>
+              {puzzleData[currentPuzzle].title}
+            </div>
+
+            {/* Statement */}
+            {puzzleData[currentPuzzle].statement && (
+              <div style={styles.puzzleStatement}>
+                NPC 5: "{puzzleData[currentPuzzle].statement}"
+              </div>
+            )}
+
+            {/* Premise (for puzzle 2) */}
+            {puzzleData[currentPuzzle].premise && (
+              <div style={styles.puzzleStatement}>
+                Premise:<br />
+                {renderColoredText(puzzleData[currentPuzzle].premise)}
+              </div>
+            )}
+
+            {/* Arguments (for puzzle 2) */}
+            {puzzleData[currentPuzzle].arguments && (
+              <div style={styles.puzzleStatement}>
+                Arguments:<br />
+                {renderColoredText(puzzleData[currentPuzzle].arguments)}
+              </div>
+            )}
+
+            {/* Question */}
+            <div style={styles.puzzleQuestion}>
+              Question: {puzzleData[currentPuzzle].question}
+            </div>
+
+            {/* Options */}
+            <div style={styles.puzzleOptions}>
+              {puzzleData[currentPuzzle].options.map((option, index) => {
+                // Determine base style
+                let optionStyle = { ...styles.puzzleOption }
+                
+                // Apply selected state styles
+                if (selectedAnswer === index) {
+                  if (option.correct) {
+                    optionStyle = { ...optionStyle, ...styles.puzzleOptionCorrect }
+                  } else {
+                    optionStyle = { ...optionStyle, ...styles.puzzleOptionWrong }
+                  }
+                }
+                
+                return (
+                  <button
+                    key={index}
+                    style={optionStyle}
+                    onClick={() => handlePuzzleAnswer(option, index)}
+                    disabled={selectedAnswer !== null}
+                    onMouseEnter={(e) => {
+                      if (selectedAnswer === null) {
+                        e.currentTarget.style.background = '#2d3748'
+                        e.currentTarget.style.transform = 'translateX(5px)'
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (selectedAnswer === null) {
+                        e.currentTarget.style.background = '#1f2937'
+                        e.currentTarget.style.transform = 'translateX(0)'
+                      }
+                    }}
+                  >
+                    {option.text}
+                  </button>
+                )
+              })}
             </div>
           </div>
         </div>
