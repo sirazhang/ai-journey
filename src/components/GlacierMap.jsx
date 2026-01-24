@@ -696,6 +696,7 @@ const GlacierMap = ({ onExit }) => {
   const [summaryWaitingForInput, setSummaryWaitingForInput] = useState(false)
   const [wrongQuizOption, setWrongQuizOption] = useState(null) // Track wrong quiz option for red border
   const [showElevatorArrow, setShowElevatorArrow] = useState(savedProgress?.showElevatorArrow || false)
+  const [courtSummaryCompleted, setCourtSummaryCompleted] = useState(savedProgress?.courtSummaryCompleted || false) // Track if court summary dialogue has been completed
   
   // Rooftop states
   const [showNpc5Dialogue, setShowNpc5Dialogue] = useState(false)
@@ -795,8 +796,8 @@ const GlacierMap = ({ onExit }) => {
     if (currentScene === 'inside') {
       if (completedCases.length === 5) {
         // All cases completed
-        if (showElevatorArrow) {
-          // Elevator arrow should be visible, and also show court arrow
+        if (courtSummaryCompleted) {
+          // Court summary already completed, show both arrows
           setShowArrow(true) // Show court arrow
           setShowDialogue(false)
         } else if (!showSummaryDialogue) {
@@ -819,9 +820,10 @@ const GlacierMap = ({ onExit }) => {
       completedCases,
       showSummaryDialogue,
       showElevatorArrow,
+      courtSummaryCompleted,
     }
     saveProgress(progress)
-  }, [currentScene, completedCases, showSummaryDialogue, showElevatorArrow])
+  }, [currentScene, completedCases, showSummaryDialogue, showElevatorArrow, courtSummaryCompleted])
 
   // 使用useMemo来避免每次渲染都重新创建dialogues
   const dialogueSequences = useMemo(() => getDialogueSequences(t), [t])
@@ -926,6 +928,7 @@ const GlacierMap = ({ onExit }) => {
       // Reached end of dialogue sequence, show elevator arrow
       setShowSummaryDialogue(false)
       setShowElevatorArrow(true)
+      setCourtSummaryCompleted(true) // Mark court summary as completed
       return
     }
     
@@ -962,6 +965,7 @@ const GlacierMap = ({ onExit }) => {
               // Reached end, show elevator arrow
               setShowSummaryDialogue(false)
               setShowElevatorArrow(true)
+              setCourtSummaryCompleted(true) // Mark court summary as completed
             } else {
               setSummaryDialogueIndex(nextIndex)
             }
@@ -977,8 +981,8 @@ const GlacierMap = ({ onExit }) => {
   useEffect(() => {
     // Handle inside scene specifically
     if (currentScene === 'inside') {
-      // If all cases completed and elevator arrow not shown yet, show summary dialogue
-      if (completedCases.length === 5 && !showElevatorArrow && !showSummaryDialogue) {
+      // If all cases completed and court summary not completed yet, show summary dialogue
+      if (completedCases.length === 5 && !courtSummaryCompleted && !showSummaryDialogue) {
         setTimeout(() => {
           setShowSummaryDialogue(true)
           setSummaryDialogueIndex(0)
@@ -991,14 +995,14 @@ const GlacierMap = ({ onExit }) => {
         // Cases not complete, show arrow to court
         setShowArrow(true)
         setShowDialogue(false)
-      } else if (completedCases.length === 5 && showElevatorArrow) {
+      } else if (completedCases.length === 5 && courtSummaryCompleted) {
         // Court completed and summary dialogue finished
         // Show both arrows (court arrow and elevator arrow)
         setShowArrow(true) // This shows the court arrow
         setShowDialogue(false)
         // Elevator arrow is controlled by showElevatorArrow state
       }
-      // If elevator arrow is showing, don't trigger dialogue again
+      // If court summary completed, don't trigger dialogue again
       return
     }
     
@@ -1010,7 +1014,7 @@ const GlacierMap = ({ onExit }) => {
     setIsTyping(false)
     setDialogueHistory([])
     setWaitingForUserInput(false)
-  }, [currentScene, completedCases.length, showSummaryDialogue, showElevatorArrow])
+  }, [currentScene, completedCases.length, showSummaryDialogue, courtSummaryCompleted])
 
   const handleContinue = () => {
     if (currentScene === 'inside') {
@@ -1077,7 +1081,7 @@ const GlacierMap = ({ onExit }) => {
     // This is handled by the regular dialogue system when first entering 'inside'
     
     // Stage 2: Court summary (only show if all 5 court cases completed AND not shown before)
-    if (completedCases.length === 5 && !showElevatorArrow && !showSummaryDialogue) {
+    if (completedCases.length === 5 && !courtSummaryCompleted && !showSummaryDialogue) {
       setShowSummaryDialogue(true)
       setSummaryDialogueIndex(0)
       setSummaryDialogueHistory([])
@@ -1088,7 +1092,7 @@ const GlacierMap = ({ onExit }) => {
     
     // Stage 3: Rooftop summary (only show if all 3 rooftop tasks completed AND court summary already shown)
     // TODO: Add rooftop summary dialogue when all rooftop tasks are completed
-    if (rooftopCompletedTasks.length === 3 && showElevatorArrow) {
+    if (rooftopCompletedTasks.length === 3 && courtSummaryCompleted) {
       // TODO: Implement rooftop summary dialogue
       console.log('All rooftop tasks completed - show rooftop summary')
       return
@@ -1107,9 +1111,10 @@ const GlacierMap = ({ onExit }) => {
     
     // Check if this is the last dialogue
     if (nextIndex >= summaryDialogueSequence.length) {
-      // This is the last user choice, show elevator arrow
+      // This is the last user choice, show elevator arrow and mark court summary as completed
       setShowSummaryDialogue(false)
       setShowElevatorArrow(true)
+      setCourtSummaryCompleted(true) // Mark court summary as completed
     } else {
       // Move to next dialogue
       setSummaryDialogueIndex(nextIndex)
@@ -1181,6 +1186,7 @@ const GlacierMap = ({ onExit }) => {
         // End of all dialogues
         setShowSummaryDialogue(false)
         setShowElevatorArrow(true)
+        setCourtSummaryCompleted(true) // Mark court summary as completed
       }
     }
   }
@@ -1192,7 +1198,8 @@ const GlacierMap = ({ onExit }) => {
   // Handle elevator arrow click
   const handleElevatorArrowClick = () => {
     setCurrentScene('rooftop')
-    setShowElevatorArrow(false)
+    // Don't reset showElevatorArrow - keep it true so it shows when returning to inside
+    // setShowElevatorArrow(false) // Removed - keep elevator arrow state
     setShowSummaryDialogue(false)
   }
 
