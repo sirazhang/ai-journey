@@ -9,7 +9,7 @@ const summaryDialogueSequence = [
   },
   {
     speaker: 'momo',
-    text: "Remember the Transport Captain? 🚛 AI tools are advisory, not authoritative. Humans are the Human-in-the-Loop 🔄. Humans have the ultimate responsibility to verify conditions. Humans can outsource the task, but never the blame 🚫.",
+    text: "Remember the Captain? 🚛 AI is an advisor, not the boss. As the 'Human-in-the-Loop' 🔄, you must verify everything.",
     showUserButton: true // Show user button after this dialogue
   },
   {
@@ -37,7 +37,7 @@ const summaryDialogueSequence = [
   },
   {
     speaker: 'momo',
-    text: "Blindly trusting an algorithm is negligence 🙈. Always perform a secondary check—like a visual inspection or a manual test 🔍. If humans just press 'Print & Sign' without looking, humans aren't doing your job.",
+    text: "Blind trust = Negligence 🙈. Always verify visually first 🔍. Don't just auto-approve; your job is to double-check.",
     showUserButton: true // Show user button after this dialogue
   },
   {
@@ -601,7 +601,7 @@ const getDialogueSequences = (t) => ({
 })
 
 const GlacierMap = ({ onExit }) => {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   
   // Helper function to get current timestamp
   const getCurrentTimestamp = () => {
@@ -766,6 +766,11 @@ const GlacierMap = ({ onExit }) => {
   const [footstepShowingSequence, setFootstepShowingSequence] = useState(false) // true during sequence display
   const [footstepCurrentHighlight, setFootstepCurrentHighlight] = useState(-1) // Currently highlighted footprint
   const [npc9Completed, setNpc9Completed] = useState(false)
+  
+  // NPC9 sharing dialogue states
+  const [showNpc9Sharing, setShowNpc9Sharing] = useState(false)
+  const [npc9UserInput, setNpc9UserInput] = useState('')
+  const [npc9ShowResponse, setNpc9ShowResponse] = useState(false)
   
   // Glitch dialogue states (for inside, court, rooftop scenes)
   const [showGlitchDialogue, setShowGlitchDialogue] = useState(false)
@@ -1404,7 +1409,12 @@ const GlacierMap = ({ onExit }) => {
           // All challenges complete
           setShowMemoryChallenge(false)
           setNpc9Completed(true)
-          setRooftopCompletedTasks(prev => [...prev, 'npc9'])
+          console.log('NPC9 memory challenge completed, showing sharing dialogue in 1s')
+          // Show sharing dialogue
+          setTimeout(() => {
+            console.log('Setting showNpc9Sharing to true')
+            setShowNpc9Sharing(true)
+          }, 1000)
         }
       }, 1000)
     }
@@ -1508,6 +1518,28 @@ const GlacierMap = ({ onExit }) => {
           }, 2000)
         }
       }, 2000)
+    }
+  }
+
+  // NPC9 sharing handlers
+  const handleNpc9SharingSubmit = () => {
+    if (npc9UserInput.trim()) {
+      // Show NPC response
+      setNpc9ShowResponse(true)
+      
+      // Close dialogue after showing response
+      setTimeout(() => {
+        setShowNpc9Sharing(false)
+        setNpc9ShowResponse(false)
+        setNpc9UserInput('')
+        setRooftopCompletedTasks(prev => [...prev, 'npc9'])
+      }, 2000)
+    }
+  }
+
+  const handleNpc9SharingKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleNpc9SharingSubmit()
     }
   }
 
@@ -1653,11 +1685,14 @@ const GlacierMap = ({ onExit }) => {
           setPuzzleTimer(300) // Reset timer to 5 minutes
         } else {
           // Puzzle 2 completed - move to exercises
+          console.log('Puzzle 2 completed, moving to exercises')
           setShowPuzzle(false)
+          setShowNpc5Dialogue(false)
           setShowExercise(true)
           setCurrentExercise(1)
           setSelectedErrors([])
           setShowExerciseFeedback(false)
+          console.log('Exercise state set: showExercise=true, currentExercise=1')
         }
       }, 2000) // Wait 2 seconds to show NPC response
     }
@@ -1673,42 +1708,29 @@ const GlacierMap = ({ onExit }) => {
     const exercise = exerciseData[currentExercise]
     const fullText = exercise.text
     
-    // Get the start and end positions of the selection in the full text
-    const anchorNode = selection.anchorNode
-    const focusNode = selection.focusNode
-    
-    if (!anchorNode || !focusNode) return
+    console.log('=== Text Selection Debug ===')
+    console.log('Selected text:', selectedText)
+    console.log('Selected text length:', selectedText.length)
     
     // Find the actual selected range in the original text
     let selectionStart = -1
     let selectionEnd = -1
     
-    // Try to find the selected text in the full text
-    const searchText = selectedText.replace(/\s+/g, ' ') // Normalize spaces
-    selectionStart = fullText.indexOf(searchText)
-    
-    if (selectionStart === -1) {
-      // Try without spaces
-      const noSpaceSearch = selectedText.replace(/\s+/g, '')
-      const noSpaceText = fullText.replace(/\s+/g, '')
-      const noSpaceIndex = noSpaceText.indexOf(noSpaceSearch)
-      if (noSpaceIndex !== -1) {
-        // Convert back to original text position
-        let charCount = 0
-        for (let i = 0; i < fullText.length; i++) {
-          if (fullText[i] !== ' ' && fullText[i] !== '\n') {
-            if (charCount === noSpaceIndex) {
-              selectionStart = i
-              break
-            }
-            charCount++
-          }
-        }
-      }
-    }
+    // Try exact match first
+    selectionStart = fullText.indexOf(selectedText)
     
     if (selectionStart !== -1) {
       selectionEnd = selectionStart + selectedText.length
+      console.log('Found exact match at:', selectionStart, '-', selectionEnd)
+    } else {
+      console.log('No exact match found, trying normalized search')
+      // Try with normalized spaces
+      const normalizedSelected = selectedText.replace(/\s+/g, ' ')
+      selectionStart = fullText.indexOf(normalizedSelected)
+      if (selectionStart !== -1) {
+        selectionEnd = selectionStart + normalizedSelected.length
+        console.log('Found normalized match at:', selectionStart, '-', selectionEnd)
+      }
     }
     
     // Check if selected text matches any error
@@ -1716,16 +1738,34 @@ const GlacierMap = ({ onExit }) => {
     exercise.errors.forEach((error, index) => {
       if (selectedErrors.includes(index)) return
       
-      // Check if selection overlaps with error
-      const errorOverlaps = (
-        selectedText === error.text ||
-        selectedText.includes(error.text) ||
-        error.text.includes(selectedText) ||
-        (selectionStart !== -1 && selectionStart <= error.start && selectionEnd >= error.end)
-      )
+      console.log(`Checking error ${index}:`, error.text, `(${error.start}-${error.end})`)
       
-      if (errorOverlaps) {
+      // Check multiple matching strategies
+      const exactTextMatch = selectedText === error.text
+      const normalizedMatch = selectedText.replace(/\s+/g, ' ') === error.text.replace(/\s+/g, ' ')
+      
+      // Position-based matching: check if selection overlaps with error position
+      let positionOverlap = false
+      if (selectionStart !== -1 && selectionEnd !== -1) {
+        // Check if there's any overlap between selection and error ranges
+        positionOverlap = !(selectionEnd <= error.start || selectionStart >= error.end)
+        console.log(`  - Position overlap check: selection(${selectionStart}-${selectionEnd}) vs error(${error.start}-${error.end}):`, positionOverlap)
+      }
+      
+      const containsError = selectedText.includes(error.text)
+      const errorContainsSelection = error.text.includes(selectedText) && selectedText.length >= 3
+      
+      console.log('  - Exact text match:', exactTextMatch)
+      console.log('  - Normalized match:', normalizedMatch)
+      console.log('  - Position overlap:', positionOverlap)
+      console.log('  - Contains error:', containsError)
+      console.log('  - Error contains selection:', errorContainsSelection)
+      
+      const errorMatches = exactTextMatch || normalizedMatch || positionOverlap || containsError || errorContainsSelection
+      
+      if (errorMatches) {
         // Correct error found
+        console.log('✓ Error matched!')
         foundError = true
         const newSelectedErrors = [...selectedErrors, index]
         setSelectedErrors(newSelectedErrors)
@@ -1760,9 +1800,12 @@ const GlacierMap = ({ onExit }) => {
     
     if (!foundError && selectedText.length > 2) {
       // Wrong selection - only play sound if selection is substantial
+      console.log('✗ No error matched - wrong selection')
       const wrongSound = new Audio('/sound/wrong.mp3')
       wrongSound.play().catch(err => console.log('Sound play failed:', err))
     }
+    
+    console.log('=== End Debug ===')
     
     // Clear selection
     selection.removeAllRanges()
@@ -2994,6 +3037,95 @@ const GlacierMap = ({ onExit }) => {
       cursor: 'pointer',
       transition: 'all 0.2s',
       fontWeight: '500',
+    },
+    // NPC9 sharing dialogue styles
+    npc9SharingContainer: {
+      position: 'fixed',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: '75%',
+      maxWidth: '900px',
+      maxHeight: '85vh',
+      background: 'rgba(80, 80, 80, 0.85)',
+      backdropFilter: 'blur(30px)',
+      WebkitBackdropFilter: 'blur(30px)',
+      borderRadius: '25px',
+      padding: '40px',
+      zIndex: 2000,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '25px',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+    },
+    npc9SharingTitle: {
+      textAlign: 'center',
+      color: '#fff',
+      fontSize: '22px',
+      marginBottom: '10px',
+      fontWeight: '500',
+    },
+    npc9SharingMessage: {
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: '15px',
+      marginBottom: '10px',
+    },
+    npc9SharingBubble: {
+      background: '#fff',
+      borderRadius: '15px',
+      padding: '20px',
+      flex: 1,
+      fontSize: '16px',
+      lineHeight: 1.6,
+      color: '#333',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    },
+    npc9SharingTimestamp: {
+      fontSize: '12px',
+      color: '#999',
+      marginTop: '8px',
+    },
+    npc9SharingUserLabel: {
+      textAlign: 'right',
+      fontSize: '12px',
+      color: '#a0d8ff',
+      marginBottom: '5px',
+      fontWeight: '500',
+    },
+    npc9SharingHints: {
+      display: 'flex',
+      gap: '10px',
+      marginBottom: '10px',
+      alignItems: 'flex-start',
+    },
+    npc9SharingHintTag: {
+      padding: '8px 16px',
+      borderRadius: '20px',
+      fontSize: '13px',
+      background: 'rgba(160, 216, 255, 0.15)',
+      border: '1px solid rgba(160, 216, 255, 0.4)',
+      color: '#a0d8ff',
+      fontWeight: '500',
+    },
+    npc9SharingInputContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '15px',
+      background: 'rgba(30, 50, 70, 0.6)',
+      borderRadius: '15px',
+      padding: '12px 20px',
+      border: '2px solid rgba(160, 216, 255, 0.4)',
+    },
+    npc9SharingInput: {
+      flex: 1,
+      background: 'none',
+      border: 'none',
+      color: '#fff',
+      fontSize: '16px',
+      outline: 'none',
+      fontFamily: "'Roboto', sans-serif",
     },
     creativityHintModal: {
       position: 'absolute',
@@ -5455,16 +5587,18 @@ const GlacierMap = ({ onExit }) => {
       )}
 
       {/* Exercise Interface - Underline Errors */}
-      {showExercise && (
+      {showExercise && (() => {
+        console.log('Rendering exercise interface, currentExercise:', currentExercise)
+        return (
         <div style={{
           ...styles.puzzleContainer,
         }}>
           <style>{`
             .exercise-text-area {
-              cursor: url('/glacier/icon/pen.png') 25 25, crosshair;
+              cursor: url('/glacier/icon/pen-cursor.png') 16 16, crosshair;
             }
             .exercise-text-area * {
-              cursor: url('/glacier/icon/pen.png') 25 25, crosshair;
+              cursor: url('/glacier/icon/pen-cursor.png') 16 16, crosshair;
             }
           `}</style>
           
@@ -5635,7 +5769,8 @@ const GlacierMap = ({ onExit }) => {
             </div>
           </div>
         </div>
-      )}
+        )
+      })()}
 
       {showArrow && currentScene !== 'court' && currentScene !== 'rooftop' && (
         <div 
@@ -5653,6 +5788,119 @@ const GlacierMap = ({ onExit }) => {
             alt="Arrow"
             style={styles.arrowImage}
           />
+        </div>
+      )}
+
+      {/* NPC9 Sharing Dialogue */}
+      {showNpc9Sharing && (
+        <div style={styles.npc9SharingContainer}>
+          <div style={styles.npc9SharingTitle}>
+            Share your memory secret here.
+          </div>
+          
+          {/* NPC Question */}
+          {!npc9ShowResponse && (
+            <div style={styles.npc9SharingMessage}>
+              <img src="/glacier/npc/npc9.png" alt="NPC9" style={{ width: '80px', height: '80px', flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <div style={styles.npc9SharingBubble}>
+                  Thanks for helping me finish the memory training! Do you have any secret memory hacks?
+                </div>
+                <div style={styles.npc9SharingTimestamp}>
+                  {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* User Response (if entered) */}
+          {npc9ShowResponse && npc9UserInput && (
+            <>
+              <div style={styles.npc9SharingMessage}>
+                <img src="/glacier/npc/npc9.png" alt="NPC9" style={{ width: '80px', height: '80px', flexShrink: 0 }} />
+                <div style={{ flex: 1 }}>
+                  <div style={styles.npc9SharingBubble}>
+                    Thanks for helping me finish the memory training! Do you have any secret memory hacks?
+                  </div>
+                  <div style={styles.npc9SharingTimestamp}>
+                    {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <div style={styles.npc9SharingUserLabel}>You</div>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+                  <div style={{
+                    ...styles.npc9SharingBubble,
+                    background: 'rgba(30, 50, 70, 0.8)',
+                    color: '#fff',
+                    maxWidth: '70%',
+                  }}>
+                    {npc9UserInput}
+                  </div>
+                </div>
+                <div style={{ ...styles.npc9SharingTimestamp, textAlign: 'right' }}>
+                  {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+            </>
+          )}
+          
+          {/* NPC Response */}
+          {npc9ShowResponse && (
+            <div style={styles.npc9SharingMessage}>
+              <img src="/glacier/npc/npc9.png" alt="NPC9" style={{ width: '80px', height: '80px', flexShrink: 0 }} />
+              <div style={{ flex: 1 }}>
+                <div style={styles.npc9SharingBubble}>
+                  I see... noted!
+                </div>
+                <div style={styles.npc9SharingTimestamp}>
+                  {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Hint Tags - Above Input */}
+          {!npc9ShowResponse && (
+            <div style={styles.npc9SharingHints}>
+              <div style={styles.npc9SharingHintTag}>Visualization</div>
+              <div style={styles.npc9SharingHintTag}>Use Mnemonics</div>
+              <div style={styles.npc9SharingHintTag}>Chunking</div>
+            </div>
+          )}
+          
+          {/* Input Container */}
+          {!npc9ShowResponse && (
+            <div style={styles.npc9SharingInputContainer}>
+              <input
+                type="text"
+                value={npc9UserInput}
+                onChange={(e) => setNpc9UserInput(e.target.value)}
+                onKeyPress={handleNpc9SharingKeyPress}
+                placeholder="Give some tips..."
+                style={styles.npc9SharingInput}
+                autoFocus
+              />
+              <button
+                onClick={handleNpc9SharingSubmit}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '8px',
+                  transition: 'transform 0.2s',
+                }}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <img src="/glacier/icon/send.png" alt="Send" style={{ width: '28px', height: '28px' }} />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
