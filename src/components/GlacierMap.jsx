@@ -65,7 +65,7 @@ const summaryDialogueSequence = [
   },
   {
     speaker: 'momo',
-    text: "And the Captain... who chose money over a species 🚢. In a 'Trolley Problem,' we must follow a Hierarchy of Values: Human Safety & Sentient Life 🐋 > Property & Economic Value 💰. There is no perfect answer, but 'saving money' is rarely a good excuse for destruction 🛑.",
+    text: "The Captain chose profit over a species. 🚢 In any ethical dilemma, remember the rule: Life 🐋 > Money 💰. 'Saving cash' is never a valid excuse for destruction.",
     showUserButton: true // Show user button after this dialogue
   },
   {
@@ -125,7 +125,7 @@ const summaryDialogueSequence = [
   },
   {
     speaker: 'momo',
-    text: "Correct! This violates two principles: Commercial use violation - the original prohibits commercial purposes. Derivative work infringement - AI-generated content is still based on the original",
+    text: "Correct! Two violations: 1. Making money (Commercial Use). 2. Using someone else's work as a base (Derivative Work).",
     condition: 'correct'
   },
   {
@@ -154,7 +154,7 @@ const summaryDialogueSequence = [
   },
   {
     speaker: 'momo',
-    text: "Correct! Creators are responsible for AI-generated false content because: Foreseeable harm when spreading content involving real people. Labeling doesn't exempt responsibility - disclaimers can't offset misleading content. Legal consequences - may constitute defamation or misinformation",
+    text: "Correct! You are responsible for what you create. Disclaimers don't fix misleading content, and you could still get sued.",
     condition: 'correct'
   },
   {
@@ -183,7 +183,7 @@ const summaryDialogueSequence = [
   },
   {
     speaker: 'momo',
-    text: "It's the 'AI Withdrawal.' They relied on AI for everything—thinking, writing, remembering. Now that the system is glitchy, they've realized they lost their own skills. No critical thinking, no creativity, no memory... they're basically frozen. Could you go up there? Maybe you can help them 'reboot' their brains.",
+    text: "They outsourced their brains to AI. Now the system glitches, they're frozen—no memory, no logic. Maybe you can teach them to think again?",
     showUserButton: true // Show user button after this dialogue
   },
   {
@@ -337,6 +337,21 @@ const creativityChallengesPool = [
   }
 ]
 
+// Co-creation elements data
+const coCreationElements = [
+  { id: 'sunglasses', name: 'sunglasses', image: '/glacier/mission/sunglasses.png' },
+  { id: 'cat', name: 'cat', image: '/glacier/mission/cat.png' },
+  { id: 'cloud', name: 'cloud', image: '/glacier/mission/cloud.png' },
+  { id: 'heart', name: 'heart', image: '/glacier/mission/heart.png' },
+  { id: 'television', name: 'television', image: '/glacier/mission/television.png' },
+  { id: 'telephone', name: 'telephone', image: '/glacier/mission/telephone.png' },
+  { id: 'camera', name: 'camera', image: '/glacier/mission/camera.png' },
+  { id: 'virus', name: 'virus', image: '/glacier/mission/virus.png' },
+  { id: 'phonograph', name: 'phonograph', image: '/glacier/mission/phonograph.png' },
+  { id: 'microphone', name: 'microphone', image: '/glacier/mission/microphone.png' },
+  { id: 'octopus', name: 'octopus', image: '/glacier/mission/octopus.png' }
+]
+
 // NPC 5 dialogue sequence
 const npc5DialogueSequence = [
   {
@@ -399,6 +414,33 @@ const puzzleData = {
       { text: "C Both", correct: true },
       { text: "D Neither", correct: false }
     ]
+  }
+}
+
+// Exercise data for underline errors
+const exerciseData = {
+  1: {
+    title: "Underline the Logical Errors",
+    npcMessage: "My brain is still rebooting... I let AI write this, but it got rejected. Can you use this marker to circle the lies?",
+    text: "[ Thomas Edison was a brilliant inventor known for lighting up the world. In 1879, he successfully patented the first practical light bulb. Later, he worked with Steve Jobs to create the first iPhone, revolutionizing communication forever ]",
+    errors: [
+      { text: "Steve Jobs", start: 162, end: 172 },
+      { text: "iPhone", start: 193, end: 199 }
+    ],
+    feedback: "I see! The AI completely mixed up people from different eras.",
+    requiredCount: 2
+  },
+  2: {
+    title: "Underline the Logical Errors",
+    npcMessage: "My brain is still rebooting... I let AI write this, but it got rejected. Can you use this marker to circle the lies?",
+    text: "[ Penguins are fascinating birds adapted to cold climates. They are excellent swimmers and primarily live in the North Pole. While they cannot fly, they are known to lay eggs underwater to protect them from predators. Their favorite food is cheese, which they find on ice floes. ]",
+    errors: [
+      { text: "North Pole", start: 113, end: 123 },
+      { text: "lay eggs underwater", start: 166, end: 185 },
+      { text: "cheese", start: 241, end: 247 }
+    ],
+    feedback: "I see now! AI models can sometimes generate 'facts' that sound plausible but defy basic biology.",
+    requiredCount: 3
   }
 }
 
@@ -601,8 +643,32 @@ const GlacierMap = ({ onExit }) => {
     }
   }
   
-  const [currentScene, setCurrentScene] = useState('hallway') // hallway, outside, inside, court, rooftop
-  const [showDialogue, setShowDialogue] = useState(true)
+  // Load saved progress from localStorage
+  const loadProgress = () => {
+    try {
+      const saved = localStorage.getItem('glacierProgress')
+      if (saved) {
+        return JSON.parse(saved)
+      }
+    } catch (error) {
+      console.error('Failed to load progress:', error)
+    }
+    return null
+  }
+  
+  // Save progress to localStorage
+  const saveProgress = (progress) => {
+    try {
+      localStorage.setItem('glacierProgress', JSON.stringify(progress))
+    } catch (error) {
+      console.error('Failed to save progress:', error)
+    }
+  }
+  
+  const savedProgress = loadProgress()
+  
+  const [currentScene, setCurrentScene] = useState(savedProgress?.currentScene || 'hallway') // hallway, outside, inside, court, rooftop
+  const [showDialogue, setShowDialogue] = useState(!savedProgress || savedProgress.currentScene === 'hallway')
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0)
   const [displayedText, setDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(false)
@@ -614,7 +680,7 @@ const GlacierMap = ({ onExit }) => {
   // Court scene states
   const [selectedNpc, setSelectedNpc] = useState(null) // npc2, npc3, npc4
   const [caseStep, setCaseStep] = useState(1) // 1: event description, 2: NPC statement
-  const [completedCases, setCompletedCases] = useState([]) // Track completed cases
+  const [completedCases, setCompletedCases] = useState(savedProgress?.completedCases || []) // Track completed cases
   const [showStamp, setShowStamp] = useState(false)
   const [stampType, setStampType] = useState('') // 'accepted' or 'rejected'
   const [statementProgress, setStatementProgress] = useState(0) // 0, 1, 2, 3 for progressive display
@@ -622,14 +688,14 @@ const GlacierMap = ({ onExit }) => {
   const [shakeApprovedButton, setShakeApprovedButton] = useState(false) // Track if approved button should shake
   
   // Summary dialogue states
-  const [showSummaryDialogue, setShowSummaryDialogue] = useState(false)
+  const [showSummaryDialogue, setShowSummaryDialogue] = useState(savedProgress?.showSummaryDialogue || false)
   const [summaryDialogueIndex, setSummaryDialogueIndex] = useState(0)
   const [summaryDisplayedText, setSummaryDisplayedText] = useState('')
   const [summaryIsTyping, setSummaryIsTyping] = useState(false)
   const [summaryDialogueHistory, setSummaryDialogueHistory] = useState([])
   const [summaryWaitingForInput, setSummaryWaitingForInput] = useState(false)
   const [wrongQuizOption, setWrongQuizOption] = useState(null) // Track wrong quiz option for red border
-  const [showElevatorArrow, setShowElevatorArrow] = useState(false)
+  const [showElevatorArrow, setShowElevatorArrow] = useState(savedProgress?.showElevatorArrow || false)
   
   // Rooftop states
   const [showNpc5Dialogue, setShowNpc5Dialogue] = useState(false)
@@ -648,6 +714,14 @@ const GlacierMap = ({ onExit }) => {
   const [npc5Completed, setNpc5Completed] = useState(false) // Track if NPC5 puzzles are completed
   const [rooftopCompletedTasks, setRooftopCompletedTasks] = useState([]) // Track completed rooftop tasks (npc5, npc6, npc7)
   
+  // Exercise states (for underline errors)
+  const [showExercise, setShowExercise] = useState(false)
+  const [currentExercise, setCurrentExercise] = useState(1)
+  const [selectedErrors, setSelectedErrors] = useState([]) // Array of error indices that user found
+  const [isSelecting, setIsSelecting] = useState(false)
+  const [selectionStart, setSelectionStart] = useState(null)
+  const [showExerciseFeedback, setShowExerciseFeedback] = useState(false)
+  
   // NPC6 states
   const [showNpc6Dialogue, setShowNpc6Dialogue] = useState(false)
   const [npc6DialogueIndex, setNpc6DialogueIndex] = useState(0)
@@ -662,6 +736,16 @@ const GlacierMap = ({ onExit }) => {
   const [currentInput, setCurrentInput] = useState('')
   const [showHint, setShowHint] = useState(false)
   const [npc6Completed, setNpc6Completed] = useState(false)
+  
+  // Co-creation task states
+  const [showCoCreation, setShowCoCreation] = useState(false)
+  const [coCreationFormulas, setCoCreationFormulas] = useState([
+    { element: null, result: null, completed: false },
+    { element: null, result: null, completed: false }
+  ])
+  const [currentFormulaIndex, setCurrentFormulaIndex] = useState(0)
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+  const [coCreationCompleted, setCoCreationCompleted] = useState(false)
   
   // NPC9 states
   const [showNpc9Dialogue, setShowNpc9Dialogue] = useState(false)
@@ -700,6 +784,39 @@ const GlacierMap = ({ onExit }) => {
       audio.currentTime = 0
     }
   }, [])
+
+  // Handle initial load with saved progress
+  useEffect(() => {
+    if (currentScene === 'inside') {
+      if (completedCases.length === 5) {
+        // All cases completed
+        if (showElevatorArrow) {
+          // Elevator arrow should be visible
+          setShowArrow(false)
+          setShowDialogue(false)
+        } else if (!showSummaryDialogue) {
+          // Summary not shown yet, Momo should be clickable
+          setShowArrow(false)
+          setShowDialogue(false)
+        }
+      } else {
+        // Cases not complete, show arrow to court
+        setShowArrow(true)
+        setShowDialogue(false)
+      }
+    }
+  }, []) // Run only once on mount
+
+  // Save progress whenever important states change
+  useEffect(() => {
+    const progress = {
+      currentScene,
+      completedCases,
+      showSummaryDialogue,
+      showElevatorArrow,
+    }
+    saveProgress(progress)
+  }, [currentScene, completedCases, showSummaryDialogue, showElevatorArrow])
 
   // 使用useMemo来避免每次渲染都重新创建dialogues
   const dialogueSequences = useMemo(() => getDialogueSequences(t), [t])
@@ -853,25 +970,36 @@ const GlacierMap = ({ onExit }) => {
 
   // Reset dialogue when scene changes
   useEffect(() => {
+    // Handle inside scene specifically
+    if (currentScene === 'inside') {
+      // If all cases completed and elevator arrow not shown yet, show summary dialogue
+      if (completedCases.length === 5 && !showElevatorArrow && !showSummaryDialogue) {
+        setTimeout(() => {
+          setShowSummaryDialogue(true)
+          setSummaryDialogueIndex(0)
+          setSummaryDialogueHistory([])
+          setSummaryWaitingForInput(false)
+          setShowDialogue(false)
+          setShowArrow(false)
+        }, 500)
+      } else if (completedCases.length < 5) {
+        // Cases not complete, show arrow to court
+        setShowArrow(true)
+        setShowDialogue(false)
+      }
+      // If elevator arrow is showing, don't trigger dialogue again
+      return
+    }
+    
+    // For other scenes, reset dialogue
     setCurrentDialogueIndex(0)
-    setShowDialogue(true)
+    setShowDialogue(currentScene === 'hallway' || currentScene === 'outside')
     setShowArrow(false)
     setDisplayedText('')
     setIsTyping(false)
     setDialogueHistory([])
     setWaitingForUserInput(false)
-    
-    // Auto-trigger summary dialogue when returning to inside after completing all cases
-    if (currentScene === 'inside' && completedCases.length === 5) {
-      setTimeout(() => {
-        setShowSummaryDialogue(true)
-        setSummaryDialogueIndex(0)
-        setSummaryDialogueHistory([])
-        setSummaryWaitingForInput(false)
-        setShowDialogue(false) // Hide regular dialogue
-      }, 500) // Small delay to ensure scene transition is complete
-    }
-  }, [currentScene, completedCases.length])
+  }, [currentScene, completedCases.length, showSummaryDialogue, showElevatorArrow])
 
   const handleContinue = () => {
     if (currentScene === 'inside') {
@@ -934,13 +1062,16 @@ const GlacierMap = ({ onExit }) => {
 
   // Handle Momo click for summary dialogue
   const handleMomoClick = () => {
-    if (completedCases.length === 5) { // Only show summary if all cases completed
+    // Only show summary if all cases completed AND elevator arrow is not showing (meaning dialogue not completed yet)
+    // Also check that summary dialogue is not already showing
+    if (completedCases.length === 5 && !showElevatorArrow && !showSummaryDialogue) {
       setShowSummaryDialogue(true)
       setSummaryDialogueIndex(0)
       setSummaryDialogueHistory([])
       setSummaryWaitingForInput(false)
       setShowDialogue(false) // Hide regular dialogue when showing summary
     }
+    // If elevator arrow is showing, do nothing (dialogue already completed)
   }
 
   // Summary dialogue handlers
@@ -984,7 +1115,10 @@ const GlacierMap = ({ onExit }) => {
       return
     }
     
-    // Correct answer - clear wrong option and proceed
+    // Correct answer - play correct sound and clear wrong option
+    const correctAudio = new Audio('/sound/correct.wav')
+    correctAudio.play().catch(e => console.log('Correct sound failed:', e))
+    
     setWrongQuizOption(null)
     
     // Current index is at the Momo question, +1 is the quiz, +2 is the response
@@ -1298,7 +1432,10 @@ const GlacierMap = ({ onExit }) => {
             // All challenges completed
             setShowCreativityChallenge(false)
             setNpc6Completed(true)
-            setRooftopCompletedTasks(prev => [...prev, 'npc6'])
+            // Start co-creation task
+            setTimeout(() => {
+              setShowCoCreation(true)
+            }, 1000)
           }
         }, 500)
       }
@@ -1330,6 +1467,47 @@ const GlacierMap = ({ onExit }) => {
   const handleGlitchClick = () => {
     if (currentScene === 'inside' || currentScene === 'court' || currentScene === 'rooftop') {
       setShowGlitchDialogue(true)
+    }
+  }
+
+  // Co-creation task handlers
+  const handleElementClick = (element) => {
+    if (coCreationCompleted) return
+    
+    const newFormulas = [...coCreationFormulas]
+    const currentFormula = newFormulas[currentFormulaIndex]
+    
+    if (!currentFormula.completed) {
+      // Set the element and result
+      currentFormula.element = element.name
+      currentFormula.result = element.image
+      currentFormula.completed = true
+      
+      setCoCreationFormulas(newFormulas)
+      setShowSuccessMessage(true)
+      
+      // Play correct sound
+      const correctSound = new Audio('/sound/correct.wav')
+      correctSound.play().catch(err => console.log('Sound play failed:', err))
+      
+      // Hide success message and move to next formula
+      setTimeout(() => {
+        setShowSuccessMessage(false)
+        
+        if (currentFormulaIndex < 1) {
+          // Move to second formula
+          setCurrentFormulaIndex(1)
+        } else {
+          // All formulas completed
+          setCoCreationCompleted(true)
+          setRooftopCompletedTasks(prev => [...prev, 'npc6'])
+          
+          // Close co-creation task after a delay
+          setTimeout(() => {
+            setShowCoCreation(false)
+          }, 2000)
+        }
+      }, 2000)
     }
   }
 
@@ -1428,6 +1606,11 @@ const GlacierMap = ({ onExit }) => {
 
   // Handle puzzle answer
   const handlePuzzleAnswer = (option, optionIndex) => {
+    // If already selected the correct answer, don't allow reselection
+    if (selectedAnswer !== null && puzzleData[currentPuzzle].options[selectedAnswer].correct) {
+      return
+    }
+    
     // Set selected answer for visual feedback
     setSelectedAnswer(optionIndex)
     
@@ -1440,9 +1623,14 @@ const GlacierMap = ({ onExit }) => {
         setShowTeachingDialogue(true)
       }, 500)
     } else {
-      // Wrong answer - play wrong sound
+      // Wrong answer - play wrong sound and allow reselection after a delay
       const wrongSound = new Audio('/sound/wrong.mp3')
       wrongSound.play().catch(err => console.log('Sound play failed:', err))
+      
+      // Clear selection after 1 second to allow reselection
+      setTimeout(() => {
+        setSelectedAnswer(null)
+      }, 1000)
     }
   }
 
@@ -1464,11 +1652,120 @@ const GlacierMap = ({ onExit }) => {
           setCurrentPuzzle(2)
           setPuzzleTimer(300) // Reset timer to 5 minutes
         } else {
-          // Puzzle 2 completed - close puzzle
+          // Puzzle 2 completed - move to exercises
           setShowPuzzle(false)
+          setShowExercise(true)
+          setCurrentExercise(1)
+          setSelectedErrors([])
+          setShowExerciseFeedback(false)
         }
       }, 2000) // Wait 2 seconds to show NPC response
     }
+  }
+
+  // Handle text selection for exercises
+  const handleTextSelection = () => {
+    const selection = window.getSelection()
+    const selectedText = selection.toString().trim()
+    
+    if (!selectedText || !showExercise) return
+    
+    const exercise = exerciseData[currentExercise]
+    const fullText = exercise.text
+    
+    // Get the start and end positions of the selection in the full text
+    const anchorNode = selection.anchorNode
+    const focusNode = selection.focusNode
+    
+    if (!anchorNode || !focusNode) return
+    
+    // Find the actual selected range in the original text
+    let selectionStart = -1
+    let selectionEnd = -1
+    
+    // Try to find the selected text in the full text
+    const searchText = selectedText.replace(/\s+/g, ' ') // Normalize spaces
+    selectionStart = fullText.indexOf(searchText)
+    
+    if (selectionStart === -1) {
+      // Try without spaces
+      const noSpaceSearch = selectedText.replace(/\s+/g, '')
+      const noSpaceText = fullText.replace(/\s+/g, '')
+      const noSpaceIndex = noSpaceText.indexOf(noSpaceSearch)
+      if (noSpaceIndex !== -1) {
+        // Convert back to original text position
+        let charCount = 0
+        for (let i = 0; i < fullText.length; i++) {
+          if (fullText[i] !== ' ' && fullText[i] !== '\n') {
+            if (charCount === noSpaceIndex) {
+              selectionStart = i
+              break
+            }
+            charCount++
+          }
+        }
+      }
+    }
+    
+    if (selectionStart !== -1) {
+      selectionEnd = selectionStart + selectedText.length
+    }
+    
+    // Check if selected text matches any error
+    let foundError = false
+    exercise.errors.forEach((error, index) => {
+      if (selectedErrors.includes(index)) return
+      
+      // Check if selection overlaps with error
+      const errorOverlaps = (
+        selectedText === error.text ||
+        selectedText.includes(error.text) ||
+        error.text.includes(selectedText) ||
+        (selectionStart !== -1 && selectionStart <= error.start && selectionEnd >= error.end)
+      )
+      
+      if (errorOverlaps) {
+        // Correct error found
+        foundError = true
+        const newSelectedErrors = [...selectedErrors, index]
+        setSelectedErrors(newSelectedErrors)
+        
+        // Play correct sound
+        const correctSound = new Audio('/sound/correct.wav')
+        correctSound.play().catch(err => console.log('Sound play failed:', err))
+        
+        // Check if all errors found
+        if (newSelectedErrors.length === exercise.requiredCount) {
+          // Show feedback
+          setShowExerciseFeedback(true)
+          
+          setTimeout(() => {
+            if (currentExercise === 1) {
+              // Move to exercise 2
+              setCurrentExercise(2)
+              setSelectedErrors([])
+              setShowExerciseFeedback(false)
+            } else {
+              // All exercises completed
+              setShowExercise(false)
+              setNpc5Completed(true)
+              if (!rooftopCompletedTasks.includes('npc5')) {
+                setRooftopCompletedTasks(prev => [...prev, 'npc5'])
+              }
+            }
+          }, 2000)
+        }
+      }
+    })
+    
+    if (!foundError && selectedText.length > 2) {
+      // Wrong selection - only play sound if selection is substantial
+      const wrongSound = new Audio('/sound/wrong.mp3')
+      wrongSound.play().catch(err => console.log('Sound play failed:', err))
+    }
+    
+    // Clear selection
+    selection.removeAllRanges()
   }
 
   // Typing animation and auto-advance for NPC5
@@ -2169,7 +2466,7 @@ const GlacierMap = ({ onExit }) => {
     },
     npc6: {
       position: 'absolute',
-      left: '150px',
+      left: '0px',
       bottom: '250px',
       width: '250px',
       height: '270px',
@@ -2179,9 +2476,9 @@ const GlacierMap = ({ onExit }) => {
     },
     npc6DialogueContainer: {
       position: 'absolute',
-      left: 'calc(150px + 250px)',
-      bottom: '250px',
-      width: '700px',
+      left: 'calc(0px + 250px)',
+      bottom: '350px',
+      width: '550px',
       minHeight: '150px',
       background: 'rgba(240, 248, 255, 0.8)',
       backdropFilter: 'blur(20px)',
@@ -2337,6 +2634,9 @@ const GlacierMap = ({ onExit }) => {
       padding: '18px 25px',
       borderRadius: '10px',
       border: '2px solid #a0d8ff',
+      borderStyle: 'solid',
+      borderWidth: '2px',
+      borderColor: '#a0d8ff',
       background: '#1f2937',
       color: '#fff',
       fontFamily: "'Roboto', sans-serif",
@@ -2348,6 +2648,7 @@ const GlacierMap = ({ onExit }) => {
       width: '100%',
       boxSizing: 'border-box',
       display: 'block',
+      outline: 'none',
     },
     puzzleOptionCorrect: {
       borderColor: '#4caf50',
@@ -2480,7 +2781,7 @@ const GlacierMap = ({ onExit }) => {
       textAlign: 'center',
       marginBottom: '30px',
       lineHeight: 1.5,
-      color: '#a0d8ff',
+      color: '#ffffff',
     },
     creativityTagsContainer: {
       width: '100%',
@@ -2513,6 +2814,7 @@ const GlacierMap = ({ onExit }) => {
       display: 'flex',
       flexDirection: 'column',
       gap: '15px',
+      position: 'relative',
     },
     creativityHintButton: {
       display: 'flex',
@@ -2596,43 +2898,141 @@ const GlacierMap = ({ onExit }) => {
       color: '#a0d8ff',
       marginLeft: '10px',
     },
-    creativityHintModal: {
-      position: 'fixed',
+    // Co-creation task styles
+    coCreationContainer: {
+      position: 'absolute',
       top: '50%',
       left: '50%',
       transform: 'translate(-50%, -50%)',
-      width: '600px',
-      background: 'rgba(30, 40, 50, 0.95)',
+      width: '80%',
+      maxWidth: '900px',
+      height: '85vh',
+      background: 'rgba(60, 60, 60, 0.95)',
       backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
       borderRadius: '20px',
-      padding: '40px',
-      zIndex: 2100,
-      boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+      padding: '30px',
+      zIndex: 1000,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px',
+    },
+    coCreationDialogue: {
+      background: '#fff',
+      borderRadius: '15px',
+      padding: '20px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '15px',
+      boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+    },
+    coCreationInstruction: {
+      textAlign: 'center',
+      color: '#a0d8ff',
+      fontSize: '18px',
+      marginBottom: '10px',
+    },
+    coCreationFormulasArea: {
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px',
+      justifyContent: 'center',
+    },
+    coCreationFormula: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '20px',
+    },
+    coCreationCard: {
+      width: '150px',
+      height: '150px',
+      background: '#fff',
+      borderRadius: '15px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+    },
+    coCreationDropZone: {
+      width: '200px',
+      height: '80px',
+      border: '3px dashed rgba(160, 216, 255, 0.5)',
+      borderRadius: '10px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: "'Roboto Mono', monospace",
+      fontSize: '18px',
+      color: '#fff',
+    },
+    coCreationResultCard: {
+      width: '150px',
+      height: '150px',
+      background: '#f0d32d',
+      border: '4px solid #a0d8ff',
+      borderRadius: '15px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+      animation: 'shake 0.5s',
+    },
+    coCreationElementsArea: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: '15px',
+      justifyContent: 'center',
+      padding: '20px',
+    },
+    coCreationElementTag: {
+      padding: '12px 24px',
+      borderRadius: '25px',
+      fontSize: '16px',
+      fontFamily: "'Roboto Mono', monospace",
+      color: '#fff',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      fontWeight: '500',
+    },
+    creativityHintModal: {
+      position: 'absolute',
+      bottom: '100%',
+      left: '0',
+      width: '280px',
+      background: 'rgba(20, 30, 40, 0.95)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      borderRadius: '12px',
+      padding: '15px',
+      marginBottom: '15px',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.6)',
+      border: '1px solid rgba(160, 216, 255, 0.3)',
+      zIndex: 100,
     },
     creativityHintHeader: {
       display: 'flex',
       alignItems: 'center',
-      gap: '15px',
-      marginBottom: '30px',
-      paddingBottom: '20px',
-      borderBottom: '1px solid rgba(160, 216, 255, 0.3)',
+      gap: '8px',
+      marginBottom: '12px',
+      paddingBottom: '8px',
+      borderBottom: '1px solid rgba(160, 216, 255, 0.2)',
     },
     creativityHintTitle: {
-      fontSize: '28px',
+      fontSize: '14px',
       fontWeight: 'bold',
-      color: '#fff',
+      color: '#a0d8ff',
       flex: 1,
     },
     creativityHintClose: {
       background: 'none',
       border: 'none',
-      fontSize: '32px',
+      fontSize: '18px',
       cursor: 'pointer',
       color: '#a0d8ff',
       padding: '0',
-      width: '40px',
-      height: '40px',
+      width: '20px',
+      height: '20px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -2640,22 +3040,23 @@ const GlacierMap = ({ onExit }) => {
     },
     creativityHintContent: {
       color: '#fff',
-      fontSize: '16px',
-      lineHeight: 1.8,
+      fontSize: '11px',
+      lineHeight: 1.4,
     },
     creativityHintItem: {
-      marginBottom: '25px',
-      padding: '20px',
-      background: 'rgba(255, 255, 255, 0.05)',
-      border: '2px solid rgba(160, 216, 255, 0.3)',
-      borderRadius: '15px',
+      marginBottom: '10px',
+      padding: '8px 10px',
+      background: 'rgba(160, 216, 255, 0.1)',
+      border: '1px solid rgba(160, 216, 255, 0.3)',
+      borderRadius: '8px',
       position: 'relative',
     },
     creativityHintLabel: {
       fontWeight: 'bold',
       color: '#a0d8ff',
-      marginBottom: '8px',
+      marginBottom: '4px',
       display: 'block',
+      fontSize: '10px',
     },
     // Court scene styles
     progressContainer: {
@@ -3343,11 +3744,15 @@ const GlacierMap = ({ onExit }) => {
           style={{
             position: 'absolute',
             zIndex: 30,
-            cursor: completedCases.length === 5 ? 'pointer' : 'default',
+            cursor: showElevatorArrow ? 'default' : 'pointer',
             ...getMomoPosition(),
           }}
           onClick={handleMomoClick}
-          onMouseOver={(e) => completedCases.length === 5 && (e.currentTarget.style.transform = 'scale(1.05)')}
+          onMouseOver={(e) => {
+            if (!showElevatorArrow) {
+              e.currentTarget.style.transform = 'scale(1.05)'
+            }
+          }}
           onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
         >
           <img 
@@ -3871,15 +4276,7 @@ const GlacierMap = ({ onExit }) => {
                   </div>
                 </div>
                 
-                {/* Close Button - Aligned with NPC avatar top */}
-                <button 
-                  style={styles.modernCloseButton}
-                  onClick={() => setShowSummaryDialogue(false)}
-                  onMouseOver={(e) => e.target.style.color = '#333'}
-                  onMouseOut={(e) => e.target.style.color = '#999'}
-                >
-                  ✕
-                </button>
+                {/* Close Button removed - dialogue cannot be skipped */}
               </div>
             </div>
             
@@ -4244,7 +4641,17 @@ const GlacierMap = ({ onExit }) => {
           
           {/* Title */}
           <div style={styles.creativityTitle}>
-            {selectedChallenges[currentChallenge].en}
+            {(() => {
+              const text = selectedChallenges[currentChallenge].en
+              // Highlight "mobile phones" and "5 different ways"
+              const parts = text.split(/(mobile phones|5 different ways)/gi)
+              return parts.map((part, index) => {
+                if (part.toLowerCase() === 'mobile phones' || part.toLowerCase() === '5 different ways') {
+                  return <span key={index} style={{ color: '#a0d8ff' }}>{part}</span>
+                }
+                return <span key={index}>{part}</span>
+              })
+            })()}
           </div>
           
           {/* Tags Container */}
@@ -4264,6 +4671,34 @@ const GlacierMap = ({ onExit }) => {
           
           {/* Input Section */}
           <div style={styles.creativityInputSection}>
+            {/* Hint Modal - Above Input */}
+            {showHint && selectedChallenges.length > 0 && (
+              <div style={styles.creativityHintModal}>
+                <div style={styles.creativityHintHeader}>
+                  <svg style={{ width: '16px', height: '16px' }} viewBox="0 0 24 24" fill="#a0d8ff">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                  </svg>
+                  <span style={styles.creativityHintTitle}>Hint</span>
+                  <button
+                    style={styles.creativityHintClose}
+                    onClick={() => setShowHint(false)}
+                    onMouseOver={(e) => e.currentTarget.style.opacity = '0.7'}
+                    onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div style={styles.creativityHintContent}>
+                  {selectedChallenges[currentChallenge].hints.en.map((hint, index) => (
+                    <div key={index} style={styles.creativityHintItem}>
+                      <span style={styles.creativityHintLabel}>Prompt {index + 1}:</span>
+                      <div style={{ fontSize: '11px' }}>{hint}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             {/* Hint Button */}
             <button
               style={styles.creativityHintButton}
@@ -4326,29 +4761,118 @@ const GlacierMap = ({ onExit }) => {
         </div>
       )}
 
-      {/* Hint Modal */}
-      {showHint && selectedChallenges.length > 0 && (
-        <div style={styles.creativityHintModal}>
-          <div style={styles.creativityHintHeader}>
-            <svg style={{ width: '40px', height: '40px' }} viewBox="0 0 24 24" fill="#a0d8ff">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-            </svg>
-            <span style={styles.creativityHintTitle}>Hint</span>
-            <button
-              style={styles.creativityHintClose}
-              onClick={() => setShowHint(false)}
-              onMouseOver={(e) => e.currentTarget.style.opacity = '0.7'}
-              onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
-            >
-              ×
-            </button>
-          </div>
-          <div style={styles.creativityHintContent}>
-            {selectedChallenges[currentChallenge].hints.en.map((hint, index) => (
-              <div key={index} style={styles.creativityHintItem}>
-                <span style={styles.creativityHintLabel}>Prompt {index + 1}:</span>
-                {hint}
+
+      {/* Co-Creation Task */}
+      {showCoCreation && (
+        <div style={styles.coCreationContainer}>
+          <style>{`
+            @keyframes shake {
+              0%, 100% { transform: translateX(0); }
+              25% { transform: translateX(-5px) rotate(-2deg); }
+              75% { transform: translateX(5px) rotate(2deg); }
+            }
+          `}</style>
+          
+          {/* NPC Dialogue */}
+          {!showSuccessMessage && !coCreationFormulas[0].completed && (
+            <div style={styles.coCreationDialogue}>
+              <img src="/glacier/npc/npc6.png" alt="NPC6" style={{ width: '80px', height: '80px' }} />
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, color: '#333', fontSize: '16px', lineHeight: 1.5 }}>
+                  Thanks! My brain is starting to unfreeze. I need to design a 'Creative Ice Cream,' but I'm stuck with this boring Vanilla.
+                </p>
               </div>
+              <img src="/glacier/mission/cream.png" alt="Ice Cream" style={{ width: '60px', height: '60px' }} />
+            </div>
+          )}
+          
+          {/* Success Message */}
+          {showSuccessMessage && (
+            <div style={styles.coCreationDialogue}>
+              <img src="/glacier/npc/npc6.png" alt="NPC6" style={{ width: '80px', height: '80px' }} />
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, color: '#4caf50', fontSize: '18px', fontWeight: 'bold', lineHeight: 1.5 }}>
+                  Wow! That's a brilliant idea! It looks amazing!
+                </p>
+              </div>
+            </div>
+          )}
+          
+          {/* Instruction */}
+          <div style={styles.coCreationInstruction}>
+            Drag an element below to create a cool new ice cream flavor!
+          </div>
+          
+          {/* Formulas Area */}
+          <div style={styles.coCreationFormulasArea}>
+            {coCreationFormulas.map((formula, index) => (
+              <div 
+                key={index} 
+                style={{
+                  ...styles.coCreationFormula,
+                  opacity: index === 0 ? 1 : (index === currentFormulaIndex ? 1 : 0.5)
+                }}
+              >
+                {/* Ice Cream */}
+                <div style={styles.coCreationCard}>
+                  <img src="/glacier/mission/cream.png" alt="Ice Cream" style={{ width: '100px', height: '100px' }} />
+                </div>
+                
+                {/* Plus Icon */}
+                <img src="/glacier/icon/add.png" alt="+" style={{ width: '40px', height: '40px' }} />
+                
+                {/* Drop Zone or Element */}
+                {formula.element ? (
+                  <div style={styles.coCreationDropZone}>
+                    {formula.element}
+                  </div>
+                ) : (
+                  <div style={styles.coCreationDropZone}>
+                    Drop Here
+                  </div>
+                )}
+                
+                {/* Equal Icon */}
+                <img src="/glacier/icon/equal.png" alt="=" style={{ width: '40px', height: '40px' }} />
+                
+                {/* Result */}
+                {formula.result ? (
+                  <div style={styles.coCreationResultCard}>
+                    <img src={formula.result} alt="Result" style={{ width: '120px', height: '120px' }} />
+                  </div>
+                ) : (
+                  <div style={{ ...styles.coCreationCard, border: '3px dashed rgba(160, 216, 255, 0.5)', background: 'transparent' }}>
+                    <img src="/glacier/icon/picture.png" alt="?" style={{ width: '60px', height: '60px', opacity: 0.5 }} />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          
+          {/* Elements */}
+          <div style={styles.coCreationElementsArea}>
+            {coCreationElements.map((element, index) => (
+              <button
+                key={element.id}
+                onClick={() => handleElementClick(element)}
+                style={{
+                  ...styles.coCreationElementTag,
+                  background: index % 2 === 0 ? '#f0d32d' : '#ab3a2c',
+                  opacity: coCreationCompleted ? 0.5 : 1,
+                  cursor: coCreationCompleted ? 'default' : 'pointer',
+                }}
+                onMouseOver={(e) => {
+                  if (!coCreationCompleted) {
+                    e.currentTarget.style.transform = 'scale(1.1)'
+                  }
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)'
+                }}
+                disabled={coCreationCompleted}
+              >
+                {element.name}
+              </button>
             ))}
           </div>
         </div>
@@ -4387,7 +4911,7 @@ const GlacierMap = ({ onExit }) => {
           position: 'absolute',
           left: 'calc(750px + 200px)',
           top: '150px',
-          width: '700px',
+          width: '550px',
           minHeight: '150px',
           background: 'rgba(240, 248, 255, 0.8)',
           backdropFilter: 'blur(20px)',
@@ -4898,20 +5422,24 @@ const GlacierMap = ({ onExit }) => {
                   }
                 }
                 
+                // Check if correct answer is already selected
+                const correctAnswerSelected = selectedAnswer !== null && 
+                  puzzleData[currentPuzzle].options[selectedAnswer].correct
+                
                 return (
                   <button
                     key={index}
                     style={optionStyle}
                     onClick={() => handlePuzzleAnswer(option, index)}
-                    disabled={selectedAnswer !== null}
+                    disabled={correctAnswerSelected}
                     onMouseEnter={(e) => {
-                      if (selectedAnswer === null) {
+                      if (!correctAnswerSelected) {
                         e.currentTarget.style.background = '#2d3748'
                         e.currentTarget.style.transform = 'translateX(5px)'
                       }
                     }}
                     onMouseLeave={(e) => {
-                      if (selectedAnswer === null) {
+                      if (!correctAnswerSelected) {
                         e.currentTarget.style.background = '#1f2937'
                         e.currentTarget.style.transform = 'translateX(0)'
                       }
@@ -4925,6 +5453,190 @@ const GlacierMap = ({ onExit }) => {
           </div>
         </div>
       )}
+
+      {/* Exercise Interface - Underline Errors */}
+      {showExercise && (
+        <div style={{
+          ...styles.puzzleContainer,
+        }}>
+          <style>{`
+            .exercise-text-area {
+              cursor: url('/glacier/icon/pen.png') 25 25, crosshair;
+            }
+            .exercise-text-area * {
+              cursor: url('/glacier/icon/pen.png') 25 25, crosshair;
+            }
+          `}</style>
+          
+          {/* Hint Text */}
+          <div style={{
+            position: 'absolute',
+            top: '80px',
+            left: '35%',
+            fontSize: '14px',
+            color: '#a0d8ff',
+            fontFamily: "'Roboto', sans-serif",
+            zIndex: 10,
+          }}>
+            ✏️ {language === 'en' ? 'Use your mouse to mark the errors.' : '用鼠标选中错误的文字'}
+          </div>
+          
+          {/* Left Panel - NPC Image and Dialogue */}
+          <div style={{
+            ...styles.puzzleLeftPanel,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            padding: '30px 20px',
+          }}>
+            {/* NPC Image - Keep original size */}
+            <img 
+              src="/glacier/npc/npc5.png"
+              alt="NPC 5"
+              style={{ 
+                width: '100%',
+                height: 'auto',
+                objectFit: 'contain',
+                marginBottom: '20px',
+              }}
+            />
+            
+            {/* NPC Dialogue */}
+            <div style={{
+              background: '#fff',
+              color: '#000',
+              padding: '15px 20px',
+              borderRadius: '15px',
+              fontSize: '16px',
+              lineHeight: 1.6,
+              textAlign: 'left',
+              width: '100%',
+            }}>
+              {exerciseData[currentExercise].npcMessage}
+            </div>
+            
+            {/* Feedback after completion */}
+            {showExerciseFeedback && (
+              <div style={{
+                background: '#fff',
+                color: '#000',
+                padding: '15px 20px',
+                borderRadius: '15px',
+                fontSize: '16px',
+                lineHeight: 1.6,
+                textAlign: 'left',
+                marginTop: '20px',
+                width: '100%',
+              }}>
+                {exerciseData[currentExercise].feedback}
+              </div>
+            )}
+          </div>
+
+          {/* Right Panel - Text with Errors */}
+          <div style={{
+            ...styles.puzzleRightPanel,
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '40px',
+          }}>
+            {/* Title */}
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '40px',
+            }}>
+              <div style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#a0d8ff',
+                fontFamily: "'Roboto', sans-serif",
+              }}>
+                {exerciseData[currentExercise].title}
+              </div>
+            </div>
+
+            {/* Text Content */}
+            <div 
+              className="exercise-text-area"
+              style={{
+                fontFamily: "'Roboto Mono', monospace",
+                fontSize: '26px',
+                lineHeight: '2.2',
+                color: '#fff',
+                marginBottom: '40px',
+                userSelect: 'text',
+                position: 'relative',
+                flex: 1,
+              }}
+              onMouseUp={handleTextSelection}
+            >
+              {exerciseData[currentExercise].text.split('').map((char, index) => {
+                // Check if this character is part of a selected error
+                let isHighlighted = false
+                exerciseData[currentExercise].errors.forEach((error, errorIndex) => {
+                  if (selectedErrors.includes(errorIndex) && index >= error.start && index < error.end) {
+                    isHighlighted = true
+                  }
+                })
+                
+                return (
+                  <span
+                    key={index}
+                    style={{
+                      position: 'relative',
+                      backgroundColor: isHighlighted ? 'rgba(243, 87, 204, 0.7)' : 'transparent',
+                    }}
+                  >
+                    {char}
+                    {isHighlighted && (
+                      <span style={{
+                        position: 'absolute',
+                        bottom: '-8px',
+                        left: 0,
+                        right: 0,
+                        height: '20px',
+                        backgroundColor: 'rgba(243, 87, 204, 0.7)',
+                        borderRadius: '0',
+                      }} />
+                    )}
+                  </span>
+                )
+              })}
+            </div>
+
+            {/* Progress Circles */}
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '15px',
+              marginTop: 'auto',
+            }}>
+              <span style={{ 
+                color: '#a0d8ff', 
+                fontSize: '18px',
+                marginRight: '10px',
+              }}>
+                {selectedErrors.length}/{exerciseData[currentExercise].requiredCount}
+              </span>
+              {Array.from({ length: exerciseData[currentExercise].requiredCount }).map((_, index) => (
+                <div
+                  key={index}
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    background: index < selectedErrors.length ? '#a0d8ff' : '#666566',
+                    transition: 'all 0.3s',
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {showArrow && currentScene !== 'court' && currentScene !== 'rooftop' && (
         <div 
           style={{
