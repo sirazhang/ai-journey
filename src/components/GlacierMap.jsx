@@ -796,8 +796,8 @@ const GlacierMap = ({ onExit }) => {
       if (completedCases.length === 5) {
         // All cases completed
         if (showElevatorArrow) {
-          // Elevator arrow should be visible
-          setShowArrow(false)
+          // Elevator arrow should be visible, and also show court arrow
+          setShowArrow(true) // Show court arrow
           setShowDialogue(false)
         } else if (!showSummaryDialogue) {
           // Summary not shown yet, Momo should be clickable
@@ -991,6 +991,12 @@ const GlacierMap = ({ onExit }) => {
         // Cases not complete, show arrow to court
         setShowArrow(true)
         setShowDialogue(false)
+      } else if (completedCases.length === 5 && showElevatorArrow) {
+        // Court completed and summary dialogue finished
+        // Show both arrows (court arrow and elevator arrow)
+        setShowArrow(true) // This shows the court arrow
+        setShowDialogue(false)
+        // Elevator arrow is controlled by showElevatorArrow state
       }
       // If elevator arrow is showing, don't trigger dialogue again
       return
@@ -1067,16 +1073,29 @@ const GlacierMap = ({ onExit }) => {
 
   // Handle Momo click for summary dialogue
   const handleMomoClick = () => {
-    // Only show summary if all cases completed AND elevator arrow is not showing (meaning dialogue not completed yet)
-    // Also check that summary dialogue is not already showing
+    // Stage 1: Initial guidance (when first entering inside scene, before any court tasks)
+    // This is handled by the regular dialogue system when first entering 'inside'
+    
+    // Stage 2: Court summary (only show if all 5 court cases completed AND not shown before)
     if (completedCases.length === 5 && !showElevatorArrow && !showSummaryDialogue) {
       setShowSummaryDialogue(true)
       setSummaryDialogueIndex(0)
       setSummaryDialogueHistory([])
       setSummaryWaitingForInput(false)
       setShowDialogue(false) // Hide regular dialogue when showing summary
+      return
     }
-    // If elevator arrow is showing, do nothing (dialogue already completed)
+    
+    // Stage 3: Rooftop summary (only show if all 3 rooftop tasks completed AND court summary already shown)
+    // TODO: Add rooftop summary dialogue when all rooftop tasks are completed
+    if (rooftopCompletedTasks.length === 3 && showElevatorArrow) {
+      // TODO: Implement rooftop summary dialogue
+      console.log('All rooftop tasks completed - show rooftop summary')
+      return
+    }
+    
+    // If user returns from court/rooftop without completing tasks, do nothing
+    // No dialogue should appear
   }
 
   // Summary dialogue handlers
@@ -2067,10 +2086,24 @@ const GlacierMap = ({ onExit }) => {
       setCurrentScene('inside')
       setShowDialogue(false)
       setShowArrow(false)
+      // When returning from court, show both arrows if court is completed
+      if (completedCases.length === 5 && showElevatorArrow) {
+        // Both arrows should be visible
+      }
     } else if (currentScene === 'rooftop') {
       setCurrentScene('inside')
       setShowNpc5Dialogue(false)
       setShowPuzzle(false)
+      setShowExercise(false)
+      setShowNpc6Dialogue(false)
+      setShowNpc6Creativity(false)
+      setShowNpc6CoCreation(false)
+      setShowNpc9Memory(false)
+      setShowNpc9Sharing(false)
+      // When returning from rooftop, show both arrows if court is completed
+      if (completedCases.length === 5 && showElevatorArrow) {
+        // Both arrows should be visible
+      }
     }
   }
 
