@@ -86,12 +86,96 @@ const MapView = ({ onRegionClick }) => {
   const [zoomRegion, setZoomRegion] = useState(null) // For zoom effect
   const [isZooming, setIsZooming] = useState(false) // Animation state
   const [glitchInput, setGlitchInput] = useState('') // For Glitch chat input
+  const [regionProgress, setRegionProgress] = useState({}) // Track progress for each region
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setRegionsVisible(true)
     }, 300)
     return () => clearTimeout(timer)
+  }, [])
+  
+  // Load progress from localStorage
+  useEffect(() => {
+    const loadProgress = () => {
+      const progress = {}
+      
+      // Load Glacier progress
+      const glacierProgress = localStorage.getItem('glacierProgress')
+      if (glacierProgress) {
+        const data = JSON.parse(glacierProgress)
+        // Calculate glacier progress: 4 main tasks, each 25%
+        // Task 1: Court (5 cases) - 25%
+        // Task 2: Court summary quiz - 25%
+        // Task 3: Rooftop (3 tasks) - 25%
+        // Task 4: Rooftop summary quiz - 25%
+        let glacierPercent = 0
+        
+        // Task 1: Court cases (0-25%)
+        if (data.completedCases && data.completedCases.length > 0) {
+          glacierPercent += (data.completedCases.length / 5) * 25
+        }
+        
+        // Task 2: Court summary (25%)
+        if (data.courtSummaryCompleted) {
+          glacierPercent += 25
+        }
+        
+        // Task 3: Rooftop tasks (0-25%)
+        if (data.rooftopCompletedTasks && data.rooftopCompletedTasks.length > 0) {
+          glacierPercent += (data.rooftopCompletedTasks.length / 3) * 25
+        }
+        
+        // Task 4: Rooftop summary / Complete (25%)
+        if (data.isComplete) {
+          glacierPercent = 100 // Fully complete
+        }
+        
+        progress.glacier = Math.round(glacierPercent)
+      } else {
+        progress.glacier = 0
+      }
+      
+      // Load Island progress (if exists)
+      const islandProgress = localStorage.getItem('islandProgress')
+      if (islandProgress) {
+        const data = JSON.parse(islandProgress)
+        // Calculate based on island's completion logic
+        progress.island = data.isComplete ? 100 : (data.phase || 0) * 33 // Rough estimate
+      } else {
+        progress.island = 0
+      }
+      
+      // Load Desert progress (if exists)
+      const desertProgress = localStorage.getItem('desertProgress')
+      if (desertProgress) {
+        const data = JSON.parse(desertProgress)
+        progress.desert = data.isComplete ? 100 : 0
+      } else {
+        progress.desert = 0
+      }
+      
+      // Load Fungi progress (if exists)
+      const fungiProgress = localStorage.getItem('fungiProgress')
+      if (fungiProgress) {
+        const data = JSON.parse(fungiProgress)
+        progress.fungi = data.isComplete ? 100 : 0
+      } else {
+        progress.fungi = 0
+      }
+      
+      setRegionProgress(progress)
+    }
+    
+    loadProgress()
+    
+    // Listen for storage changes to update progress in real-time
+    const handleStorageChange = () => {
+      loadProgress()
+    }
+    
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
   }, [])
 
   // Check if any region card is showing
@@ -727,7 +811,7 @@ const MapView = ({ onRegionClick }) => {
           <div style={styles.regionLabelProgressContainer}>
             <div style={{
               ...styles.regionLabelProgressFill,
-              width: '40%' // Can be dynamic based on actual progress
+              width: `${regionProgress[region.id] || 0}%`
             }} />
           </div>
         </div>
@@ -776,7 +860,7 @@ const MapView = ({ onRegionClick }) => {
           <div style={styles.progressBarContainer}>
             <div style={{
               ...styles.progressBarFill,
-              width: '40%' // This can be dynamic based on actual progress
+              width: `${regionProgress[selectedRegion] || 0}%`
             }} />
           </div>
           

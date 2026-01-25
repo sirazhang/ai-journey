@@ -61,7 +61,6 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
       overflow: 'hidden',
       margin: 0,
       padding: 0,
-      cursor: 'url(/icon/spaceship.svg), auto',
     },
     backgroundGif: {
       position: 'absolute',
@@ -94,7 +93,6 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
       border: '2px solid rgba(255, 255, 255, 0.5)',
       borderRadius: '8px',
       padding: '10px 25px',
-      cursor: 'pointer',
       zIndex: 3,
       transition: 'all 0.3s ease',
     },
@@ -126,23 +124,25 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
       opacity: 0.9,
       textShadow: '0 2px 10px rgba(0,0,0,0.5)',
     },
-    // CONTINUE button for returning users
+    // CONTINUE button for returning users - glassmorphism style with gradient border
     continueButton: {
       fontFamily: "'Montserrat', sans-serif",
       fontSize: '32px',
       fontWeight: 700,
       color: '#fff',
-      backgroundColor: '#000',
+      background: 'rgba(0, 0, 0, 0.85)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
       border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(#000, #000), linear-gradient(90deg, #5170FF, #FF6B9D)',
+      backgroundImage: 'linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), linear-gradient(90deg, #5170FF, #8B5CF6, #FF6B9D)',
       backgroundOrigin: 'border-box',
       backgroundClip: 'padding-box, border-box',
       padding: '25px 120px',
       borderRadius: '15px',
-      cursor: 'pointer',
       letterSpacing: '3px',
       transition: 'all 0.3s ease',
       marginBottom: '25px',
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
     },
     // START OVER text button
     startOverButton: {
@@ -153,7 +153,6 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
       background: 'transparent',
       border: 'none',
       padding: '10px 30px',
-      cursor: 'pointer',
       letterSpacing: '2px',
       opacity: 0.9,
       transition: 'opacity 0.3s ease',
@@ -222,7 +221,6 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
       border: '1px solid rgba(255, 255, 255, 0.2)',
       padding: '16px 60px',
       borderRadius: '30px',
-      cursor: 'pointer',
       textTransform: 'lowercase',
       letterSpacing: '2px',
       transition: 'all 0.3s ease',
@@ -295,11 +293,13 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
             onClick={handleContinue}
             onMouseOver={(e) => {
               e.target.style.transform = 'scale(1.05)'
-              e.target.style.boxShadow = '0 10px 40px rgba(81, 112, 255, 0.4)'
+              e.target.style.backgroundImage = 'linear-gradient(rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.95)), linear-gradient(90deg, #5170FF, #8B5CF6, #FF6B9D)'
+              e.target.style.boxShadow = '0 12px 40px rgba(81, 112, 255, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
             }}
             onMouseOut={(e) => {
               e.target.style.transform = 'scale(1)'
-              e.target.style.boxShadow = 'none'
+              e.target.style.backgroundImage = 'linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), linear-gradient(90deg, #5170FF, #8B5CF6, #FF6B9D)'
+              e.target.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
             }}
           >
             {t('continueGame')}

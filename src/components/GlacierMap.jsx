@@ -248,6 +248,149 @@ const npc9DialogueSequence = [
   }
 ]
 
+// Rooftop Momo quiz data
+const rooftopQuizData = {
+  intro: {
+    text: "You've seen the risks of overusing GenAI, but don't forget—it is a powerful tool when used wisely. Now, let's see what kind of AI user you are!"
+  },
+  questions: [
+    {
+      id: 'q1',
+      category: 'proficiency',
+      question: "How often do you use AI tools (like Gemini, Doubao)?",
+      options: [
+        { text: "Rarely. I only try it if someone mentions it.", score: 1 },
+        { text: "Occasionally. Mostly when I'm stuck on homework.", score: 3 },
+        { text: "Daily. It's my go-to app for everything.", score: 5 }
+      ]
+    },
+    {
+      id: 'q2',
+      category: 'proficiency',
+      question: "How do you usually ask AI for help?",
+      options: [
+        { text: "One sentence. (e.g., \"Write a self-introduction.\")", score: 1 },
+        { text: "A few details. (e.g., \"Write a funny intro, about 300 words.\")", score: 3 },
+        { text: "Structured prompts. (I set the Role + Context + Constraints, or give it examples to copy.)", score: 5 }
+      ]
+    },
+    {
+      id: 'q3',
+      category: 'proficiency',
+      question: "Besides basic Q&A, what else do you use AI for?",
+      options: [
+        { text: "Basic search. Just searching or chatting when bored.", score: 1 },
+        { text: "Study helper. Translation, summarizing, or checking grammar.", score: 2 },
+        { text: "Creativity. Generating images or music.", score: 3 },
+        { text: "Advanced tasks. Roleplay practice, coding games, etc.", score: 5 }
+      ]
+    },
+    {
+      id: 'q4',
+      category: 'judgment',
+      question: "If AI provides specific data or facts, what do you do?",
+      options: [
+        { text: "Trust it. Copy and paste. It looks professional.", score: 1 },
+        { text: "Skim it. I only check if it looks obviously wrong.", score: 3 },
+        { text: "Verify it. I always double-check facts with search engines. I don't trust hallucinations.", score: 5 }
+      ]
+    },
+    {
+      id: 'q5',
+      category: 'judgment',
+      question: "If the AI writes well but the opinion is different from yours, what do you do?",
+      options: [
+        { text: "Accept it. It saves me time, so I'll just use its opinion.", score: 1 },
+        { text: "Mix it. I combine its ideas with mine.", score: 3 },
+        { text: "Rewrite it. I force it to write my way, or I edit it manually. My work must reflect my thoughts.", score: 5 }
+      ]
+    },
+    {
+      id: 'q6',
+      category: 'judgment',
+      question: "If all AI tools crashed tonight, could you finish your work?",
+      options: [
+        { text: "Panic. My mind would go blank. I couldn't write anything.", score: 1 },
+        { text: "Struggle. It would be slower and harder, but I would finish.", score: 3 },
+        { text: "No problem. AI is just a helper. The core ideas are in my head.", score: 5 }
+      ]
+    }
+  ],
+  categories: {
+    daisy: {
+      name: "Daisy",
+      image: "/glacier/mission/daisy.png",
+      condition: (proficiency, judgment) => proficiency >= 10 && judgment >= 10,
+      description: "You seamlessly blend your own creativity with AI power. Try building a custom \"Agent\" or \"Bot\" that specializes in one specific complex task to automate your workflow."
+    },
+    bark: {
+      name: "Bark",
+      image: "/glacier/mission/bark.png",
+      condition: (proficiency, judgment) => proficiency >= 10 && judgment < 10,
+      description: "You are an efficiency machine, but be careful not to run on autopilot. Don't just copy-paste; ask the AI, \"What are the potential flaws in this answer?\" to force a quality check."
+    },
+    twig: {
+      name: "Twig",
+      image: "/glacier/mission/twig.png",
+      condition: (proficiency, judgment) => proficiency < 10 && judgment >= 10,
+      description: "You value your own craft and critical thinking above all else. Use AI as a \"Junior Assistant\" for brainstorming—ask it to list 10 crazy ideas, then you pick the best one to refine."
+    },
+    shrub: {
+      name: "Shrub",
+      image: "/glacier/mission/shrub.png",
+      condition: (proficiency, judgment) => proficiency < 10 && judgment < 10,
+      description: "You are a casual observer, just starting to explore what AI can do. Start by giving the AI a simple role. Tell it: \"Act as a strict English teacher and correct my grammar,\" to see how it changes its tone."
+    }
+  },
+  finalMessage: "Great! I think order is finally being restored here."
+}
+
+// Complete scene NPC data
+const completeSceneNpcs = [
+  {
+    id: 'momo',
+    image: '/glacier/npc/momo.png',
+    dialogue: "You did it! The data flow is stable and the colors are back.",
+    position: { left: '900px', bottom: '0px', height: '350px' }
+  },
+  {
+    id: 'npc2',
+    image: '/glacier/npc/npc2.png',
+    dialogue: "The ecosystem is healing.",
+    position: { left: '0px', bottom: '150px', height: '180px' }
+  },
+  {
+    id: 'npc3',
+    image: '/glacier/npc/npc3.png',
+    dialogue: "Fast is good, but correct is better.",
+    position: { right: '100px', bottom: '120px', height: '180px' }
+  },
+  {
+    id: 'npc4',
+    image: '/glacier/npc/npc4.png',
+    dialogue: "The AI suggested a new carving angle.",
+    position: { right: '600px', bottom: '0px', height: '180px' }
+  },
+  {
+    id: 'npc11',
+    image: '/glacier/npc/npc11.png',
+    dialogue: "I used to just copy-paste the snow. Now I actually shape it.",
+    position: { left: '1200px', top: '300px', height: '170px' }
+  },
+  {
+    id: 'npc12',
+    image: '/glacier/npc/npc12.png',
+    dialogue: "I still trust my hands, but... the machine is a useful tool.",
+    position: { left: '900px', top: '0px', height: '120px' }
+  },
+  {
+    id: 'npc10',
+    image: '/glacier/npc/npc10.png',
+    dialogue: "It feels good to think clearly again.",
+    position: { right: '700px', bottom: '500px', height: '90px' }
+  }
+]
+
 // Creativity challenges data - randomized question pool
 const creativityChallengesPool = [
   {
@@ -667,7 +810,7 @@ const GlacierMap = ({ onExit }) => {
   
   const savedProgress = loadProgress()
   
-  const [currentScene, setCurrentScene] = useState(savedProgress?.currentScene || 'hallway') // hallway, outside, inside, court, rooftop
+  const [currentScene, setCurrentScene] = useState(savedProgress?.currentScene || 'hallway') // hallway, outside, inside, court, rooftop, reloading, complete
   const [showDialogue, setShowDialogue] = useState(!savedProgress || savedProgress.currentScene === 'hallway')
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0)
   const [displayedText, setDisplayedText] = useState('')
@@ -697,6 +840,7 @@ const GlacierMap = ({ onExit }) => {
   const [wrongQuizOption, setWrongQuizOption] = useState(null) // Track wrong quiz option for red border
   const [showElevatorArrow, setShowElevatorArrow] = useState(savedProgress?.showElevatorArrow || false)
   const [courtSummaryCompleted, setCourtSummaryCompleted] = useState(savedProgress?.courtSummaryCompleted || false) // Track if court summary dialogue has been completed
+  const [hasSeenInsideIntro, setHasSeenInsideIntro] = useState(savedProgress?.hasSeenInsideIntro || false) // Track if user has seen initial inside dialogue
   
   // Rooftop states
   const [showNpc5Dialogue, setShowNpc5Dialogue] = useState(false)
@@ -776,6 +920,22 @@ const GlacierMap = ({ onExit }) => {
   // Glitch dialogue states (for inside, court, rooftop scenes)
   const [showGlitchDialogue, setShowGlitchDialogue] = useState(false)
   const [glitchInput, setGlitchInput] = useState('')
+  
+  // Rooftop Momo quiz states
+  const [showRooftopQuiz, setShowRooftopQuiz] = useState(false)
+  const [rooftopQuizStep, setRooftopQuizStep] = useState('intro') // 'intro', 'quiz', 'calculating', 'result'
+  const [currentQuizQuestion, setCurrentQuizQuestion] = useState(0)
+  const [quizAnswers, setQuizAnswers] = useState([])
+  const [proficiencyScore, setProficiencyScore] = useState(0)
+  const [judgmentScore, setJudgmentScore] = useState(0)
+  const [userCategory, setUserCategory] = useState(null) // 'daisy', 'bark', 'twig', 'shrub'
+  
+  // Complete scene states
+  const [showCompleteNpcDialogue, setShowCompleteNpcDialogue] = useState(null) // npc id
+  const [reloadingProgress, setReloadingProgress] = useState(0) // 0-100
+  
+  // Court completion dialogue state
+  const [showCourtCompletionDialogue, setShowCourtCompletionDialogue] = useState(null) // npc id
 
   // Background music
   useEffect(() => {
@@ -821,9 +981,22 @@ const GlacierMap = ({ onExit }) => {
       showSummaryDialogue,
       showElevatorArrow,
       courtSummaryCompleted,
+      hasSeenInsideIntro,
+      rooftopCompletedTasks,
+      isComplete: currentScene === 'complete',
     }
     saveProgress(progress)
-  }, [currentScene, completedCases, showSummaryDialogue, showElevatorArrow, courtSummaryCompleted])
+    
+    // Update user progress in localStorage for homepage
+    if (currentScene === 'complete') {
+      const savedUser = localStorage.getItem('aiJourneyUser')
+      if (savedUser) {
+        const userData = JSON.parse(savedUser)
+        userData.glacierCompleted = true
+        localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+      }
+    }
+  }, [currentScene, completedCases, showSummaryDialogue, showElevatorArrow, courtSummaryCompleted, hasSeenInsideIntro, rooftopCompletedTasks])
 
   // 使用useMemo来避免每次渲染都重新创建dialogues
   const dialogueSequences = useMemo(() => getDialogueSequences(t), [t])
@@ -915,6 +1088,13 @@ const GlacierMap = ({ onExit }) => {
         // Move to next dialogue (user button)
         setCurrentDialogueIndex(currentDialogueIndex + 1)
         setWaitingForUserInput(true)
+      } else if (currentDialogue && !currentDialogue.isButton && !nextDialogue) {
+        // This is the last dialogue (no next dialogue), auto-close after a delay
+        setTimeout(() => {
+          setShowDialogue(false)
+          setHasSeenInsideIntro(true)
+          setShowArrow(true)
+        }, 1500) // Wait 1.5 seconds before closing
       }
     }
   }, [isTyping, currentScene, showDialogue, currentDialogueIndex, currentDialogues])
@@ -981,6 +1161,17 @@ const GlacierMap = ({ onExit }) => {
   useEffect(() => {
     // Handle inside scene specifically
     if (currentScene === 'inside') {
+      // First time entering inside scene - show initial dialogue
+      if (!hasSeenInsideIntro) {
+        // Show the existing inside dialogue
+        setShowDialogue(true)
+        setCurrentDialogueIndex(0)
+        setDialogueHistory([])
+        setWaitingForUserInput(false)
+        setShowArrow(false)
+        return
+      }
+      
       // If all cases completed and court summary not completed yet, show summary dialogue
       if (completedCases.length === 5 && !courtSummaryCompleted && !showSummaryDialogue) {
         setTimeout(() => {
@@ -995,12 +1186,15 @@ const GlacierMap = ({ onExit }) => {
         // Cases not complete, show arrow to court
         setShowArrow(true)
         setShowDialogue(false)
-      } else if (completedCases.length === 5 && courtSummaryCompleted) {
-        // Court completed and summary dialogue finished
-        // Show both arrows (court arrow and elevator arrow)
-        setShowArrow(true) // This shows the court arrow
+      } else if (courtSummaryCompleted && !showElevatorArrow) {
+        // Court summary completed but elevator arrow not shown yet (shouldn't happen, but handle it)
+        setShowArrow(false)
         setShowDialogue(false)
-        // Elevator arrow is controlled by showElevatorArrow state
+      } else if (showElevatorArrow) {
+        // Elevator arrow is shown (court summary completed)
+        // Don't show court arrow anymore
+        setShowArrow(false)
+        setShowDialogue(false)
       }
       // If court summary completed, don't trigger dialogue again
       return
@@ -1014,7 +1208,7 @@ const GlacierMap = ({ onExit }) => {
     setIsTyping(false)
     setDialogueHistory([])
     setWaitingForUserInput(false)
-  }, [currentScene, completedCases.length, showSummaryDialogue, courtSummaryCompleted])
+  }, [currentScene, completedCases.length, showSummaryDialogue, courtSummaryCompleted, hasSeenInsideIntro])
 
   const handleContinue = () => {
     if (currentScene === 'inside') {
@@ -1033,8 +1227,9 @@ const GlacierMap = ({ onExit }) => {
         if (currentDialogueIndex < currentDialogues.length - 1) {
           setCurrentDialogueIndex(currentDialogueIndex + 1)
         } else {
-          // End of dialogue, show arrow
+          // End of dialogue, mark as seen and show arrow
           setShowDialogue(false)
+          setHasSeenInsideIntro(true)
           setShowArrow(true)
         }
       }
@@ -1057,8 +1252,9 @@ const GlacierMap = ({ onExit }) => {
 
   const handleSkip = () => {
     if (currentScene === 'inside') {
-      // Skip all remaining dialogues and show arrow
+      // Skip all remaining dialogues, mark as seen and show arrow
       setShowDialogue(false)
+      setHasSeenInsideIntro(true)
       setShowArrow(true)
     } else {
       setShowDialogue(false)
@@ -1070,9 +1266,19 @@ const GlacierMap = ({ onExit }) => {
     // Add user choice to history
     setDialogueHistory(prev => [...prev, { speaker: 'user', text: choiceText }])
     
-    // Move to next dialogue (should be Momo's response)
-    setCurrentDialogueIndex(currentDialogueIndex + 1)
-    setWaitingForUserInput(false)
+    // Check if this is the last dialogue
+    if (currentDialogueIndex >= currentDialogues.length - 1) {
+      // End of dialogue, mark as seen and show arrow
+      setShowDialogue(false)
+      if (currentScene === 'inside') {
+        setHasSeenInsideIntro(true)
+      }
+      setShowArrow(true)
+    } else {
+      // Move to next dialogue (should be Momo's response)
+      setCurrentDialogueIndex(currentDialogueIndex + 1)
+      setWaitingForUserInput(false)
+    }
   }
 
   // Handle Momo click for summary dialogue
@@ -1090,11 +1296,12 @@ const GlacierMap = ({ onExit }) => {
       return
     }
     
-    // Stage 3: Rooftop summary (only show if all 3 rooftop tasks completed AND court summary already shown)
-    // TODO: Add rooftop summary dialogue when all rooftop tasks are completed
-    if (rooftopCompletedTasks.length === 3 && courtSummaryCompleted) {
-      // TODO: Implement rooftop summary dialogue
-      console.log('All rooftop tasks completed - show rooftop summary')
+    // Stage 3: Rooftop summary quiz (only show if all 3 rooftop tasks completed AND in inside scene)
+    if (currentScene === 'inside' && rooftopCompletedTasks.length === 3 && courtSummaryCompleted && !showRooftopQuiz) {
+      setShowRooftopQuiz(true)
+      setRooftopQuizStep('intro')
+      setCurrentQuizQuestion(0)
+      setQuizAnswers([])
       return
     }
     
@@ -1497,6 +1704,90 @@ const GlacierMap = ({ onExit }) => {
     if (e.key === 'Enter') {
       handleGlitchSend()
     }
+  }
+  
+  // Rooftop quiz handlers
+  const handleRooftopQuizStart = () => {
+    setRooftopQuizStep('quiz')
+    setCurrentQuizQuestion(0)
+  }
+  
+  const handleRooftopQuizAnswer = (option) => {
+    const newAnswers = [...quizAnswers, { 
+      questionId: rooftopQuizData.questions[currentQuizQuestion].id, 
+      score: option.score, 
+      category: rooftopQuizData.questions[currentQuizQuestion].category,
+      text: option.text // Store the answer text
+    }]
+    setQuizAnswers(newAnswers)
+    
+    // Move to next question or calculate results
+    if (currentQuizQuestion < rooftopQuizData.questions.length - 1) {
+      setCurrentQuizQuestion(currentQuizQuestion + 1)
+    } else {
+      // All questions answered, calculate scores
+      setRooftopQuizStep('calculating')
+      
+      // Calculate proficiency and judgment scores
+      let profScore = 0
+      let judgScore = 0
+      
+      newAnswers.forEach(answer => {
+        if (answer.category === 'proficiency') {
+          profScore += answer.score
+        } else if (answer.category === 'judgment') {
+          judgScore += answer.score
+        }
+      })
+      
+      setProficiencyScore(profScore)
+      setJudgmentScore(judgScore)
+      
+      // Determine category
+      let category = null
+      if (profScore >= 10 && judgScore >= 10) {
+        category = 'daisy'
+      } else if (profScore >= 10 && judgScore < 10) {
+        category = 'bark'
+      } else if (profScore < 10 && judgScore >= 10) {
+        category = 'twig'
+      } else {
+        category = 'shrub'
+      }
+      
+      setUserCategory(category)
+      
+      // Show result after 2 seconds
+      setTimeout(() => {
+        setRooftopQuizStep('result')
+      }, 2000)
+    }
+  }
+  
+  const handleRooftopQuizClose = () => {
+    setShowRooftopQuiz(false)
+    
+    // Show final message from Momo, then start reloading
+    setTimeout(() => {
+      // Trigger reloading scene
+      setCurrentScene('reloading')
+      setReloadingProgress(0)
+      
+      // Simulate loading progress
+      let progress = 0
+      const loadingInterval = setInterval(() => {
+        progress += 2
+        setReloadingProgress(progress)
+        
+        if (progress >= 100) {
+          clearInterval(loadingInterval)
+          // Move to complete scene after loading
+          setTimeout(() => {
+            setCurrentScene('complete')
+          }, 500)
+        }
+      }, 50) // Update every 50ms for smooth animation
+    }, 1000)
   }
   
   // Handle Glitch NPC click
@@ -2013,6 +2304,12 @@ const GlacierMap = ({ onExit }) => {
 
   // Court scene handlers
   const handleNpcClick = (npcId) => {
+    // If all cases are completed and clicking npc2 or npc3, show completion message
+    if (completedCases.length === 5 && (npcId === 'npc2' || npcId === 'npc3')) {
+      setShowCourtCompletionDialogue(npcId)
+      return
+    }
+    
     if (completedCases.includes(npcId)) return // Don't allow clicking completed cases
     setSelectedNpc(npcId)
     setCaseStep(1)
@@ -2092,10 +2389,14 @@ const GlacierMap = ({ onExit }) => {
     if (currentScene === 'court') {
       setCurrentScene('inside')
       setShowDialogue(false)
-      setShowArrow(false)
-      // When returning from court, show both arrows if court is completed
-      if (completedCases.length === 5 && showElevatorArrow) {
-        // Both arrows should be visible
+      // When returning from court:
+      // - If court not complete, show court arrow
+      // - If court complete but summary not done, summary dialogue will trigger
+      // - If court summary done, elevator arrow will show
+      if (completedCases.length < 5) {
+        setShowArrow(true) // Show court arrow
+      } else {
+        setShowArrow(false) // Don't show court arrow if cases are complete
       }
     } else if (currentScene === 'rooftop') {
       setCurrentScene('inside')
@@ -2107,10 +2408,10 @@ const GlacierMap = ({ onExit }) => {
       setShowNpc6CoCreation(false)
       setShowNpc9Memory(false)
       setShowNpc9Sharing(false)
-      // When returning from rooftop, show both arrows if court is completed
-      if (completedCases.length === 5 && showElevatorArrow) {
-        // Both arrows should be visible
-      }
+      // When returning from rooftop:
+      // - Elevator arrow should remain visible (controlled by showElevatorArrow state)
+      // - Court arrow should not show
+      setShowArrow(false)
     }
   }
 
@@ -2156,6 +2457,10 @@ const GlacierMap = ({ onExit }) => {
         return '/glacier/background/court.png'
       case 'rooftop':
         return '/glacier/background/rooftop.png'
+      case 'reloading':
+        return null // Black background
+      case 'complete':
+        return '/glacier/background/color.png'
       default:
         return '/glacier/background/hallway.png'
     }
@@ -2226,6 +2531,8 @@ const GlacierMap = ({ onExit }) => {
   const getMomoPosition = () => {
     if (currentScene === 'inside') {
       return { right: '10%', bottom: '0%', height: '85%' } // Momo position
+    } else if (currentScene === 'rooftop') {
+      return { left: '5%', bottom: '5%', height: '25%' } // Momo position on rooftop (smaller, bottom left)
     }
     return null
   }
@@ -2573,7 +2880,7 @@ const GlacierMap = ({ onExit }) => {
       flexDirection: 'column',
       justifyContent: 'space-between',
       boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(100, 149, 237, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.1)',
-      zIndex: 1000,
+      zIndex: 2100,
     },
     npc6ContinueButton: {
       alignSelf: 'flex-end',
@@ -2638,7 +2945,7 @@ const GlacierMap = ({ onExit }) => {
       background: 'rgba(40, 40, 40, 0.95)',
       borderRadius: '20px',
       padding: '0',
-      zIndex: 2000,
+      zIndex: 3000,
       color: '#fff',
       display: 'flex',
       overflow: 'hidden',
@@ -2841,7 +3148,7 @@ const GlacierMap = ({ onExit }) => {
       WebkitBackdropFilter: 'blur(20px)',
       borderRadius: '20px',
       padding: '50px',
-      zIndex: 2000,
+      zIndex: 3100,
       color: '#fff',
       display: 'flex',
       flexDirection: 'column',
@@ -2994,7 +3301,7 @@ const GlacierMap = ({ onExit }) => {
       backdropFilter: 'blur(20px)',
       borderRadius: '20px',
       padding: '30px',
-      zIndex: 1000,
+      zIndex: 3200,
       display: 'flex',
       flexDirection: 'column',
       gap: '20px',
@@ -3092,7 +3399,7 @@ const GlacierMap = ({ onExit }) => {
       WebkitBackdropFilter: 'blur(30px)',
       borderRadius: '25px',
       padding: '40px',
-      zIndex: 2000,
+      zIndex: 3000,
       display: 'flex',
       flexDirection: 'column',
       gap: '25px',
@@ -3595,6 +3902,11 @@ const GlacierMap = ({ onExit }) => {
         10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
         20%, 40%, 60%, 80% { transform: translateX(10px); }
       }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
     `,
     
     // Modern Dialogue Styles (Based on Reference Image 2)
@@ -3727,7 +4039,7 @@ const GlacierMap = ({ onExit }) => {
       maxWidth: '85%',
     },
     modernUserBubble: {
-      background: '#333333', // Black theme for Momo
+      background: '#333333',
       padding: '12px 18px',
       borderRadius: '18px',
       boxShadow: '0 2px 6px rgba(51, 51, 51, 0.3)',
@@ -3735,7 +4047,7 @@ const GlacierMap = ({ onExit }) => {
     modernUserText: {
       fontFamily: "'Roboto', sans-serif",
       fontSize: '14px',
-      color: 'white',
+      color: '#ffffff',
       lineHeight: 1.5,
       margin: 0,
     },
@@ -3767,18 +4079,284 @@ const GlacierMap = ({ onExit }) => {
       boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
       marginTop: '8px',
     },
+    // Rooftop quiz styles
+    rooftopQuizOverlay: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      background: 'rgba(0, 0, 0, 0.8)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 2000,
+    },
+    rooftopQuizModal: {
+      background: 'linear-gradient(135deg, rgba(20, 40, 60, 0.95), rgba(30, 50, 70, 0.95))',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      borderRadius: '20px',
+      padding: '40px',
+      maxWidth: '600px',
+      width: '90%',
+      maxHeight: '80vh',
+      overflowY: 'auto',
+      boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+      border: '2px solid rgba(255, 255, 255, 0.1)',
+      position: 'relative',
+    },
+    rooftopQuizContent: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '20px',
+    },
+    rooftopQuizHeader: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      textAlign: 'center',
+    },
+    rooftopQuizMessage: {
+      color: '#fff',
+      fontSize: '18px',
+      lineHeight: 1.6,
+      textAlign: 'center',
+      padding: '20px',
+      background: 'rgba(255, 255, 255, 0.05)',
+      borderRadius: '12px',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+    },
+    rooftopQuizButton: {
+      padding: '12px 40px',
+      borderRadius: '25px',
+      border: 'none',
+      background: 'rgba(255, 255, 255, 0.9)',
+      color: '#1a2a3a',
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '16px',
+      fontWeight: 'bold',
+      cursor: 'pointer',
+      transition: 'all 0.3s',
+      marginTop: '10px',
+    },
+    rooftopQuizProgress: {
+      color: '#a0d8ff',
+      fontSize: '16px',
+      fontWeight: 'bold',
+      marginBottom: '10px',
+    },
+    rooftopQuizQuestion: {
+      color: '#fff',
+      fontSize: '20px',
+      fontWeight: 'bold',
+      textAlign: 'center',
+      marginBottom: '20px',
+      lineHeight: 1.4,
+    },
+    rooftopQuizOptions: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '15px',
+      width: '100%',
+    },
+    rooftopQuizOption: {
+      padding: '15px 20px',
+      borderRadius: '12px',
+      border: '2px solid rgba(255, 255, 255, 0.2)',
+      background: 'rgba(255, 255, 255, 0.1)',
+      color: '#fff',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '16px',
+      cursor: 'pointer',
+      transition: 'all 0.3s',
+      textAlign: 'left',
+      lineHeight: 1.5,
+    },
+    rooftopQuizCalculating: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '20px',
+      padding: '40px',
+    },
+    rooftopQuizCalculatingText: {
+      color: '#fff',
+      fontSize: '24px',
+      fontWeight: 'bold',
+    },
+    rooftopQuizSpinner: {
+      width: '50px',
+      height: '50px',
+      border: '4px solid rgba(255, 255, 255, 0.2)',
+      borderTop: '4px solid #a0d8ff',
+      borderRadius: '50%',
+      animation: 'spin 1s linear infinite',
+    },
+    rooftopQuizResultHeader: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      marginBottom: '20px',
+    },
+    rooftopQuizQuadrant: {
+      width: '100%',
+      maxWidth: '400px',
+      marginBottom: '30px',
+    },
+    rooftopQuizQuadrantGrid: {
+      position: 'relative',
+      width: '100%',
+      paddingTop: '100%',
+      background: 'rgba(0, 0, 0, 0.3)',
+      borderRadius: '12px',
+      border: '2px solid rgba(255, 255, 255, 0.2)',
+    },
+    rooftopQuizAxisLabel: {
+      position: 'absolute',
+      fontSize: '14px',
+      color: '#fff',
+      fontWeight: 'bold',
+    },
+    rooftopQuizResultContent: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      textAlign: 'center',
+    },
+    rooftopQuizResultMessage: {
+      color: '#fff',
+      fontSize: '16px',
+      lineHeight: 1.6,
+      padding: '20px',
+      background: 'rgba(255, 255, 255, 0.05)',
+      borderRadius: '12px',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      maxWidth: '500px',
+    },
+    // Reloading scene styles
+    reloadingContainer: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      background: '#000',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 3000,
+    },
+    reloadingIcon: {
+      width: '100px',
+      height: '100px',
+      animation: 'spin 2s linear infinite',
+      filter: 'drop-shadow(0 0 20px rgba(160, 216, 255, 0.8))',
+      marginBottom: '30px',
+    },
+    reloadingText: {
+      color: '#a0d8ff',
+      fontSize: '24px',
+      fontWeight: 'bold',
+      fontFamily: "'Montserrat', sans-serif",
+      letterSpacing: '2px',
+    },
+    // Complete scene NPC styles
+    completeNpc: {
+      position: 'absolute',
+      cursor: 'pointer',
+      transition: 'transform 0.2s',
+      zIndex: 30,
+    },
+    completeNpcImage: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'contain',
+    },
+    completeNpcDialogue: {
+      position: 'absolute',
+      bottom: '110%',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      background: 'rgba(255, 255, 255, 0.95)',
+      border: '2px solid #333',
+      borderRadius: '15px',
+      padding: '15px 20px',
+      minWidth: '200px',
+      maxWidth: '300px',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+      zIndex: 100,
+      whiteSpace: 'normal',
+      wordWrap: 'break-word',
+    },
+    completeNpcDialogueText: {
+      color: '#333',
+      fontSize: '14px',
+      lineHeight: 1.5,
+      fontFamily: "'Roboto', sans-serif",
+      margin: 0,
+    },
   }
 
   return (
     <div style={styles.container}>
       <style>{styles.keyframes}</style>
       
+      {/* Reloading Scene */}
+      {currentScene === 'reloading' && (
+        <div style={styles.reloadingContainer}>
+          <img 
+            src="/glacier/icon/snowfake.svg" 
+            alt="Loading" 
+            style={styles.reloadingIcon}
+          />
+          <div style={styles.reloadingText}>System Online.</div>
+        </div>
+      )}
+      
       {/* Background Image */}
-      <img 
-        src={getBackgroundImage()}
-        alt="Glacier Background" 
-        style={styles.backgroundImage}
-      />
+      {currentScene !== 'reloading' && getBackgroundImage() && (
+        <img 
+          src={getBackgroundImage()}
+          alt="Glacier Background" 
+          style={styles.backgroundImage}
+        />
+      )}
+      
+      {/* Complete Scene NPCs */}
+      {currentScene === 'complete' && completeSceneNpcs.map((npc) => (
+        <div
+          key={npc.id}
+          style={{
+            ...styles.completeNpc,
+            ...npc.position,
+          }}
+          onClick={() => setShowCompleteNpcDialogue(showCompleteNpcDialogue === npc.id ? null : npc.id)}
+          onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+          onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <img 
+            src={npc.image}
+            alt={npc.id}
+            style={styles.completeNpcImage}
+          />
+          {showCompleteNpcDialogue === npc.id && (
+            <div style={{
+              ...styles.completeNpcDialogue,
+              ...(npc.id === 'npc12' ? {
+                left: 'auto',
+                right: '110%',
+                transform: 'none',
+                bottom: '0',
+              } : {})
+            }}>
+              <p style={styles.completeNpcDialogueText}>{npc.dialogue}</p>
+            </div>
+          )}
+        </div>
+      ))}
       
       {/* Exit Button / Left Button */}
       {currentScene === 'court' || currentScene === 'rooftop' ? (
@@ -3811,31 +4389,31 @@ const GlacierMap = ({ onExit }) => {
         </button>
       )}
 
-      {/* NPC Glitch */}
-      <div 
-        style={{
-          ...styles.npc,
-          ...getNpcPosition(),
-          width: getNpcPosition().size,
-          height: getNpcPosition().size,
-          cursor: (currentScene === 'inside' || currentScene === 'court' || currentScene === 'rooftop') ? 'pointer' : 'default',
-        }}
-        onClick={handleGlitchClick}
-        onMouseOver={(e) => {
-          if (currentScene === 'inside' || currentScene === 'court' || currentScene === 'rooftop') {
+      {/* NPC Glitch - Only show in inside, court, and rooftop scenes */}
+      {(currentScene === 'inside' || currentScene === 'court' || currentScene === 'rooftop') && (
+        <div 
+          style={{
+            ...styles.npc,
+            ...getNpcPosition(),
+            width: getNpcPosition().size,
+            height: getNpcPosition().size,
+            cursor: 'pointer',
+          }}
+          onClick={handleGlitchClick}
+          onMouseOver={(e) => {
             e.currentTarget.style.transform = 'scale(1.05)'
-          }
-        }}
-        onMouseOut={(e) => {
-          e.currentTarget.style.transform = 'scale(1)'
-        }}
-      >
-        <img 
-          src="/npc/npc_glacier.gif"
-          alt="Glitch"
-          style={styles.npcImage}
-        />
-      </div>
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+          }}
+        >
+          <img 
+            src="/npc/npc_glacier.gif"
+            alt="Glitch"
+            style={styles.npcImage}
+          />
+        </div>
+      )}
       
       {/* Glitch Dialogue (shows on click in inside, court, rooftop scenes) */}
       {showGlitchDialogue && (currentScene === 'inside' || currentScene === 'court' || currentScene === 'rooftop') && (
@@ -3916,12 +4494,15 @@ const GlacierMap = ({ onExit }) => {
           style={{
             position: 'absolute',
             zIndex: 30,
-            cursor: showElevatorArrow ? 'default' : 'pointer',
+            cursor: (showElevatorArrow && rooftopCompletedTasks.length < 3) ? 'default' : 
+                    (rooftopCompletedTasks.length === 3 && courtSummaryCompleted) ? 'pointer' :
+                    (!showElevatorArrow) ? 'pointer' : 'default',
             ...getMomoPosition(),
           }}
           onClick={handleMomoClick}
           onMouseOver={(e) => {
-            if (!showElevatorArrow) {
+            if ((!showElevatorArrow) || 
+                (rooftopCompletedTasks.length === 3 && courtSummaryCompleted)) {
               e.currentTarget.style.transform = 'scale(1.05)'
             }
           }}
@@ -3996,7 +4577,7 @@ const GlacierMap = ({ onExit }) => {
       {/* Inside Scene Dialogue System - Modern Design */}
       {currentScene === 'inside' && showDialogue && !showSummaryDialogue && (() => {
         const theme = getNpcTheme('momo')
-        const totalSteps = 3
+        const totalSteps = 4
         const currentStep = 1 // Inside dialogue is step 1
         const progressPercent = (currentStep / totalSteps) * 100
         
@@ -4139,30 +4720,68 @@ const GlacierMap = ({ onExit }) => {
       {/* Court Scene NPCs */}
       {currentScene === 'court' && (
         <>
-          {Object.entries(getCourtNpcPositions()).map(([npcId, position]) => (
-            <div
-              key={npcId}
-              style={{
-                ...styles.courtNpc,
-                ...position,
-                height: position.height,
-                opacity: completedCases.includes(npcId) ? 0.5 : 1,
-              }}
-              onClick={() => handleNpcClick(npcId)}
-              onMouseOver={(e) => !completedCases.includes(npcId) && (e.currentTarget.style.transform = 'scale(1.05)')}
-              onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-            >
-              <img
-                src={courtCases[npcId].npcImage}
-                alt={npcId}
+          {Object.entries(getCourtNpcPositions()).map(([npcId, position]) => {
+            // npc2 and npc3 should be clickable after all cases are done
+            const isClickableAfterCompletion = completedCases.length === 5 && (npcId === 'npc2' || npcId === 'npc3')
+            const isCompleted = completedCases.includes(npcId)
+            
+            return (
+              <div
+                key={npcId}
                 style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
+                  ...styles.courtNpc,
+                  ...position,
+                  height: position.height,
+                  opacity: (isCompleted && !isClickableAfterCompletion) ? 0.5 : 1,
+                  cursor: isClickableAfterCompletion || !isCompleted ? 'pointer' : 'default',
                 }}
-              />
-            </div>
-          ))}
+                onClick={() => handleNpcClick(npcId)}
+                onMouseOver={(e) => {
+                  if (isClickableAfterCompletion || !isCompleted) {
+                    e.currentTarget.style.transform = 'scale(1.05)'
+                  }
+                }}
+                onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+              >
+                <img
+                  src={courtCases[npcId].npcImage}
+                  alt={npcId}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                  }}
+                />
+                {/* Show completion dialogue for npc2 and npc3 after all cases done */}
+                {showCourtCompletionDialogue === npcId && completedCases.length === 5 && (npcId === 'npc2' || npcId === 'npc3') && (
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '110%',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: 'rgba(255, 255, 255, 0.95)',
+                    border: '2px solid #333',
+                    borderRadius: '15px',
+                    padding: '15px 20px',
+                    minWidth: '200px',
+                    maxWidth: '300px',
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+                    zIndex: 100,
+                    whiteSpace: 'normal',
+                    wordWrap: 'break-word',
+                  }}>
+                    <p style={{
+                      color: '#333',
+                      fontSize: '14px',
+                      lineHeight: 1.5,
+                      fontFamily: "'Roboto', sans-serif",
+                      margin: 0,
+                    }}>Let's go outside and find Momo.</p>
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </>
       )}
 
@@ -4403,7 +5022,7 @@ const GlacierMap = ({ onExit }) => {
       {/* Summary Dialogue System - Modern Design (Based on Reference Image 2) */}
       {showSummaryDialogue && (() => {
         const theme = getNpcTheme('momo')
-        const totalSteps = 3
+        const totalSteps = 4
         const currentStep = 2 // Summary dialogue is step 2
         const progressPercent = (currentStep / totalSteps) * 100
         
@@ -4591,8 +5210,8 @@ const GlacierMap = ({ onExit }) => {
         )
       })()}
 
-      {/* Elevator Arrow */}
-      {showElevatorArrow && currentScene === 'inside' && (
+      {/* Elevator Arrow - only show if rooftop tasks not completed */}
+      {showElevatorArrow && currentScene === 'inside' && rooftopCompletedTasks.length < 3 && (
         <div 
           style={styles.elevatorArrow}
           onClick={handleElevatorArrowClick}
@@ -4658,7 +5277,9 @@ const GlacierMap = ({ onExit }) => {
             <>
               <div style={{ marginBottom: '15px', flex: 1 }}>
                 <div style={styles.dialogueText}>
-                  Oh, hello again! You know, my brain feels... awake.
+                  {rooftopCompletedTasks.length === 3 
+                    ? "Let's go down and look for Momo." 
+                    : "Oh, hello again! You know, my brain feels... awake."}
                 </div>
               </div>
               <button 
@@ -4734,7 +5355,9 @@ const GlacierMap = ({ onExit }) => {
             <>
               <div style={{ marginBottom: '15px', flex: 1 }}>
                 <div style={styles.dialogueText}>
-                  Thank you... I can feel it coming back. The spark. The vision. My hands remember now.
+                  {rooftopCompletedTasks.length === 3 
+                    ? "Let's go down and look for Momo." 
+                    : "Thank you... I can feel it coming back. The spark. The vision. My hands remember now."}
                 </div>
               </div>
               <button 
@@ -5102,7 +5725,9 @@ const GlacierMap = ({ onExit }) => {
             <>
               <div style={{ marginBottom: '15px', flex: 1 }}>
                 <div style={styles.dialogueText}>
-                  Wow! My brain feels... rebooted! I can focus again. Thank you!
+                  {rooftopCompletedTasks.length === 3 
+                    ? "Let's go down and look for Momo." 
+                    : "Wow! My brain feels... rebooted! I can focus again. Thank you!"}
                 </div>
               </div>
               <button 
@@ -5186,7 +5811,7 @@ const GlacierMap = ({ onExit }) => {
           display: 'flex',
           flexDirection: 'column',
           boxShadow: '0 12px 48px rgba(0, 0, 0, 0.6)',
-          zIndex: 2000,
+          zIndex: 3000,
         }}>
           {/* Header */}
           <div style={{
@@ -5943,6 +6568,502 @@ const GlacierMap = ({ onExit }) => {
           )}
         </div>
       )}
+      
+      {/* Rooftop Quiz Modal - Modern Design (Same as Summary Dialogue) */}
+      {showRooftopQuiz && (() => {
+        const theme = getNpcTheme('momo')
+        const totalSteps = 4
+        const currentStep = 4 // Rooftop quiz is step 4
+        const progressPercent = (currentStep / totalSteps) * 100
+        
+        return (
+          <div style={{
+            ...styles.modernDialogueContainer,
+            border: `3px solid ${theme.borderColor}`,
+          }}>
+            {/* Header with Progress */}
+            <div style={styles.modernDialogueHeader}>
+              <div style={styles.modernProgressContainer}>
+                <div style={{
+                  ...styles.modernMissionTitle,
+                  color: theme.borderColor
+                }}>
+                  MISSION: AI USER ASSESSMENT
+                </div>
+                <div style={styles.modernStepIndicator}>
+                  Step {currentStep} of {totalSteps}
+                </div>
+              </div>
+              <div style={styles.modernProgressBar}>
+                <div style={{
+                  ...styles.modernProgressFill,
+                  width: `${progressPercent}%`,
+                  background: theme.progressColor
+                }} />
+              </div>
+              
+              {/* NPC Info */}
+              <div style={styles.modernNpcInfo}>
+                <img 
+                  src={theme.avatar} 
+                  alt="Momo" 
+                  style={styles.modernNpcAvatar}
+                />
+                <div>
+                  <div style={styles.modernNpcName}>Momo</div>
+                  <div style={styles.modernNpcStatus}>Station Supervisor</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Dialogue Content */}
+            <div style={styles.modernDialogueContent}>
+              {/* Intro Step */}
+              {rooftopQuizStep === 'intro' && (
+                <>
+                  <div style={styles.modernNpcMessage}>
+                    <div style={styles.modernNpcSpeaker}>MOMO:</div>
+                    <p style={styles.modernNpcText}>
+                      {rooftopQuizData.intro.text}
+                    </p>
+                    <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
+                  </div>
+                  
+                  <button
+                    onClick={handleRooftopQuizStart}
+                    style={styles.modernActionButton}
+                    onMouseOver={(e) => {
+                      e.target.style.borderColor = theme.borderColor
+                      e.target.style.transform = 'translateX(5px)'
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.borderColor = '#E0E0E0'
+                      e.target.style.transform = 'translateX(0)'
+                    }}
+                  >
+                    <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                    Start Quiz
+                  </button>
+                </>
+              )}
+
+              {/* Quiz Step - Show history + current question */}
+              {rooftopQuizStep === 'quiz' && (
+                <>
+                  {/* Show previous Q&A */}
+                  {quizAnswers.map((answer, idx) => (
+                    <div key={idx}>
+                      {/* Question */}
+                      <div style={styles.modernNpcMessage}>
+                        <div style={styles.modernNpcSpeaker}>MOMO:</div>
+                        <p style={styles.modernNpcText}>
+                          <span style={{ fontSize: '14px', color: '#888', display: 'block', marginBottom: '8px' }}>
+                            Question {idx + 1}/{rooftopQuizData.questions.length}
+                          </span>
+                          {rooftopQuizData.questions[idx].question}
+                        </p>
+                        <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
+                      </div>
+                      
+                      {/* User's answer */}
+                      <div style={{
+                        alignSelf: 'flex-end',
+                        maxWidth: '85%',
+                        marginBottom: '15px',
+                      }}>
+                        <div style={{
+                          fontFamily: "'Roboto', sans-serif",
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          color: '#666',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          marginBottom: '6px',
+                          textAlign: 'right',
+                        }}>YOU:</div>
+                        <div style={{
+                          background: '#333333',
+                          padding: '12px 18px',
+                          borderRadius: '18px',
+                          boxShadow: '0 2px 6px rgba(51, 51, 51, 0.3)',
+                        }}>
+                          <p style={{
+                            fontFamily: "'Roboto', sans-serif",
+                            fontSize: '14px',
+                            color: '#ffffff',
+                            lineHeight: 1.5,
+                            margin: 0,
+                          }}>{answer.text}</p>
+                        </div>
+                        <div style={{
+                          fontFamily: "'Roboto', sans-serif",
+                          fontSize: '11px',
+                          color: '#999',
+                          marginTop: '4px',
+                          textAlign: 'right'
+                        }}>{getCurrentTimestamp()}</div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Current question */}
+                  <div style={styles.modernNpcMessage}>
+                    <div style={styles.modernNpcSpeaker}>MOMO:</div>
+                    <p style={styles.modernNpcText}>
+                      <span style={{ fontSize: '14px', color: '#888', display: 'block', marginBottom: '8px' }}>
+                        Question {currentQuizQuestion + 1}/{rooftopQuizData.questions.length}
+                      </span>
+                      {rooftopQuizData.questions[currentQuizQuestion].question}
+                    </p>
+                    <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
+                  </div>
+                  
+                  {/* Options */}
+                  <div style={{width: '100%', marginTop: '10px'}}>
+                    {rooftopQuizData.questions[currentQuizQuestion].options.map((option, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleRooftopQuizAnswer(option)}
+                        style={styles.modernActionButton}
+                        onMouseOver={(e) => {
+                          e.target.style.borderColor = theme.borderColor
+                          e.target.style.transform = 'translateX(5px)'
+                        }}
+                        onMouseOut={(e) => {
+                          e.target.style.borderColor = '#E0E0E0'
+                          e.target.style.transform = 'translateX(0)'
+                        }}
+                      >
+                        <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                        {option.text}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Calculating Step */}
+              {rooftopQuizStep === 'calculating' && (
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '60px 0',
+                  gap: '20px'
+                }}>
+                  <div style={{
+                    fontSize: '24px',
+                    color: '#333',
+                    fontWeight: '600'
+                  }}>
+                    Calculating...
+                  </div>
+                  <div style={{
+                    width: '50px',
+                    height: '50px',
+                    border: '4px solid rgba(0, 0, 0, 0.1)',
+                    borderTop: `4px solid ${theme.borderColor}`,
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }}></div>
+                </div>
+              )}
+
+              {/* Result Step */}
+              {rooftopQuizStep === 'result' && userCategory && (
+                <>
+                  {/* Show all Q&A history */}
+                  {quizAnswers.map((answer, idx) => (
+                    <div key={idx}>
+                      {/* Question */}
+                      <div style={styles.modernNpcMessage}>
+                        <div style={styles.modernNpcSpeaker}>MOMO:</div>
+                        <p style={styles.modernNpcText}>
+                          <span style={{ fontSize: '14px', color: '#888', display: 'block', marginBottom: '8px' }}>
+                            Question {idx + 1}/{rooftopQuizData.questions.length}
+                          </span>
+                          {rooftopQuizData.questions[idx].question}
+                        </p>
+                        <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
+                      </div>
+                      
+                      {/* User's answer */}
+                      <div style={{
+                        alignSelf: 'flex-end',
+                        maxWidth: '85%',
+                        marginBottom: '15px',
+                      }}>
+                        <div style={{
+                          fontFamily: "'Roboto', sans-serif",
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          color: '#666',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          marginBottom: '6px',
+                          textAlign: 'right',
+                        }}>YOU:</div>
+                        <div style={{
+                          background: '#333333',
+                          padding: '12px 18px',
+                          borderRadius: '18px',
+                          boxShadow: '0 2px 6px rgba(51, 51, 51, 0.3)',
+                        }}>
+                          <p style={{
+                            fontFamily: "'Roboto', sans-serif",
+                            fontSize: '14px',
+                            color: '#ffffff',
+                            lineHeight: 1.5,
+                            margin: 0,
+                          }}>{answer.text}</p>
+                        </div>
+                        <div style={{
+                          fontFamily: "'Roboto', sans-serif",
+                          fontSize: '11px',
+                          color: '#999',
+                          marginTop: '4px',
+                          textAlign: 'right'
+                        }}>{getCurrentTimestamp()}</div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Result Display - Quadrant and Character side by side */}
+                  <div style={{
+                    display: 'flex',
+                    gap: '30px',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginTop: '20px',
+                    marginBottom: '20px',
+                    padding: '20px',
+                    background: 'rgba(0, 0, 0, 0.02)',
+                    borderRadius: '12px'
+                  }}>
+                    {/* Quadrant Chart */}
+                    <div style={{
+                      width: '280px',
+                      height: '280px',
+                      position: 'relative',
+                      background: '#2a2a2a',
+                      borderRadius: '12px',
+                      padding: '35px',
+                      flexShrink: 0
+                    }}>
+                      {/* Add pulsing animation keyframes */}
+                      <style>{`
+                        @keyframes pulse-ring {
+                          0% {
+                            transform: translate(-50%, -50%) scale(0.8);
+                            opacity: 0.8;
+                          }
+                          50% {
+                            transform: translate(-50%, -50%) scale(1.2);
+                            opacity: 0.4;
+                          }
+                          100% {
+                            transform: translate(-50%, -50%) scale(0.8);
+                            opacity: 0.8;
+                          }
+                        }
+                      `}</style>
+                      
+                      {/* Corner Labels */}
+                      <div style={{
+                        position: 'absolute',
+                        top: '15px',
+                        left: '15px',
+                        fontSize: '11px',
+                        color: '#888',
+                        textAlign: 'center',
+                        lineHeight: '1.3'
+                      }}>
+                        Low Proficiency<br/>High Judgment
+                      </div>
+                      <div style={{
+                        position: 'absolute',
+                        top: '15px',
+                        right: '15px',
+                        fontSize: '11px',
+                        color: '#888',
+                        textAlign: 'center',
+                        lineHeight: '1.3'
+                      }}>
+                        High Proficiency<br/>High Judgment
+                      </div>
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '15px',
+                        left: '15px',
+                        fontSize: '11px',
+                        color: '#888',
+                        textAlign: 'center',
+                        lineHeight: '1.3'
+                      }}>
+                        Low Proficiency<br/>Low Judgment
+                      </div>
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '15px',
+                        right: '15px',
+                        fontSize: '11px',
+                        color: '#888',
+                        textAlign: 'center',
+                        lineHeight: '1.3'
+                      }}>
+                        High Proficiency<br/>Low Judgment
+                      </div>
+                      
+                      {/* Axis Labels */}
+                      <div style={{
+                        position: 'absolute',
+                        left: '-70px',
+                        top: '50%',
+                        transform: 'translateY(-50%) rotate(-90deg)',
+                        fontSize: '12px',
+                        color: '#aaa',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        Judgment →
+                      </div>
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '-35px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        fontSize: '12px',
+                        color: '#aaa'
+                      }}>
+                        Proficiency →
+                      </div>
+                      
+                      {/* Grid lines - dashed */}
+                      <div style={{
+                        position: 'absolute',
+                        width: '100%',
+                        height: '1px',
+                        borderTop: '1px dashed rgba(255,255,255,0.3)',
+                        top: '50%',
+                        left: 0
+                      }}></div>
+                      <div style={{
+                        position: 'absolute',
+                        width: '1px',
+                        height: '100%',
+                        borderLeft: '1px dashed rgba(255,255,255,0.3)',
+                        left: '50%',
+                        top: 0
+                      }}></div>
+                      
+                      {/* User position - pulsing ring + inner dot */}
+                      <div style={{
+                        position: 'absolute',
+                        left: `${(proficiencyScore / 15) * 100}%`,
+                        top: `${100 - (judgmentScore / 15) * 100}%`,
+                        transform: 'translate(-50%, -50%)'
+                      }}>
+                        {/* Outer pulsing ring */}
+                        <div style={{
+                          position: 'absolute',
+                          width: '40px',
+                          height: '40px',
+                          borderRadius: '50%',
+                          background: 'rgba(120, 104, 229, 0.5)',
+                          left: '50%',
+                          top: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          animation: 'pulse-ring 2s ease-in-out infinite'
+                        }}></div>
+                        
+                        {/* Inner dot with white border */}
+                        <div style={{
+                          position: 'relative',
+                          width: '16px',
+                          height: '16px',
+                          borderRadius: '50%',
+                          background: '#a0d8ff',
+                          border: '3px solid #fff',
+                          boxShadow: '0 0 15px rgba(160, 216, 255, 0.8)'
+                        }}></div>
+                        
+                        {/* "You" label */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '-25px',
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          fontSize: '12px',
+                          color: '#fff',
+                          fontWeight: '600',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          You
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Character Result */}
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '15px'
+                    }}>
+                      <img 
+                        src={rooftopQuizData.categories[userCategory].image} 
+                        alt={rooftopQuizData.categories[userCategory].name}
+                        style={{ width: '220px', height: '220px' }}
+                      />
+                      <div style={{
+                        fontSize: '36px',
+                        fontWeight: '700',
+                        color: '#333'
+                      }}>
+                        {rooftopQuizData.categories[userCategory].name}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Description */}
+                  <div style={styles.modernNpcMessage}>
+                    <div style={styles.modernNpcSpeaker}>MOMO:</div>
+                    <p style={styles.modernNpcText}>
+                      {rooftopQuizData.categories[userCategory].description}
+                    </p>
+                    <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
+                  </div>
+                  
+                  {/* Final Message */}
+                  <div style={styles.modernNpcMessage}>
+                    <div style={styles.modernNpcSpeaker}>MOMO:</div>
+                    <p style={styles.modernNpcText}>
+                      {rooftopQuizData.finalMessage}
+                    </p>
+                    <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
+                  </div>
+                  
+                  <button
+                    onClick={handleRooftopQuizClose}
+                    style={styles.modernActionButton}
+                    onMouseOver={(e) => {
+                      e.target.style.borderColor = theme.borderColor
+                      e.target.style.transform = 'translateX(5px)'
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.borderColor = '#E0E0E0'
+                      e.target.style.transform = 'translateX(0)'
+                    }}
+                  >
+                    <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                    Close
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }

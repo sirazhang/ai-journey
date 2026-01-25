@@ -13,6 +13,12 @@ html, body, #root {
 body {
   font-family: 'Roboto', sans-serif;
   background: #000;
+  cursor: url(/icon/spaceship.svg) 12 12, auto;
+}
+
+/* Custom cursor for interactive elements */
+button, a, [role="button"], input[type="submit"], input[type="button"] {
+  cursor: url(/icon/spaceship.svg) 12 12, pointer !important;
 }
 
 /* Breathing border animation */
