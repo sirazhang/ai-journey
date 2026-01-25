@@ -1008,6 +1008,10 @@ const IslandMap = ({ onExit }) => {
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0) // Track current dialogue index
   const [currentDialogueIsland, setCurrentDialogueIsland] = useState(null) // Track which island's dialogue is active
   
+  // Glitch dialogue states (modern design with input)
+  const [showGlitchDialogue, setShowGlitchDialogue] = useState(false)
+  const [glitchInput, setGlitchInput] = useState('')
+  
   // Sparky dialogue states
   const [showSparkyDialogue, setShowSparkyDialogue] = useState(false)
   const [sparkyMessages, setSparkyMessages] = useState([])
@@ -1145,26 +1149,53 @@ const IslandMap = ({ onExit }) => {
   // Sound effects and music
   useBackgroundMusic('/sound/island.mp3')
   const { playClickSound } = useSoundEffects()
+  
+  // Auto-trigger NPC dialogues when entering islands (without mission active)
+  useEffect(() => {
+    // Close dialogue when leaving islands or entering main island
+    if (currentIsland === ISLANDS.MAIN_ISLAND) {
+      setShowDialogue(false)
+      setCurrentDialogueIsland(null)
+      setCurrentDialogueIndex(0)
+      return
+    }
+    
+    if (!missionActive && !showDialogue) {
+      const npcDialogues = getNpcDialogues(t)
+      const dialogues = npcDialogues[currentIsland]
+      
+      // Auto-trigger dialogue for Island 1, 2, 3
+      if (dialogues && dialogues.length > 0 && 
+          (currentIsland === ISLANDS.ISLAND_1 || 
+           currentIsland === ISLANDS.ISLAND_2 || 
+           currentIsland === ISLANDS.ISLAND_3)) {
+        setTimeout(() => {
+          setCurrentDialogue(dialogues[0])
+          setCurrentDialogueIndex(0)
+          setCurrentDialogueIsland(currentIsland)
+          setShowDialogue(true)
+        }, 500) // Small delay for smooth transition
+      }
+    }
+  }, [currentIsland, missionActive])
 
   // Event handlers
   const handleGlitchClick = () => {
-    if (phase2Active) {
-      // Phase 2 Glitch message
-      setCurrentDialogue({
-        text: t('phase2GlitchMessage'),
-        speaker: 'Glitch'
-      })
-      setShowDialogue(true)
-    } else if (missionActive) {
-      // During Phase 1 mission, Glitch shows different messages
-      return
-    } else {
-      // Original message
-      setCurrentDialogue({
-        text: t('sparkyMainIsland'),
-        speaker: 'Glitch'
-      })
-      setShowDialogue(true)
+    // Show modern Glitch dialogue with input
+    setShowGlitchDialogue(true)
+  }
+  
+  const handleGlitchSend = () => {
+    if (glitchInput.trim()) {
+      // For now, just clear the input
+      // In the future, this could trigger AI responses
+      setGlitchInput('')
+    }
+  }
+  
+  const handleGlitchInputKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleGlitchSend()
     }
   }
 
@@ -1363,68 +1394,48 @@ const IslandMap = ({ onExit }) => {
     
     playClickSound()
     
-    // Play stamp sound
+    const isCorrect = judgment === currentImageNpc.correctAnswer
+    
+    if (!isCorrect) {
+      // Wrong answer - play wrong sound and stay on page
+      const wrongAudio = new Audio('/sound/wrong.mp3')
+      wrongAudio.play().catch(e => console.log('Audio play failed:', e))
+      return // Stay on page, don't close dialogue
+    }
+    
+    // Correct answer - play stamp sound
     const stampAudio = new Audio('/sound/stamp.mp3')
     stampAudio.play().catch(e => console.log('Stamp sound failed:', e))
     
-    const isCorrect = judgment === currentImageNpc.correctAnswer
+    // Correct judgment
+    setImageStampType(judgment)
+    setShowImageStamp(true)
     
-    if (isCorrect) {
-      // Correct judgment
-      setImageStampType(judgment)
-      setShowImageStamp(true)
+    // Add NPC to completed list and missions
+    setCompletedNpcs(prev => new Set([...prev, currentImageNpc.id]))
+    setCompletedMissions(prev => [...prev, currentImageNpc.id])
+    
+    // Handle Phase 2 progress tracking
+    if (phase2Active && currentImageNpc.id && currentImageNpc.id.includes('_p2')) {
+      const baseNpcId = currentImageNpc.id.replace('_p2', '')
+      const npcNumber = parseInt(baseNpcId.replace('npc', ''))
       
-      // Add NPC to completed list
-      setCompletedNpcs(prev => new Set([...prev, currentImageNpc.id]))
-      
-      // Handle Phase 2 progress tracking
-      if (phase2Active && currentImageNpc.id && currentImageNpc.id.includes('_p2')) {
-        const baseNpcId = currentImageNpc.id.replace('_p2', '')
-        const npcNumber = parseInt(baseNpcId.replace('npc', ''))
-        
-        // Phase 2 Island 2 failed NPC: npc20
-        if (npcNumber === 20 && judgment === 'failed') {
-          // Add to phase 2 progress (position 3 for Island 2)
-          setPhase2CompletedMissions(prev => [...prev, 3])
-        }
-      } else {
-        // Phase 1 progress tracking
-        const npcNumber = currentImageNpc.id.replace('npc', '')
-        const npcNum = parseInt(npcNumber)
-        
-        if ([22, 23, 24].includes(npcNum) && judgment === 'failed') {
-          // Map Island 2 NPCs to positions 7, 8, 9 in the progress bar
-          const progressPosition = npcNum === 22 ? 7 : npcNum === 23 ? 8 : 9
-          setCompletedMissions(prev => [...prev, progressPosition])
-        }
+      // Phase 2 Island 2 failed NPC: npc20
+      if (npcNumber === 20 && judgment === 'failed') {
+        // Add to phase 2 progress (position 3 for Island 2)
+        setPhase2CompletedMissions(prev => [...prev, 3])
       }
-      
-      // Hide stamp after 2 seconds
-      setTimeout(() => {
-        setShowImageStamp(false)
-        setShowImageDialogue(false)
-        setCurrentImageNpc(null)
-        setShowImageResponse(false)
-        setImageResponseText('')
-        setIsImageResponseTyping(false)
-      }, 2000)
-    } else {
-      // Wrong judgment - show Glitch error message
+    }
+    
+    // Hide stamp after 2 seconds
+    setTimeout(() => {
+      setShowImageStamp(false)
       setShowImageDialogue(false)
       setCurrentImageNpc(null)
       setShowImageResponse(false)
       setImageResponseText('')
       setIsImageResponseTyping(false)
-      
-      // Show Glitch error dialogue
-      setTimeout(() => {
-        setCurrentDialogue({
-          text: t('fakeNews'),
-          speaker: 'Glitch'
-        })
-        setShowDialogue(true)
-      }, 500)
-    }
+    }, 2000)
   }
 
   const handleQAJudgment = (judgment) => {
@@ -1432,71 +1443,50 @@ const IslandMap = ({ onExit }) => {
     
     playClickSound()
     
-    // Play stamp sound
+    const isCorrect = judgment === currentQANpc.correctAnswer
+    
+    if (!isCorrect) {
+      // Wrong answer - play wrong sound and stay on page
+      const wrongAudio = new Audio('/sound/wrong.mp3')
+      wrongAudio.play().catch(e => console.log('Audio play failed:', e))
+      return // Stay on page, don't close dialogue
+    }
+    
+    // Correct answer - play stamp sound
     const stampAudio = new Audio('/sound/stamp.mp3')
     stampAudio.play().catch(e => console.log('Stamp sound failed:', e))
     
-    const isCorrect = judgment === currentQANpc.correctAnswer
+    // Correct judgment
+    setQAStampType(judgment)
+    setShowQAStamp(true)
     
-    if (isCorrect) {
-      // Correct judgment
-      setQAStampType(judgment)
-      setShowQAStamp(true)
+    // Add NPC to completed list and missions
+    setCompletedNpcs(prev => new Set([...prev, currentQANpc.id]))
+    setCompletedMissions(prev => [...prev, currentQANpc.id])
+    
+    // Handle Phase 2 progress tracking
+    if (phase2Active && currentQANpc.id && currentQANpc.id.includes('_p2')) {
+      const baseNpcId = currentQANpc.id.replace('_p2', '')
+      const npcNumber = parseInt(baseNpcId.replace('npc', ''))
       
-      // Add NPC to completed list
-      setCompletedNpcs(prev => new Set([...prev, currentQANpc.id]))
-      
-      // Handle Phase 2 progress tracking
-      if (phase2Active && currentQANpc.id && currentQANpc.id.includes('_p2')) {
-        const baseNpcId = currentQANpc.id.replace('_p2', '')
-        const npcNumber = parseInt(baseNpcId.replace('npc', ''))
-        
-        // Phase 2 Island 3 failed NPCs: npc12, npc16
-        if ([12, 16].includes(npcNumber) && judgment === 'failed') {
-          // Add to phase 2 progress (positions 4, 5 for Island 3)
-          const progressPosition = npcNumber === 12 ? 4 : 5
-          setPhase2CompletedMissions(prev => [...prev, progressPosition])
-        }
-      } else {
-        // Phase 1 progress tracking
-        const npcNumber = currentQANpc.id.replace('npc', '')
-        const npcNum = parseInt(npcNumber)
-        
-        if ([13, 14, 17].includes(npcNum) && judgment === 'failed') {
-          // Map Island 3 NPCs to positions 4, 5, 6 in the progress bar
-          const progressPosition = npcNum === 13 ? 4 : npcNum === 14 ? 5 : 6
-          setCompletedMissions(prev => [...prev, progressPosition])
-        }
+      // Phase 2 Island 3 failed NPCs: npc12, npc16
+      if ([12, 16].includes(npcNumber) && judgment === 'failed') {
+        // Add to phase 2 progress (positions 4, 5 for Island 3)
+        const progressPosition = npcNumber === 12 ? 4 : 5
+        setPhase2CompletedMissions(prev => [...prev, progressPosition])
       }
-      
-      // Hide stamp after 2 seconds
-      setTimeout(() => {
-        setShowQAStamp(false)
-        setShowQADialogue(false)
-        setCurrentQANpc(null)
-        setShowQuestion(false)
-        setShowAnswer(false)
-        setQuestionText('')
-        setAnswerText('')
-      }, 2000)
-    } else {
-      // Wrong judgment - show Glitch error message
+    }
+    
+    // Hide stamp after 2 seconds
+    setTimeout(() => {
+      setShowQAStamp(false)
       setShowQADialogue(false)
       setCurrentQANpc(null)
       setShowQuestion(false)
       setShowAnswer(false)
       setQuestionText('')
       setAnswerText('')
-      
-      // Show Glitch error dialogue
-      setTimeout(() => {
-        setCurrentDialogue({
-          text: t('fakeNews'),
-          speaker: 'Glitch'
-        })
-        setShowDialogue(true)
-      }, 500)
-    }
+    }, 2000)
   }
 
   const handleMissionNpcClick = (npcId) => {
@@ -2033,7 +2023,7 @@ const IslandMap = ({ onExit }) => {
         break
     }
   }
-  // Typing effect for regular dialogue
+  // Typing effect for regular dialogue - auto-advance to last message
   useEffect(() => {
     if (!currentDialogue || !showDialogue) return
     
@@ -2051,11 +2041,27 @@ const IslandMap = ({ onExit }) => {
       } else {
         setIsTyping(false)
         clearInterval(typingInterval)
+        
+        // Auto-advance to next dialogue after typing completes
+        if (currentDialogueIsland) {
+          const npcDialogues = getNpcDialogues(t)
+          const dialogues = npcDialogues[currentDialogueIsland]
+          const nextIndex = currentDialogueIndex + 1
+          
+          if (nextIndex < dialogues.length) {
+            // Wait 1 second then show next dialogue
+            setTimeout(() => {
+              setCurrentDialogue(dialogues[nextIndex])
+              setCurrentDialogueIndex(nextIndex)
+            }, 1000)
+          }
+          // If it's the last dialogue, keep it displayed (don't close)
+        }
       }
     }, 30)
 
     return () => clearInterval(typingInterval)
-  }, [currentDialogue, showDialogue])
+  }, [currentDialogue, showDialogue, currentDialogueIndex, currentDialogueIsland])
   
   // New Conversation Test typing effect - disabled, now using typeNextMessage function
   // useEffect removed to use manual typeNextMessage control
@@ -2475,8 +2481,8 @@ const IslandMap = ({ onExit }) => {
       position: 'absolute',
       bottom: '100px',
       left: '2%',
-      width: '48%',
-      maxWidth: '600px',
+      width: '350px', // Fixed width for better glassmorphism effect
+      maxWidth: '350px',
       zIndex: 100,
     },
     glitchDialogueContainer: {
@@ -2524,6 +2530,106 @@ const IslandMap = ({ onExit }) => {
       fontWeight: 600,
       color: '#5170FF',
       marginBottom: '8px',
+    },
+    // Glitch dialogue bubble (modern design with input)
+    glitchDialogue: {
+      position: 'absolute',
+      top: '20px',
+      right: '150px', // Left shift to avoid covering NPC Glitch
+      width: '350px',
+      background: 'rgba(255, 255, 255, 0.95)',
+      borderRadius: '15px',
+      padding: '20px',
+      boxShadow: '0 4px 20px rgba(175, 77, 202, 0.3)',
+      zIndex: 150,
+    },
+    glitchDialogueHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      marginBottom: '15px',
+    },
+    glitchDialogueAvatar: {
+      width: '40px',
+      height: '40px',
+      borderRadius: '50%',
+      background: 'linear-gradient(135deg, #af4dca, #7868e5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+    },
+    glitchDialogueAvatarIcon: {
+      fontSize: '24px',
+    },
+    glitchDialogueName: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '16px',
+      fontWeight: 600,
+      color: '#333',
+      margin: 0,
+    },
+    glitchDialogueText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      color: '#666',
+      lineHeight: 1.6,
+      margin: '0 0 15px 0',
+    },
+    glitchDialogueInputContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      padding: '8px 12px',
+      border: '2px solid #e0e0e0',
+      borderRadius: '25px',
+      transition: 'border-color 0.2s',
+    },
+    glitchDialogueInput: {
+      flex: 1,
+      padding: '10px 15px',
+      border: 'none',
+      background: 'transparent',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      color: '#333',
+      outline: 'none',
+    },
+    glitchDialogueDivider: {
+      width: '2px',
+      height: '24px',
+      background: '#e0e0e0',
+      borderRadius: '1px',
+      flexShrink: 0,
+    },
+    glitchDialogueSendButton: {
+      background: 'none',
+      border: 'none',
+      padding: '0',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'transform 0.2s',
+      flexShrink: 0,
+    },
+    glitchDialogueSendIcon: {
+      width: '24px',
+      height: '24px',
+      objectFit: 'contain',
+    },
+    glitchDialogueCloseButton: {
+      position: 'absolute',
+      top: '15px',
+      right: '15px',
+      background: 'none',
+      border: 'none',
+      fontSize: '24px',
+      color: '#999',
+      cursor: 'pointer',
+      padding: '0',
+      lineHeight: 1,
+      transition: 'color 0.2s',
     },
     // Sparky dialogue container
     sparkyDialogueContainer: {
@@ -3625,23 +3731,136 @@ const IslandMap = ({ onExit }) => {
         )
       })}
 
-      {/* Regular NPC Dialogue */}
-      {showDialogue && currentDialogue && (
-        <div style={currentDialogue.speaker === 'Glitch' ? styles.glitchDialogueContainer : styles.dialogueContainer}>
-          <div style={styles.dialogueBox} onClick={currentDialogue.speaker === 'Glitch' ? () => setShowDialogue(false) : handleDialogueClick}>
-            <div style={styles.speaker}>{currentDialogue.speaker}</div>
-            <p style={styles.dialogueText}>
+      {/* Regular NPC Dialogue - Auto-display with typing animation */}
+      {showDialogue && currentDialogue && currentDialogue.speaker !== 'Glitch' && (
+        <div style={{
+          ...styles.dialogueContainer,
+          // Position based on island
+          ...(currentDialogueIsland === ISLANDS.ISLAND_1 && {
+            right: 'calc(15% + 350px + 20px)', // Right side of NPC1
+            bottom: '15%',
+            left: 'auto',
+            top: 'auto'
+          }),
+          ...(currentDialogueIsland === ISLANDS.ISLAND_2 && {
+            left: '15%',
+            bottom: 'calc(10% + 300px + 20px)', // Top of NPC2
+            right: 'auto',
+            top: 'auto'
+          }),
+          ...(currentDialogueIsland === ISLANDS.ISLAND_3 && {
+            left: 'calc(15% + 300px + 20px)', // Right side of NPC3
+            bottom: '30%',
+            right: 'auto',
+            top: 'auto'
+          })
+        }}>
+          <div style={{
+            padding: '20px 25px',
+            borderRadius: '16px',
+            // Glassmorphism with 85% opacity white background for better readability
+            background: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            // Subtle border
+            border: '1px solid rgba(255, 255, 255, 0.4)',
+            // Inner shadow for depth
+            boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 8px 24px rgba(0, 0, 0, 0.15)',
+            position: 'relative',
+          }}>
+            <div style={{
+              fontFamily: "'Roboto', sans-serif",
+              fontSize: '12px',
+              fontWeight: 600,
+              color: '#1a1a1a',
+              marginBottom: '8px',
+              textShadow: '0 0 8px rgba(255, 255, 255, 0.6)', // Subtle outer glow
+            }}>{currentDialogue.speaker}</div>
+            <p style={{
+              fontFamily: "'Roboto', sans-serif",
+              fontSize: '18px', // Increased font size for better readability
+              color: '#1a1a1a',
+              lineHeight: 1.6,
+              margin: 0,
+              textShadow: '0 0 6px rgba(255, 255, 255, 0.5)', // Subtle outer glow
+            }}>
               {displayedText}
               {isTyping && <span style={{ opacity: 0.5 }}>|</span>}
             </p>
-            {currentDialogue.speaker !== 'Glitch' && (
-              <button
-                style={styles.continueButton}
-                onClick={handleDialogueClick}
-              >
-                {isTyping ? t('skip') : t('continue')}
-              </button>
-            )}
+            {/* No Continue/Skip buttons - auto-advance */}
+          </div>
+        </div>
+      )}
+      
+      {/* Glitch Dialogue - Modern Design with Input (Top Right) */}
+      {showGlitchDialogue && (
+        <div style={styles.glitchDialogue}>
+          {/* Close button */}
+          <button
+            style={styles.glitchDialogueCloseButton}
+            onClick={() => setShowGlitchDialogue(false)}
+            onMouseOver={(e) => {
+              e.target.style.color = '#333'
+            }}
+            onMouseOut={(e) => {
+              e.target.style.color = '#999'
+            }}
+          >
+            ×
+          </button>
+          
+          {/* Header with avatar and name */}
+          <div style={styles.glitchDialogueHeader}>
+            <div style={styles.glitchDialogueAvatar}>
+              <span style={styles.glitchDialogueAvatarIcon}>👾</span>
+            </div>
+            <h4 style={styles.glitchDialogueName}>Glitch</h4>
+          </div>
+          
+          {/* Message content */}
+          <p style={styles.glitchDialogueText}>
+            {phase2Active 
+              ? t('phase2GlitchMessage')
+              : missionActive 
+                ? "The truth is hidden in plain sight. Look carefully at what you see."
+                : t('sparkyMainIsland')}
+          </p>
+          
+          {/* Input container */}
+          <div 
+            style={styles.glitchDialogueInputContainer}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = '#af4dca'
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = '#e0e0e0'
+            }}
+          >
+            <input 
+              type="text" 
+              placeholder="Ask Glitch anything..."
+              value={glitchInput}
+              onChange={(e) => setGlitchInput(e.target.value)}
+              onKeyPress={handleGlitchInputKeyPress}
+              style={styles.glitchDialogueInput}
+            />
+            <div style={styles.glitchDialogueDivider}></div>
+            <button
+              onClick={handleGlitchSend}
+              style={styles.glitchDialogueSendButton}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'scale(1)'
+              }}
+            >
+              <img 
+                src="/icon/send.png" 
+                alt="Send" 
+                style={styles.glitchDialogueSendIcon}
+              />
+            </button>
           </div>
         </div>
       )}
@@ -4124,18 +4343,21 @@ const IslandMap = ({ onExit }) => {
               </div>
             ))
           ) : (
-            // Phase 1: Show original 9 circles
-            [1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
-              <div 
-                key={num}
-                style={{
-                  ...styles.progressCircle,
-                  ...(completedMissions.includes(num) ? styles.completedCircle : styles.incompleteCircle)
-                }}
-              >
-                {completedMissions.includes(num) ? num : '?'}
-              </div>
-            ))
+            // Phase 1: Show 9 circles representing total progress across all 3 islands
+            [1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => {
+              const isCompleted = completedMissions.length >= num
+              return (
+                <div 
+                  key={num}
+                  style={{
+                    ...styles.progressCircle,
+                    ...(isCompleted ? styles.completedCircle : styles.incompleteCircle)
+                  }}
+                >
+                  {isCompleted ? num : '?'}
+                </div>
+              )
+            })
           )}
         </div>
       )}
