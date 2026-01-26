@@ -141,7 +141,24 @@ const MapView = ({ onRegionClick }) => {
       if (islandProgress) {
         const data = JSON.parse(islandProgress)
         // Calculate based on island's completion logic
-        progress.island = data.isComplete ? 100 : (data.phase || 0) * 33 // Rough estimate
+        // Phase 1: Mission completed (9 GenAI NPCs) - 40%
+        // Phase 2: Phase 2 completed (5 GenAI NPCs) - 40%
+        // Final: Island restored - 20%
+        let islandPercent = 0
+        
+        if (data.missionCompleted) {
+          islandPercent += 40
+        }
+        
+        if (data.phase2Completed) {
+          islandPercent += 40
+        }
+        
+        if (data.islandRestored) {
+          islandPercent = 100 // Fully complete
+        }
+        
+        progress.island = Math.round(islandPercent)
       } else {
         progress.island = 0
       }

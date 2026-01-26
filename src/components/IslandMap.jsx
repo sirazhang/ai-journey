@@ -611,7 +611,32 @@ const getSparkyDebriefFlow = (t) => [
       {
         type: 'message',
         speaker: 'Sparky',
-        text: "GenAI is trained on 'average' data. So, it often generates things that look too similar, too stereotypical, or lack diversity."
+        text: "GenAI learns from massive datasets."
+      },
+      {
+        type: 'image',
+        src: '/island/icon/standard.png',
+        alt: 'Standard Dataset'
+      },
+      {
+        type: 'message',
+        speaker: 'Sparky',
+        text: "GenAI often creates a classic birthday cake because it copies the most common patterns it's seen. Similar inputs lead to similar outputs."
+      },
+      {
+        type: 'image',
+        src: '/island/icon/cake.png',
+        alt: 'Birthday Cake'
+      },
+      {
+        type: 'message',
+        speaker: 'Sparky',
+        text: "But Humans imagine endlessly. A cake can be anything. That's where GenAI struggles."
+      },
+      {
+        type: 'image',
+        src: '/island/icon/human.png',
+        alt: 'Human Creativity'
       }
     ],
     nextChoice: {
@@ -631,7 +656,7 @@ const getSparkyDebriefFlow = (t) => [
       {
         type: 'message',
         speaker: 'Sparky',
-        text: "Look closer: Zero creativity. Real art is full of surprises, but these spies just copy common patterns. Repetitive, boring, and stuck in a loop."
+        text: "No creativity—just copied patterns. Predictable. Boring. Robotic."
       },
       {
         type: 'message',
@@ -642,11 +667,6 @@ const getSparkyDebriefFlow = (t) => [
         type: 'message',
         speaker: 'Sparky',
         text: "Target: Find 5 Homogenized AI Spies."
-      },
-      {
-        type: 'message',
-        speaker: 'Sparky',
-        text: "Clue: Look for stereotypes and lack of diversity."
       }
     ],
     nextChoice: {
@@ -692,7 +712,7 @@ const getFinalSparkyDialogueFlow = (t) => [
     id: 0,
     type: 'message',
     speaker: 'Sparky',
-    text: "You successfully spotted the AI spies! Whether it was those 'perfect' poems or those 'glossy' images, you saw the truth. But do you know why AI creates things that feel so... similar? We call it Homogenization.",
+    text: "You spotted ALL GenAI spies! Those \"perfect\" poems? Those glossy images? They're all part of homogenization.",
     nextChoice: {
       text: "Can you tell me more",
       choiceId: 1
@@ -705,22 +725,17 @@ const getFinalSparkyDialogueFlow = (t) => [
       {
         type: 'message',
         speaker: 'Sparky',
-        text: "Think about the ocean. 🌊 Human creativity is like a wild storm, or a secret coral reef—spiky, messy, and full of unique colors. AI is like... a swimming pool. 🏊‍♀️ It is clean. It is safe. It is perfectly blue. But every drop tastes exactly the same."
+        text: "Think of it like this: 🌊 Human creativity = the ocean — wild, messy, full of strange colors. 🏊‍♀️ AI output = a swimming pool — clean, safe… and every drop tastes identical."
       },
       {
         type: 'message',
         speaker: 'Sparky',
-        text: "Why? Because AI learns from billions of human pictures and texts. To be 'correct' and 'helpful,' it mixes them all together until it finds the Average. It smooths out the rough edges. It creates a 'perfect' image that lacks the messy soul of a real artist."
+        text: "Why? AI averages billions of human creations—no mess, no soul, just safe and smooth."
       },
       {
         type: 'message',
         speaker: 'Sparky',
-        text: "So, when you see a picture that is too shiny, or read a poem that is too polite... that is the 'Swimming Pool' trying to imitate the Ocean!"
-      },
-      {
-        type: 'message',
-        speaker: 'Sparky',
-        text: "If you receive a strange email or read an essay, which of these is a strong clue that it was written by AI, not a human?"
+        text: "So when you see a picture that's too generic or a poem that's too formulaic… it's AI playing it safe—just repeating what it's seen most."
       }
     ],
     quiz: {
@@ -730,7 +745,7 @@ const getFinalSparkyDialogueFlow = (t) => [
         { id: 'B', text: "It is extremely polite, uses a 'perfect' list structure (First, Furthermore, In Conclusion), and words like 'delve' or 'tapestry'.", correct: true },
         { id: 'C', text: "It expresses a very strong, angry opinion about politics.", correct: false }
       ],
-      feedback: "Why? Humans are messy! We make typos, we get angry, we tell bad jokes. AI tries to be the 'Perfect Student.' It is always polite, organized, and loves using those fancy 'SAT words' over and over again. Too perfect = Suspicious!",
+      feedback: "Why? Humans are messy—we typo, rage, and tell bad jokes. AI plays the 'perfect student': always polite, tidy, and overusing fancy words. Too perfect? Suspicious!",
       nextChoiceId: 2
     }
   },
@@ -741,7 +756,7 @@ const getFinalSparkyDialogueFlow = (t) => [
       {
         type: 'message',
         speaker: 'Sparky',
-        text: "When you look at a photo that looks almost real, which detail reveals that it is actually AI-generated?"
+        text: "Exactly! Now let's test your visual detection skills."
       }
     ],
     quiz: {
@@ -1159,18 +1174,13 @@ const IslandMap = ({ onExit }) => {
   // Load progress from localStorage on mount
   useEffect(() => {
     const savedProgress = localStorage.getItem('islandProgress')
-    console.log('=== LOADING ISLAND PROGRESS ===')
-    console.log('Raw localStorage data:', savedProgress)
     
     if (savedProgress) {
       try {
         const progress = JSON.parse(savedProgress)
-        console.log('Parsed progress:', progress)
-        console.log('Check condition:', progress.missionActive || progress.missionCompleted || progress.phase2Active || progress.phase2Completed)
         
         // Only load if there's actual progress
         if (progress.missionActive || progress.missionCompleted || progress.phase2Active || progress.phase2Completed) {
-          console.log('Loading progress...')
           setMissionActive(progress.missionActive || false)
           setMissionCompleted(progress.missionCompleted || false)
           setPhase2Active(progress.phase2Active || false)
@@ -1187,16 +1197,10 @@ const IslandMap = ({ onExit }) => {
           setDebriefStep(progress.debriefStep || 0)
           setShowFinalSparkyDialogue(progress.showFinalSparkyDialogue || false)
           setFinalDialogueStep(progress.finalDialogueStep || 0)
-          
-          console.log('Loaded island progress:', progress)
-        } else {
-          console.log('No progress to load (all flags are false)')
         }
       } catch (e) {
         console.log('Failed to load island progress:', e)
       }
-    } else {
-      console.log('No saved progress found in localStorage')
     }
   }, [])
   
@@ -2434,6 +2438,7 @@ const IslandMap = ({ onExit }) => {
                   text: getRandomDialogue(t),
                   speaker: 'NPC'
                 })
+                setCurrentDialogueIsland(ISLANDS.ISLAND_1)
                 setShowDialogue(true)
               }
             },
@@ -2447,6 +2452,7 @@ const IslandMap = ({ onExit }) => {
                   text: getRandomDialogue(t),
                   speaker: 'NPC'
                 })
+                setCurrentDialogueIsland(ISLANDS.ISLAND_1)
                 setShowDialogue(true)
               }
             },
@@ -2460,6 +2466,7 @@ const IslandMap = ({ onExit }) => {
                   text: getRandomDialogue(t),
                   speaker: 'NPC'
                 })
+                setCurrentDialogueIsland(ISLANDS.ISLAND_1)
                 setShowDialogue(true)
               }
             },
@@ -2473,6 +2480,7 @@ const IslandMap = ({ onExit }) => {
                   text: getRandomDialogue(t),
                   speaker: 'NPC'
                 })
+                setCurrentDialogueIsland(ISLANDS.ISLAND_1)
                 setShowDialogue(true)
               }
             }
@@ -2489,6 +2497,7 @@ const IslandMap = ({ onExit }) => {
                   text: getRandomDialogue(t),
                   speaker: 'NPC'
                 })
+                setCurrentDialogueIsland(ISLANDS.ISLAND_2)
                 setShowDialogue(true)
               }
             },
@@ -2502,6 +2511,7 @@ const IslandMap = ({ onExit }) => {
                   text: getRandomDialogue(t),
                   speaker: 'NPC'
                 })
+                setCurrentDialogueIsland(ISLANDS.ISLAND_2)
                 setShowDialogue(true)
               }
             }
@@ -2518,6 +2528,7 @@ const IslandMap = ({ onExit }) => {
                   text: getRandomDialogue(t),
                   speaker: 'NPC'
                 })
+                setCurrentDialogueIsland(ISLANDS.ISLAND_3)
                 setShowDialogue(true)
               }
             },
@@ -2531,6 +2542,7 @@ const IslandMap = ({ onExit }) => {
                   text: getRandomDialogue(t),
                   speaker: 'NPC'
                 })
+                setCurrentDialogueIsland(ISLANDS.ISLAND_3)
                 setShowDialogue(true)
               }
             },
@@ -2544,6 +2556,7 @@ const IslandMap = ({ onExit }) => {
                   text: getRandomDialogue(t),
                   speaker: 'NPC'
                 })
+                setCurrentDialogueIsland(ISLANDS.ISLAND_3)
                 setShowDialogue(true)
               }
             },
@@ -2557,6 +2570,7 @@ const IslandMap = ({ onExit }) => {
                   text: getRandomDialogue(t),
                   speaker: 'NPC'
                 })
+                setCurrentDialogueIsland(ISLANDS.ISLAND_3)
                 setShowDialogue(true)
               }
             }
@@ -3899,32 +3913,6 @@ const IslandMap = ({ onExit }) => {
         style={styles.backgroundImage}
       />
       
-      {/* Debug Display - Top Left */}
-      <div style={{
-        position: 'absolute',
-        top: '10px',
-        left: '10px',
-        background: 'rgba(0, 0, 0, 0.7)',
-        color: 'white',
-        padding: '10px',
-        borderRadius: '8px',
-        fontSize: '12px',
-        fontFamily: 'monospace',
-        zIndex: 9999,
-        lineHeight: '1.5',
-      }}>
-        <div>missionActive: {missionActive.toString()}</div>
-        <div>missionCompleted: {missionCompleted.toString()}</div>
-        <div>phase2Active: {phase2Active.toString()}</div>
-        <div>showSparkyDialogue: {showSparkyDialogue.toString()}</div>
-        <div>showSparkyDebrief: {showSparkyDebrief.toString()}</div>
-        <div>currentSparkyStep: {currentSparkyStep}</div>
-        <div>debriefStep: {debriefStep}</div>
-        <div>currentIsland: {currentIsland}</div>
-        <div>completedMissions: {completedMissions.length}</div>
-        <div>phase2CompletedMissions: {phase2CompletedMissions.length}</div>
-      </div>
-
       {/* Exit Button */}
       <button style={styles.exitButton} onClick={onExit}>
         {t('exit')}
@@ -4757,7 +4745,7 @@ const IslandMap = ({ onExit }) => {
       })()}
 
       {/* Progress Collection - New Design with Coconuts */}
-      {missionActive && (currentIsland === ISLANDS.ISLAND_1 || currentIsland === ISLANDS.ISLAND_2 || currentIsland === ISLANDS.ISLAND_3) && (
+      {missionActive && !islandRestored && (currentIsland === ISLANDS.ISLAND_1 || currentIsland === ISLANDS.ISLAND_2 || currentIsland === ISLANDS.ISLAND_3) && (
         <div style={{
           position: 'absolute',
           bottom: '100px',
