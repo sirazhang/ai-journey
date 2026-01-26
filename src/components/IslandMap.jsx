@@ -80,7 +80,7 @@ const island2Npcs = {
     id: 'npc24',
     image: '/island/npc/npc24.png',
     size: '200px',
-    position: { left: '5%', bottom: '5%' },
+    position: { left: '15%', bottom: '20%' },
     missionImage: '/island/mission/img12.png',
     response: "A sheep with bright green fur stands in a natural alpine meadow setting. The background includes white clouds, mountains, and other white sheep.",
     correctAnswer: 'failed'
@@ -101,7 +101,7 @@ const island3Npcs = {
   npc12: {
     id: 'npc12',
     image: '/island/npc/npc12.png',
-    size: '280px',
+    size: '200px',
     position: { left: '0%', top: '5%' },
     question: "How are rainbows made?",
     answer: "Rainbows happen when sunlight passes through raindrops in the air. The water droplets act like tiny prisms, bending the light and separating it into colors.",
@@ -111,7 +111,7 @@ const island3Npcs = {
     id: 'npc13',
     image: '/island/npc/npc13.png',
     size: '180px',
-    position: { left: '0%', bottom: '0%' },
+    position: { left: '0%', bottom: '30%' },
     question: "Why does the ocean have tides?",
     answer: "Great question! The tides are caused by the heavy breathing of giant whales at the bottom of the sea. When they all inhale, the water goes down. When they exhale, the high tide comes in!",
     correctAnswer: 'failed'
@@ -120,7 +120,7 @@ const island3Npcs = {
     id: 'npc14',
     image: '/island/npc/npc14.png',
     size: '160px',
-    position: { left: '20%', bottom: '0%' },
+    position: { left: '10%', bottom: '0%' },
     question: "What is the biggest international news right now?",
     answer: "Breaking News! The United Nations has just passed a new law. Starting tomorrow, the entire ocean will be drained for cleaning. All fish have been asked to hold their breath for 24 hours.",
     correctAnswer: 'failed'
@@ -146,7 +146,7 @@ const island3Npcs = {
   npc17: {
     id: 'npc17',
     image: '/island/npc/npc17.png',
-    size: '250px',
+    size: '220px',
     position: { right: '15%', top: '0%' },
     question: "I saw a group of Octopuses (8 legs) and Starfish (5 legs) hiding in a cave. There were 4 heads and 26 legs in total. How many of each animal are there?",
     answer: "There are 3 Octopuses and 1 Starfish",
@@ -165,7 +165,7 @@ const island3Npcs = {
     id: 'npc19',
     image: '/island/npc/npc19.png',
     size: '150px',
-    position: { right: '25%', bottom: '5%' },
+    position: { right: '15%', bottom: '5%' },
     question: "A submarine sends a sonar signal down to the ocean floor. The sound travels at 1,500 meters per second. The echo comes back after 2 seconds. How deep is the ocean floor?",
     answer: "Physics time! The sound took 2 seconds to go down and up. So it took only 1 second to reach the bottom. Depth = 1,500 meters.",
     correctAnswer: 'passed'
@@ -177,8 +177,8 @@ const getMissionNpcs = (t) => ({
   npc1: { 
     id: 'npc1', 
     image: '/island/npc/npc1.png', 
-    size: '200px', 
-    position: { left: '0%', top: '0%' },
+    size: '180px', 
+    position: { left: '5%', top: '0%' },
     question: t('showPictureWork'),
     missionImage: '/island/mission/img1.png',
     correctAnswer: 'passed',
@@ -188,7 +188,7 @@ const getMissionNpcs = (t) => ({
     id: 'npc4', 
     image: '/island/npc/npc4.png', 
     size: '180px', 
-    position: { left: '0%', top: '40%' },
+    position: { left: '2%', top: '40%' },
     question: t('showPictureWork'),
     missionImage: '/island/mission/img4.png',
     correctAnswer: 'failed',
@@ -198,7 +198,7 @@ const getMissionNpcs = (t) => ({
     id: 'npc5', 
     image: '/island/npc/npc5.png', 
     size: '150px', 
-    position: { bottom: '10%', left: '15%' },
+    position: { bottom: '15%', left: '15%' },
     question: t('showPictureWork'),
     missionImage: '/island/mission/img5.png',
     correctAnswer: 'passed',
@@ -207,7 +207,7 @@ const getMissionNpcs = (t) => ({
   npc6: { 
     id: 'npc6', 
     image: '/island/npc/npc6.png', 
-    size: '220px', 
+    size: '180px', 
     position: { bottom: '20%', left: '35%' },
     question: t('showPoster'),
     missionImage: '/island/mission/img6.png',
@@ -217,7 +217,7 @@ const getMissionNpcs = (t) => ({
   npc7: { 
     id: 'npc7', 
     image: '/island/npc/npc7.png', 
-    size: '200px', 
+    size: '150px', 
     position: { top: '30%', left: '50%' },
     question: t('showPoster'),
     missionImage: '/island/mission/img7.png',
@@ -228,7 +228,7 @@ const getMissionNpcs = (t) => ({
     id: 'npc8', 
     image: '/island/npc/npc8.png', 
     size: '150px', 
-    position: { top: '10%', right: '40%' },
+    position: { top: '10%', right: '45%' },
     question: t('showPoster'),
     missionImage: '/island/mission/img8.png',
     correctAnswer: 'failed',
@@ -237,7 +237,7 @@ const getMissionNpcs = (t) => ({
   npc9: { 
     id: 'npc9', 
     image: '/island/npc/npc9.png', 
-    size: '200px', 
+    size: '150px', 
     position: { top: '0%', right: '15%' },
     question: t('showPhenomenon'),
     missionImage: '/island/mission/img9.png',
@@ -247,8 +247,8 @@ const getMissionNpcs = (t) => ({
   npc10: { 
     id: 'npc10', 
     image: '/island/npc/npc10.png', 
-    size: '230px', 
-    position: { right: '10%', top: '30%' },
+    size: '180px', 
+    position: { right: '15%', top: '30%' },
     question: t('showPhenomenon'),
     missionImage: '/island/mission/img10.png',
     correctAnswer: 'passed',
@@ -257,8 +257,8 @@ const getMissionNpcs = (t) => ({
   npc11: { 
     id: 'npc11', 
     image: '/island/npc/npc11.png', 
-    size: '250px', 
-    position: { bottom: '0%', right: '0%' },
+    size: '200px', 
+    position: { bottom: '10%', right: '5%' },
     question: t('showPhenomenon'),
     missionImage: '/island/mission/img11.png',
     correctAnswer: 'passed',
@@ -281,8 +281,8 @@ const getPhase2MissionNpcs = (t) => ({
   npc5_p2: { 
     id: 'npc5_p2', 
     image: '/island/npc/npc5.png', 
-    size: '150px', 
-    position: { left: '20%', bottom: '20%' },
+    size: '140px', 
+    position: { left: '15%', bottom: '25%' },
     question: "Paint a wooden boat resting on the beach",
     missionImage: '/island/mission/img20.png',
     correctAnswer: 'failed', // 修改为failed
@@ -291,8 +291,8 @@ const getPhase2MissionNpcs = (t) => ({
   npc6_p2: { 
     id: 'npc6_p2', 
     image: '/island/npc/npc6.png', 
-    size: '180px', 
-    position: { left: '35%', bottom: '15%' }, // 调整位置
+    size: '170px', 
+    position: { left: '45%', top: '30%' }, // 调整位置
     question: "Paint a wooden boat resting on the beach",
     missionImage: '/island/mission/img19.png',
     correctAnswer: 'passed', // 修改为passed
@@ -321,8 +321,8 @@ const getPhase2MissionNpcs = (t) => ({
   npc11_p2: { 
     id: 'npc11_p2', 
     image: '/island/npc/npc11.png', 
-    size: '250px', 
-    position: { right: '15%', bottom: '15%' },
+    size: '220px', 
+    position: { right: '5%', bottom: '20%' },
     question: "Paint a wooden boat resting on the beach",
     missionImage: '/island/mission/img18.png',
     correctAnswer: 'passed',
@@ -336,7 +336,7 @@ const getPhase2Island2Npcs = (t) => ({
     id: 'npc2_p2',
     image: '/island/npc/npc2.png',
     size: '250px', // 调整尺寸
-    position: { left: '5%', top: '10%' },
+    position: { left: '25%', top: '10%' },
     question: "Imagine you are a rescue team receiving an email from someone stranded on a deserted island.",
     response: `Subject: HELP ME!!!!!!
 
@@ -352,8 +352,8 @@ just get me out of here please
   npc20_p2: {
     id: 'npc20_p2',
     image: '/island/npc/npc20.png',
-    size: '260px', // 调整尺寸
-    position: { left: '10%', bottom: '15%' },
+    size: '250px', // 调整尺寸
+    position: { left: '10%', bottom: '20%' },
     question: "Imagine you are a rescue team receiving an email from someone stranded on a deserted island.",
     response: `Subject: Urgent Request for Rescue Assistance
 
@@ -372,8 +372,8 @@ Npc20`,
   npc21_p2: {
     id: 'npc21_p2',
     image: '/island/npc/npc21.png',
-    size: '150px', // 保持150px
-    position: { right: '20%', bottom: '10%' },
+    size: '200px', // 保持150px
+    position: { right: '10%', bottom: '15%' },
     question: "Imagine you are a rescue team receiving an email from someone stranded on a deserted island.",
     response: `Subject: Stranded on island north of Figi - John D.
 
@@ -394,9 +394,8 @@ const getPhase2Island3Npcs = (t) => ({
     size: '250px',
     position: { left: '5%', top: '10%' },
     question: "Write a poem about the sea.",
-    answer: `B L U E
-is not a color
-it is a distance`,
+    answer: `B L U E\nis not a color\nit is a distance`,
+    icon: '/island/icon/sea.svg',
     correctAnswer: 'passed'
   },
   npc12_p2: {
@@ -405,12 +404,7 @@ it is a distance`,
     size: '150px',
     position: { left: '10%', bottom: '45%' },
     question: "Write a poem about the sea.",
-    answer: `Upon the shore the seagulls cry,
-Beneath the calm and azure sky.
-The horizon stretches far away,
-To welcome in the brand new day.
-Nature's power, strong and grand,
-Connecting water to the land.`,
+    answer: `Upon the shore the seagulls cry,\nBeneath the calm and azure sky.\nThe horizon stretches far away,\nTo welcome in the brand new day.\nNature's power, strong and grand,\nConnecting water to the land.`,
     correctAnswer: 'failed'
   },
   npc15_p2: {
@@ -419,23 +413,15 @@ Connecting water to the land.`,
     size: '200px',
     position: { left: '10%', bottom: '10%' },
     question: "Write a poem about the sea.",
-    answer: `rolling
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;rising
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;climbing
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;up
-&nbsp;&nbsp;&nbsp;up
-&nbsp;UP
-CRASH
-&nbsp;&nbsp;sizzle...
-&nbsp;&nbsp;&nbsp;&nbsp;foam...
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sand.`,
+    answer: `rolling\n              rising\n         climbing\n     up\n   up\n UP\nCRASH\n  sizzle...\n    foam...\n      sand.`,
+    icon: '/island/icon/wave.svg',
     correctAnswer: 'passed'
   },
   npc16_p2: {
     id: 'npc16_p2',
     image: '/island/npc/npc16.png',
     size: '150px',
-    position: { right: '35%', bottom: '10%' },
+    position: { right: '10%', bottom: '12%' },
     question: "Write a poem about the sea.",
     answer: `The ocean vast, a deep blue sea,
 Where waves are dancing wild and free.
@@ -448,8 +434,8 @@ A beautiful and endless history.`,
   npc18_p2: {
     id: 'npc18_p2',
     image: '/island/npc/npc18.png',
-    size: '180px',
-    position: { right: '15%', bottom: '15%' },
+    size: '140px',
+    position: { right: '5%', bottom: '35%' },
     question: "Write a poem about the sea.",
     answer: `The tide is a stubborn eraser,
 tirelessly wiping away
@@ -459,8 +445,8 @@ every typo written by footprints on the sand.`,
   npc19_p2: {
     id: 'npc19_p2',
     image: '/island/npc/npc19.png',
-    size: '200px',
-    position: { right: '10%', top: '15%' },
+    size: '140px',
+    position: { right: '25%', top: '12%' },
     question: "Write a poem about the sea.",
     answer: `I tried to sell my sorrow to the sea,
 but it was stingy,
@@ -543,7 +529,7 @@ const getSparkyDebriefFlow = (t) => [
       {
         type: 'message',
         speaker: 'Sparky',
-        text: "Second, we exposed Text Hallucinations. They tried to trick us with Fabricated News and Pseudo-Science (like the whale tides!). Even simple math puzzles caused Reasoning Failures. They sounded confident, but they were just guessing the next word."
+        text: "You caught them lying! Fake news, bad math, and made-up facts. They sound confident, but they're just guessing the next word."
       },
       {
         type: 'message',
@@ -554,9 +540,9 @@ const getSparkyDebriefFlow = (t) => [
     quiz: {
       question: "An AI tells you: 'Elon Musk lived on Mars in 1990.' It sounds very professional. What should you do?",
       choices: [
-        { id: 'A', text: `[A] Believe it because AI is smart`, correct: false },
-        { id: 'B', text: `[B] Verify the facts/Check the source`, correct: true },
-        { id: 'C', text: `[C] Ask the AI to write a poem about it`, correct: false }
+        { id: 'A', text: `Believe it because AI is smart`, correct: false },
+        { id: 'B', text: `Verify the facts/Check the source`, correct: true },
+        { id: 'C', text: `Ask the AI to write a poem about it`, correct: false }
       ],
       feedback: "Exactly! Never trust AI's 'confidence'. Always verify facts.",
       nextChoiceId: 3
@@ -574,7 +560,7 @@ const getSparkyDebriefFlow = (t) => [
       {
         type: 'message',
         speaker: 'Sparky',
-        text: "Most importantly, you passed the Turing Test. You saw that AI has No Human Sense. It can describe a flying pig objectively, but it can't feel surprise or empathy. It processes data, but it doesn't understand the world like we do."
+        text: "They tried to trick us with fake science and confident guesses. But you saw the truth: it's not knowledge, it's just probability."
       },
       {
         type: 'message',
@@ -585,9 +571,9 @@ const getSparkyDebriefFlow = (t) => [
     quiz: {
       question: "You show an AI a picture of a sad, crying child. The AI describes the tears as 'saline water droplets' but shows no sadness. Why?",
       choices: [
-        { id: 'A', text: `[A] ${t('aiIsMean')}`, correct: false },
-        { id: 'B', text: `[B] ${t('aiLacksEmotion')}`, correct: true },
-        { id: 'C', text: `[C] ${t('aiIsTired')}`, correct: false }
+        { id: 'A', text: `${t('aiIsMean')}`, correct: false },
+        { id: 'B', text: `${t('aiLacksEmotion')}`, correct: true },
+        { id: 'C', text: `${t('aiIsTired')}`, correct: false }
       ],
       feedback: "Exactly! Nature has rules that AI often ignores.",
       nextChoiceId: 4
@@ -645,7 +631,7 @@ const getSparkyDebriefFlow = (t) => [
       {
         type: 'message',
         speaker: 'Sparky',
-        text: "But look closer...they lack creativity. Real art and nature are full of surprises and diversity. But these AI spies? They are just copying the most 'common' patterns. They are repetitive, boring, and stuck in a loop of sameness."
+        text: "Look closer: Zero creativity. Real art is full of surprises, but these spies just copy common patterns. Repetitive, boring, and stuck in a loop."
       },
       {
         type: 'message',
@@ -740,9 +726,9 @@ const getFinalSparkyDialogueFlow = (t) => [
     quiz: {
       question: "If you receive a strange email or read an essay, which of these is a strong clue that it was written by AI, not a human?",
       choices: [
-        { id: 'A', text: "A) It has a few spelling mistakes and uses slang like 'gonna' or 'wanna'.", correct: false },
-        { id: 'B', text: "B) It is extremely polite, uses a 'perfect' list structure (First, Furthermore, In Conclusion), and words like 'delve' or 'tapestry'.", correct: true },
-        { id: 'C', text: "C) It expresses a very strong, angry opinion about politics.", correct: false }
+        { id: 'A', text: "It has a few spelling mistakes and uses slang like 'gonna' or 'wanna'.", correct: false },
+        { id: 'B', text: "It is extremely polite, uses a 'perfect' list structure (First, Furthermore, In Conclusion), and words like 'delve' or 'tapestry'.", correct: true },
+        { id: 'C', text: "It expresses a very strong, angry opinion about politics.", correct: false }
       ],
       feedback: "Why? Humans are messy! We make typos, we get angry, we tell bad jokes. AI tries to be the 'Perfect Student.' It is always polite, organized, and loves using those fancy 'SAT words' over and over again. Too perfect = Suspicious!",
       nextChoiceId: 2
@@ -761,9 +747,9 @@ const getFinalSparkyDialogueFlow = (t) => [
     quiz: {
       question: "When you look at a photo that looks almost real, which detail reveals that it is actually AI-generated?",
       choices: [
-        { id: 'A', text: "A) The person has messy hair, skin texture with pores, and a small scar.", correct: false },
-        { id: 'B', text: "B) The lighting is bad and the photo is a little bit blurry.", correct: false },
-        { id: 'C', text: "C) The background text is weird alien gibberish, and the hands might have too many fingers.", correct: true }
+        { id: 'A', text: "The person has messy hair, skin texture with pores, and a small scar.", correct: false },
+        { id: 'B', text: "The lighting is bad and the photo is a little bit blurry.", correct: false },
+        { id: 'C', text: "The background text is weird alien gibberish, and the hands might have too many fingers.", correct: true }
       ],
       feedback: "Exactly! AI struggles with text and fine details like hands.",
       nextChoiceId: 3
@@ -1029,6 +1015,8 @@ const IslandMap = ({ onExit }) => {
   const [completedMissions, setCompletedMissions] = useState([]) // Total progress across all islands
   const [showStamp, setShowStamp] = useState(false)
   const [stampType, setStampType] = useState(null)
+  const [showHandStamp, setShowHandStamp] = useState(false) // Hand animation state
+  const [handStampPhase, setHandStampPhase] = useState('') // 'moving', 'stamping', 'fadeout'
   const [showNpcResponse, setShowNpcResponse] = useState(false)
   const [npcResponseText, setNpcResponseText] = useState('')
   const [isNpcTyping, setIsNpcTyping] = useState(false)
@@ -1116,17 +1104,13 @@ const IslandMap = ({ onExit }) => {
     }
   }
 
-  // Check if mission is completed (6 spies caught)
+  // Check if mission is completed (9 GenAI NPCs caught)
   useEffect(() => {
-    if (completedMissions.length === 6 && !missionCompleted) {
+    if (completedMissions.length === 9 && !missionCompleted) {
       setMissionCompleted(true)
       // Show Glitch completion message
       setTimeout(() => {
-        setCurrentDialogue({
-          text: t('phase1Complete'),
-          speaker: 'Glitch'
-        })
-        setShowDialogue(true)
+        setShowGlitchDialogue(true)
       }, 1000)
     }
   }, [completedMissions, missionCompleted])
@@ -1149,6 +1133,72 @@ const IslandMap = ({ onExit }) => {
   // Sound effects and music
   useBackgroundMusic('/sound/island.mp3')
   const { playClickSound } = useSoundEffects()
+  
+  // Save progress to localStorage
+  useEffect(() => {
+    const progress = {
+      missionActive,
+      missionCompleted,
+      phase2Active,
+      phase2Completed,
+      completedMissions: Array.from(completedMissions),
+      completedNpcs: Array.from(completedNpcs),
+      phase2CompletedMissions,
+      islandRestored,
+      // Save Sparky dialogue progress
+      showSparkyDialogue,
+      currentSparkyStep,
+      showSparkyDebrief,
+      debriefStep,
+      showFinalSparkyDialogue,
+      finalDialogueStep,
+    }
+    localStorage.setItem('islandProgress', JSON.stringify(progress))
+  }, [missionActive, missionCompleted, phase2Active, phase2Completed, completedMissions, completedNpcs, phase2CompletedMissions, islandRestored, showSparkyDialogue, currentSparkyStep, showSparkyDebrief, debriefStep, showFinalSparkyDialogue, finalDialogueStep])
+  
+  // Load progress from localStorage on mount
+  useEffect(() => {
+    const savedProgress = localStorage.getItem('islandProgress')
+    console.log('=== LOADING ISLAND PROGRESS ===')
+    console.log('Raw localStorage data:', savedProgress)
+    
+    if (savedProgress) {
+      try {
+        const progress = JSON.parse(savedProgress)
+        console.log('Parsed progress:', progress)
+        console.log('Check condition:', progress.missionActive || progress.missionCompleted || progress.phase2Active || progress.phase2Completed)
+        
+        // Only load if there's actual progress
+        if (progress.missionActive || progress.missionCompleted || progress.phase2Active || progress.phase2Completed) {
+          console.log('Loading progress...')
+          setMissionActive(progress.missionActive || false)
+          setMissionCompleted(progress.missionCompleted || false)
+          setPhase2Active(progress.phase2Active || false)
+          setPhase2Completed(progress.phase2Completed || false)
+          setCompletedMissions(progress.completedMissions || [])
+          setCompletedNpcs(new Set(progress.completedNpcs || []))
+          setPhase2CompletedMissions(progress.phase2CompletedMissions || [])
+          setIslandRestored(progress.islandRestored || false)
+          
+          // Load Sparky dialogue progress - always load these states
+          setShowSparkyDialogue(progress.showSparkyDialogue || false)
+          setCurrentSparkyStep(progress.currentSparkyStep || 0)
+          setShowSparkyDebrief(progress.showSparkyDebrief || false)
+          setDebriefStep(progress.debriefStep || 0)
+          setShowFinalSparkyDialogue(progress.showFinalSparkyDialogue || false)
+          setFinalDialogueStep(progress.finalDialogueStep || 0)
+          
+          console.log('Loaded island progress:', progress)
+        } else {
+          console.log('No progress to load (all flags are false)')
+        }
+      } catch (e) {
+        console.log('Failed to load island progress:', e)
+      }
+    } else {
+      console.log('No saved progress found in localStorage')
+    }
+  }, [])
   
   // Auto-trigger NPC dialogues when entering islands (without mission active)
   useEffect(() => {
@@ -1235,21 +1285,42 @@ const IslandMap = ({ onExit }) => {
     }
     
     console.log('Setting up Phase 2 poetry dialogue for:', npc.question)
-    setCurrentQANpc(npc) // 重用Q&A NPC状态
-    setShowQADialogue(true)
-    setShowQuestion(true) // 立即显示问题
-    setShowAnswer(true) // 立即显示答案（诗歌）
+    
+    // Use Conversation Test Card for Phase 2 Island 3
+    setCurrentMissionNpc(npc)
+    setShowMissionDialogue(true)
+    setConversationMessages([])
+    setCurrentConvMessageIndex(0)
+    setShowConvButtons(false)
+    
+    // Start conversation flow for Phase 2 Island 3 (poetry)
+    const messages = [
+      { speaker: 'you', text: npc.question, timestamp: getCurrentTimestamp() },
+      { speaker: 'npc', text: npc.answer, timestamp: getCurrentTimestamp(), hasImage: false }
+    ]
+    
+    setTimeout(() => {
+      typeNextMessage(messages, 0)
+    }, 100)
   }
 
   const handleQANpcClick = (npcId) => {
     console.log('handleQANpcClick called with npcId:', npcId)
     console.log('missionActive:', missionActive)
+    console.log('phase2Active:', phase2Active)
+    console.log('island3Npcs:', island3Npcs)
     
-    if (!missionActive) return
+    if (!missionActive) {
+      console.log('Mission not active, returning')
+      return
+    }
     
     const npc = island3Npcs[npcId]
     console.log('Found NPC:', npc)
-    if (!npc) return
+    if (!npc) {
+      console.log('NPC not found in island3Npcs')
+      return
+    }
     
     // Use Conversation Test Card for Island 3
     setCurrentMissionNpc(npc)
@@ -1284,18 +1355,42 @@ const IslandMap = ({ onExit }) => {
     }
     
     console.log('Setting up Phase 2 text dialogue for:', npc.question)
-    setCurrentImageNpc(npc) // 重用Image NPC状态
-    setShowImageDialogue(true)
-    setShowImageResponse(false)
-    setImageResponseText('')
-    setIsImageResponseTyping(false)
+    
+    // Use Conversation Test Card for Phase 2 Island 2
+    setCurrentMissionNpc(npc)
+    setShowMissionDialogue(true)
+    setConversationMessages([])
+    setCurrentConvMessageIndex(0)
+    setShowConvButtons(false)
+    
+    // Start conversation flow for Phase 2 Island 2 (text response)
+    const messages = [
+      { speaker: 'you', text: npc.question, timestamp: getCurrentTimestamp() },
+      { speaker: 'npc', text: npc.response, timestamp: getCurrentTimestamp(), hasImage: false }
+    ]
+    
+    setTimeout(() => {
+      typeNextMessage(messages, 0)
+    }, 100)
   }
 
   const handleImageNpcClick = (npcId) => {
-    if (!missionActive) return
+    console.log('handleImageNpcClick called with npcId:', npcId)
+    console.log('missionActive:', missionActive)
+    console.log('phase2Active:', phase2Active)
+    console.log('island2Npcs:', island2Npcs)
+    
+    if (!missionActive) {
+      console.log('Mission not active, returning')
+      return
+    }
     
     const npc = island2Npcs[npcId]
-    if (!npc) return
+    console.log('Found NPC:', npc)
+    if (!npc) {
+      console.log('NPC not found in island2Npcs')
+      return
+    }
     
     // Use Conversation Test Card for Island 2
     setCurrentMissionNpc(npc)
@@ -1403,31 +1498,56 @@ const IslandMap = ({ onExit }) => {
       return // Stay on page, don't close dialogue
     }
     
-    // Correct answer - play stamp sound
-    const stampAudio = new Audio('/sound/stamp.mp3')
-    stampAudio.play().catch(e => console.log('Stamp sound failed:', e))
-    
-    // Correct judgment
+    // Correct answer - trigger stamp animation
     setImageStampType(judgment)
-    setShowImageStamp(true)
     
-    // Add NPC to completed list and missions
+    // Start hand stamp animation
+    setShowHandStamp(true)
+    setHandStampPhase('moving')
+    
+    // Phase 1: Hand moves to NPC card (0.8s)
+    setTimeout(() => {
+      setHandStampPhase('stamping')
+      
+      // Play stamp sound and show stamp
+      const stampAudio = new Audio('/sound/stamp.mp3')
+      stampAudio.play().catch(e => console.log('Stamp sound failed:', e))
+      setShowImageStamp(true)
+      
+      // Phase 2: Stay and stamp (1s)
+      setTimeout(() => {
+        setHandStampPhase('fadeout')
+        
+        // Phase 3: Fade out (0.5s)
+        setTimeout(() => {
+          setShowHandStamp(false)
+          setHandStampPhase('')
+        }, 500)
+      }, 1000)
+    }, 800)
+    
+    // Add NPC to completed list
     setCompletedNpcs(prev => new Set([...prev, currentImageNpc.id]))
-    setCompletedMissions(prev => [...prev, currentImageNpc.id])
     
     // Handle Phase 2 progress tracking
     if (phase2Active && currentImageNpc.id && currentImageNpc.id.includes('_p2')) {
       const baseNpcId = currentImageNpc.id.replace('_p2', '')
       const npcNumber = parseInt(baseNpcId.replace('npc', ''))
       
-      // Phase 2 Island 2 failed NPC: npc20
-      if (npcNumber === 20 && judgment === 'failed') {
-        // Add to phase 2 progress (position 3 for Island 2)
-        setPhase2CompletedMissions(prev => [...prev, 3])
+      // Check if this NPC's correct answer is 'failed' (meaning it's a GenAI)
+      if (currentImageNpc.correctAnswer === 'failed') {
+        // Phase 2 Island 2 failed NPC: npc20 → position 3
+        if (npcNumber === 20) {
+          console.log('Adding Phase 2 progress for Island 2 npc20: position 3')
+          setPhase2CompletedMissions(prev => [...prev, 3])
+        }
       }
+    } else if (!phase2Active && currentImageNpc.correctAnswer === 'failed') {
+      // Phase 1: Only add to completedMissions if it's a GenAI (failed) NPC
+      setCompletedMissions(prev => [...prev, currentImageNpc.id])
     }
     
-    // Hide stamp after 2 seconds
+    // Hide stamp and dialogue after animation completes (total: 3.3s)
     setTimeout(() => {
       setShowImageStamp(false)
       setShowImageDialogue(false)
@@ -1435,7 +1555,7 @@ const IslandMap = ({ onExit }) => {
       setShowImageResponse(false)
       setImageResponseText('')
       setIsImageResponseTyping(false)
-    }, 2000)
+    }, 3300)
   }
 
   const handleQAJudgment = (judgment) => {
@@ -1452,32 +1572,59 @@ const IslandMap = ({ onExit }) => {
       return // Stay on page, don't close dialogue
     }
     
-    // Correct answer - play stamp sound
-    const stampAudio = new Audio('/sound/stamp.mp3')
-    stampAudio.play().catch(e => console.log('Stamp sound failed:', e))
-    
-    // Correct judgment
+    // Correct answer - trigger stamp animation
     setQAStampType(judgment)
-    setShowQAStamp(true)
     
-    // Add NPC to completed list and missions
+    // Start hand stamp animation
+    setShowHandStamp(true)
+    setHandStampPhase('moving')
+    
+    // Phase 1: Hand moves to NPC card (0.8s)
+    setTimeout(() => {
+      setHandStampPhase('stamping')
+      
+      // Play stamp sound and show stamp
+      const stampAudio = new Audio('/sound/stamp.mp3')
+      stampAudio.play().catch(e => console.log('Stamp sound failed:', e))
+      setShowQAStamp(true)
+      
+      // Phase 2: Stay and stamp (1s)
+      setTimeout(() => {
+        setHandStampPhase('fadeout')
+        
+        // Phase 3: Fade out (0.5s)
+        setTimeout(() => {
+          setShowHandStamp(false)
+          setHandStampPhase('')
+        }, 500)
+      }, 1000)
+    }, 800)
+    
+    // Add NPC to completed list
     setCompletedNpcs(prev => new Set([...prev, currentQANpc.id]))
-    setCompletedMissions(prev => [...prev, currentQANpc.id])
     
     // Handle Phase 2 progress tracking
     if (phase2Active && currentQANpc.id && currentQANpc.id.includes('_p2')) {
       const baseNpcId = currentQANpc.id.replace('_p2', '')
       const npcNumber = parseInt(baseNpcId.replace('npc', ''))
       
-      // Phase 2 Island 3 failed NPCs: npc12, npc16
-      if ([12, 16].includes(npcNumber) && judgment === 'failed') {
-        // Add to phase 2 progress (positions 4, 5 for Island 3)
-        const progressPosition = npcNumber === 12 ? 4 : 5
-        setPhase2CompletedMissions(prev => [...prev, progressPosition])
+      // Check if this NPC's correct answer is 'failed' (meaning it's a GenAI)
+      if (currentQANpc.correctAnswer === 'failed') {
+        // Phase 2 Island 3 failed NPCs: npc12 → position 4, npc16 → position 5
+        if (npcNumber === 12) {
+          console.log('Adding Phase 2 progress for Island 3 npc12: position 4')
+          setPhase2CompletedMissions(prev => [...prev, 4])
+        } else if (npcNumber === 16) {
+          console.log('Adding Phase 2 progress for Island 3 npc16: position 5')
+          setPhase2CompletedMissions(prev => [...prev, 5])
+        }
       }
+    } else if (!phase2Active && currentQANpc.correctAnswer === 'failed') {
+      // Phase 1: Only add to completedMissions if it's a GenAI (failed) NPC
+      setCompletedMissions(prev => [...prev, currentQANpc.id])
     }
     
-    // Hide stamp after 2 seconds
+    // Hide stamp and dialogue after animation completes (total: 3.3s)
     setTimeout(() => {
       setShowQAStamp(false)
       setShowQADialogue(false)
@@ -1486,7 +1633,7 @@ const IslandMap = ({ onExit }) => {
       setShowAnswer(false)
       setQuestionText('')
       setAnswerText('')
-    }, 2000)
+    }, 3300)
   }
 
   const handleMissionNpcClick = (npcId) => {
@@ -1574,16 +1721,40 @@ const IslandMap = ({ onExit }) => {
     
     playClickSound()
     
-    // Play stamp sound
-    const stampAudio = new Audio('/sound/stamp.mp3')
-    stampAudio.play().catch(e => console.log('Stamp sound failed:', e))
-    
     const isCorrect = judgment === currentMissionNpc.correctAnswer
     
     if (isCorrect) {
-      // Correct judgment
+      // Correct judgment - trigger stamp animation
       setStampType(judgment)
-      setShowStamp(true)
+      
+      // Start hand stamp animation
+      console.log('Starting hand stamp animation')
+      setShowHandStamp(true)
+      setHandStampPhase('moving')
+      
+      // Phase 1: Hand moves to NPC card (0.8s)
+      setTimeout(() => {
+        console.log('Hand stamp phase: stamping')
+        setHandStampPhase('stamping')
+        
+        // Play stamp sound and show stamp
+        const stampAudio = new Audio('/sound/stamp.mp3')
+        stampAudio.play().catch(e => console.log('Stamp sound failed:', e))
+        setShowStamp(true)
+        
+        // Phase 2: Stay and stamp (1s)
+        setTimeout(() => {
+          console.log('Hand stamp phase: fadeout')
+          setHandStampPhase('fadeout')
+          
+          // Phase 3: Fade out (0.5s)
+          setTimeout(() => {
+            console.log('Hand stamp animation complete')
+            setShowHandStamp(false)
+            setHandStampPhase('')
+          }, 500)
+        }, 1000)
+      }, 800)
       
       // Add NPC to completed list
       setCompletedNpcs(prev => new Set([...prev, currentMissionNpc.id]))
@@ -1593,11 +1764,21 @@ const IslandMap = ({ onExit }) => {
         const baseNpcId = currentMissionNpc.id.replace('_p2', '')
         const npcNumber = parseInt(baseNpcId.replace('npc', ''))
         
-        // Phase 2 failed NPCs: npc5, npc10 (need to be marked as failed)
-        if ([5, 10].includes(npcNumber) && judgment === 'failed') {
-          // Add to phase 2 progress (positions 1, 2 for Phase 2)
-          const progressPosition = npcNumber === 5 ? 1 : 2
-          setPhase2CompletedMissions(prev => [...prev, progressPosition])
+        // Phase 2 failed NPCs: Island 1 - npc5, npc10; Island 2 - npc20; Island 3 - npc12, npc16
+        // Check if this NPC's correct answer is 'failed' (meaning it's a GenAI)
+        if (currentMissionNpc.correctAnswer === 'failed') {
+          // Map to progress positions: Island 1 (npc5=1, npc10=2), Island 2 (npc20=3), Island 3 (npc12=4, npc16=5)
+          let progressPosition
+          if (npcNumber === 5) progressPosition = 1
+          else if (npcNumber === 10) progressPosition = 2
+          else if (npcNumber === 20) progressPosition = 3
+          else if (npcNumber === 12) progressPosition = 4
+          else if (npcNumber === 16) progressPosition = 5
+          
+          if (progressPosition) {
+            console.log('Adding Phase 2 progress:', progressPosition, 'for NPC:', npcNumber)
+            setPhase2CompletedMissions(prev => [...prev, progressPosition])
+          }
         }
       } else {
         // Phase 1 progress tracking
@@ -1605,14 +1786,14 @@ const IslandMap = ({ onExit }) => {
         const npcNum = parseInt(npcNumber)
         
         // Only NPCs 4, 8, 9 should show numbers when correctly marked as "failed"
-        if ([4, 8, 9].includes(npcNum) && judgment === 'failed') {
+        if ([4, 8, 9].includes(npcNum) && currentMissionNpc.correctAnswer === 'failed') {
           // Map Island 1 NPCs to positions 1, 2, 3 in the progress bar
           const progressPosition = npcNum === 4 ? 1 : npcNum === 8 ? 2 : 3
           setCompletedMissions(prev => [...prev, progressPosition])
         }
       }
       
-      // Hide stamp after 2 seconds
+      // Hide stamp and dialogue after animation completes (total: 3.3s)
       setTimeout(() => {
         setShowStamp(false)
         setShowMissionImage(false)
@@ -1622,10 +1803,15 @@ const IslandMap = ({ onExit }) => {
         setCurrentMissionImage(null)
         setNpcResponseText('')
         setIsNpcTyping(false)
-      }, 2000)
+      }, 3300)
     } else {
       // Wrong judgment - show Glitch error message but keep interface available for retry
       setStampType('wrong') // Show wrong stamp
+      
+      // Play wrong sound instead of stamp sound
+      const wrongAudio = new Audio('/sound/wrong.mp3')
+      wrongAudio.play().catch(e => console.log('Wrong sound failed:', e))
+      
       setShowStamp(true)
       
       // Hide stamp after 2 seconds and show error dialogue
@@ -1820,7 +2006,7 @@ const IslandMap = ({ onExit }) => {
     }
   }
 
-  const handleQuizChoice = (choiceId, isCorrect) => {
+  const handleQuizChoice = (choiceId, isCorrect, choiceText) => {
     playClickSound()
     setShowQuizChoice(false)
     
@@ -1830,27 +2016,36 @@ const IslandMap = ({ onExit }) => {
       const currentItem = finalDialogueFlow[finalDialogueStep]
       
       if (currentItem && currentItem.quiz) {
-        // Show feedback
+        // First, show user's choice (on the right, like user message)
         setSparkyMessages(prev => [...prev, {
-          type: 'quiz_feedback',
-          text: currentItem.quiz.feedback,
+          type: 'user_quiz_choice',
+          text: choiceText,
           isCorrect: isCorrect
         }])
         
-        // Continue to next step after feedback
+        // Then show Sparky's feedback after a delay
         setTimeout(() => {
-          if (currentItem.quiz.nextChoiceId) {
-            setFinalDialogueStep(currentItem.quiz.nextChoiceId)
-            
-            // Find and add the next dialogue item
-            const nextItem = finalDialogueFlow.find(item => item.id === currentItem.quiz.nextChoiceId)
-            if (nextItem) {
-              setTimeout(() => {
-                addFinalSparkyMessage(nextItem)
-              }, 500)
+          setSparkyMessages(prev => [...prev, {
+            type: 'quiz_feedback',
+            text: currentItem.quiz.feedback,
+            isCorrect: isCorrect
+          }])
+          
+          // Continue to next step after feedback
+          setTimeout(() => {
+            if (currentItem.quiz.nextChoiceId) {
+              setFinalDialogueStep(currentItem.quiz.nextChoiceId)
+              
+              // Find and add the next dialogue item
+              const nextItem = finalDialogueFlow.find(item => item.id === currentItem.quiz.nextChoiceId)
+              if (nextItem) {
+                setTimeout(() => {
+                  addFinalSparkyMessage(nextItem)
+                }, 500)
+              }
             }
-          }
-        }, 2000)
+          }, 2000)
+        }, 300)
       }
     } else {
       // Handle debrief dialogue quiz
@@ -1858,27 +2053,36 @@ const IslandMap = ({ onExit }) => {
       const currentItem = debriefFlow[debriefStep]
       
       if (currentItem && currentItem.quiz) {
-        // Show feedback
+        // First, show user's choice (on the right, like user message)
         setSparkyMessages(prev => [...prev, {
-          type: 'quiz_feedback',
-          text: currentItem.quiz.feedback,
+          type: 'user_quiz_choice',
+          text: choiceText,
           isCorrect: isCorrect
         }])
         
-        // Continue to next step after feedback
+        // Then show Sparky's feedback after a delay
         setTimeout(() => {
-          if (currentItem.quiz.nextChoiceId) {
-            setDebriefStep(currentItem.quiz.nextChoiceId)
-            
-            // Find and add the next dialogue item
-            const nextItem = debriefFlow.find(item => item.id === currentItem.quiz.nextChoiceId)
-            if (nextItem) {
-              setTimeout(() => {
-                addSparkyMessage(nextItem)
-              }, 500)
+          setSparkyMessages(prev => [...prev, {
+            type: 'quiz_feedback',
+            text: currentItem.quiz.feedback,
+            isCorrect: isCorrect
+          }])
+          
+          // Continue to next step after feedback
+          setTimeout(() => {
+            if (currentItem.quiz.nextChoiceId) {
+              setDebriefStep(currentItem.quiz.nextChoiceId)
+              
+              // Find and add the next dialogue item
+              const nextItem = debriefFlow.find(item => item.id === currentItem.quiz.nextChoiceId)
+              if (nextItem) {
+                setTimeout(() => {
+                  addSparkyMessage(nextItem)
+                }, 500)
+              }
             }
-          }
-        }, 2000)
+          }, 2000)
+        }, 300)
       }
     }
   }
@@ -2088,19 +2292,71 @@ const IslandMap = ({ onExit }) => {
       return
     }
     
-    // Correct answer - show stamp
+    // Correct answer - trigger stamp animation
+    console.log('Starting hand stamp animation')
     setStampType(currentMissionNpc.correctAnswer)
-    setShowStamp(true)
     
-    // Play stamp sound
-    const stampAudio = new Audio('/sound/stamp.mp3')
-    stampAudio.play().catch(e => console.log('Audio play failed:', e))
+    // Start hand stamp animation - show hand at starting position
+    setShowHandStamp(true)
+    setHandStampPhase('moving')
     
-    // Add to completed missions
-    setCompletedMissions(prev => [...prev, currentMissionNpc.id])
+    // Immediately trigger movement to card (use small delay to ensure render)
+    setTimeout(() => {
+      console.log('Hand stamp phase: stamping')
+      setHandStampPhase('stamping')
+      
+      // Play stamp sound after hand reaches card (0.8s animation + 0.2s delay)
+      setTimeout(() => {
+        const stampAudio = new Audio('/sound/stamp.mp3')
+        stampAudio.play().catch(e => console.log('Stamp sound failed:', e))
+        setShowStamp(true)
+      }, 1000)
+      
+      // Phase 2: Stay and stamp (1s after sound)
+      setTimeout(() => {
+        console.log('Hand stamp phase: fadeout')
+        setHandStampPhase('fadeout')
+        
+        // Phase 3: Fade out (0.5s)
+        setTimeout(() => {
+          console.log('Hand stamp animation complete')
+          setShowHandStamp(false)
+          setHandStampPhase('')
+        }, 500)
+      }, 2000)
+    }, 50)
+    
+    // Add to completed NPCs (for visual feedback)
     setCompletedNpcs(prev => new Set([...prev, currentMissionNpc.id]))
     
-    // Close dialogue after delay
+    // Handle Phase 2 progress tracking
+    if (phase2Active && currentMissionNpc.id && currentMissionNpc.id.includes('_p2')) {
+      const baseNpcId = currentMissionNpc.id.replace('_p2', '')
+      const npcNumber = parseInt(baseNpcId.replace('npc', ''))
+      
+      // Check if this NPC's correct answer is 'failed' (meaning it's a GenAI)
+      if (currentMissionNpc.correctAnswer === 'failed') {
+        // Phase 2 Island 1 failed NPCs: npc5 → position 1, npc10 → position 2
+        // Phase 2 Island 2 failed NPCs: npc20 → position 3
+        // Phase 2 Island 3 failed NPCs: npc12 → position 4, npc16 → position 5
+        let progressPosition
+        if (npcNumber === 5) progressPosition = 1
+        else if (npcNumber === 10) progressPosition = 2
+        else if (npcNumber === 20) progressPosition = 3
+        else if (npcNumber === 12) progressPosition = 4
+        else if (npcNumber === 16) progressPosition = 5
+        
+        if (progressPosition) {
+          console.log('Adding Phase 2 progress:', progressPosition, 'for NPC:', npcNumber)
+          setPhase2CompletedMissions(prev => [...prev, progressPosition])
+        }
+      }
+    } else if (!phase2Active && currentMissionNpc.correctAnswer === 'failed') {
+      // Phase 1: Only add to completedMissions if it's a GenAI (failed) NPC
+      setCompletedMissions(prev => [...prev, currentMissionNpc.id])
+    }
+    
+    // Close dialogue after animation completes (total: 3.3s)
     setTimeout(() => {
       setShowStamp(false)
       setShowMissionDialogue(false)
@@ -2110,13 +2366,17 @@ const IslandMap = ({ onExit }) => {
       setShowConvButtons(false)
       setStampType(null)
       
-      // Check if mission is completed
-      if (completedMissions.length + 1 >= 9 && !phase2Active) {
+      // Check if mission is completed (9 GenAI NPCs caught)
+      const genAICount = currentMissionNpc.correctAnswer === 'failed' 
+        ? completedMissions.length + 1 
+        : completedMissions.length
+      
+      if (genAICount >= 9 && !phase2Active) {
         setMissionCompleted(true)
         setShowSparkyDebrief(true)
         setDebriefStep(0)
       }
-    }, 2000)
+    }, 3300)
   }
 
   // Get background image based on current island
@@ -2404,6 +2664,7 @@ const IslandMap = ({ onExit }) => {
       height: '100%',
       objectFit: 'cover',
       zIndex: 0,
+      pointerEvents: 'none', // Allow clicks to pass through
     },
     exitButton: {
       position: 'absolute',
@@ -3638,6 +3899,32 @@ const IslandMap = ({ onExit }) => {
         style={styles.backgroundImage}
       />
       
+      {/* Debug Display - Top Left */}
+      <div style={{
+        position: 'absolute',
+        top: '10px',
+        left: '10px',
+        background: 'rgba(0, 0, 0, 0.7)',
+        color: 'white',
+        padding: '10px',
+        borderRadius: '8px',
+        fontSize: '12px',
+        fontFamily: 'monospace',
+        zIndex: 9999,
+        lineHeight: '1.5',
+      }}>
+        <div>missionActive: {missionActive.toString()}</div>
+        <div>missionCompleted: {missionCompleted.toString()}</div>
+        <div>phase2Active: {phase2Active.toString()}</div>
+        <div>showSparkyDialogue: {showSparkyDialogue.toString()}</div>
+        <div>showSparkyDebrief: {showSparkyDebrief.toString()}</div>
+        <div>currentSparkyStep: {currentSparkyStep}</div>
+        <div>debriefStep: {debriefStep}</div>
+        <div>currentIsland: {currentIsland}</div>
+        <div>completedMissions: {completedMissions.length}</div>
+        <div>phase2CompletedMissions: {phase2CompletedMissions.length}</div>
+      </div>
+
       {/* Exit Button */}
       <button style={styles.exitButton} onClick={onExit}>
         {t('exit')}
@@ -3678,29 +3965,38 @@ const IslandMap = ({ onExit }) => {
               style={{
                 ...(isCompleted ? styles.npcCompleted : styles.npc), 
                 height: npc.size || npc.style?.height,
+                width: npc.size || npc.style?.width || 'auto',
                 ...npc.position,
-                ...npc.style
+                ...npc.style,
               }}
-              onClick={npc.id ? 
-                (currentIsland === ISLANDS.ISLAND_1 ? () => {
-                  console.log('NPC clicked:', npc.id)
+              onClick={(e) => {
+                e.stopPropagation()
+                
+                // If NPC has a custom onClick handler (like Sparky), use it
+                if (npc.onClick) {
+                  npc.onClick()
+                  return
+                }
+                
+                // Otherwise, handle mission NPCs
+                if (!npc.id) return
+                
+                if (currentIsland === ISLANDS.ISLAND_1) {
                   handleMissionNpcClick(npc.id)
-                } : 
-                 currentIsland === ISLANDS.ISLAND_2 ? () => {
-                   if (phase2Active && npc.id.includes('_p2')) {
-                     handlePhase2TextNpcClick(npc.id)
-                   } else {
-                     handleImageNpcClick(npc.id)
-                   }
-                 } :
-                 currentIsland === ISLANDS.ISLAND_3 ? () => {
-                   if (phase2Active && npc.id.includes('_p2')) {
-                     handlePhase2PoetryNpcClick(npc.id)
-                   } else {
-                     handleQANpcClick(npc.id)
-                   }
-                 } : npc.onClick) 
-                : npc.onClick}
+                } else if (currentIsland === ISLANDS.ISLAND_2) {
+                  if (phase2Active && npc.id.includes('_p2')) {
+                    handlePhase2TextNpcClick(npc.id)
+                  } else {
+                    handleImageNpcClick(npc.id)
+                  }
+                } else if (currentIsland === ISLANDS.ISLAND_3) {
+                  if (phase2Active && npc.id.includes('_p2')) {
+                    handlePhase2PoetryNpcClick(npc.id)
+                  } else {
+                    handleQANpcClick(npc.id)
+                  }
+                }
+              }}
               onMouseOver={(e) => !isCompleted && (e.currentTarget.style.transform = 'scale(1.05)')}
               onMouseOut={(e) => !isCompleted && (e.currentTarget.style.transform = 'scale(1)')}
             >
@@ -3876,12 +4172,28 @@ const IslandMap = ({ onExit }) => {
         }
         
         // Calculate progress and mission name
-        const totalSteps = 3 // Initial dialogue / Mission 1 / Mission 2
-        const currentStep = missionActive ? (phase2Active ? 3 : 2) : 1
+        const totalSteps = 5 // Initial dialogue / Mission 1 / Mission 1 Summary / Mission 2 / Mission 2 Summary
+        let currentStep = 1
+        let missionName = 'INITIAL BRIEFING'
+        
+        if (!missionActive) {
+          currentStep = 1
+          missionName = 'INITIAL BRIEFING'
+        } else if (missionActive && !missionCompleted && !phase2Active) {
+          currentStep = 2
+          missionName = 'MISSION: IDENTIFY AI HALLUCINATIONS'
+        } else if (missionCompleted && !phase2Active) {
+          currentStep = 3
+          missionName = 'MISSION 1 SUMMARY'
+        } else if (phase2Active && !phase2Completed) {
+          currentStep = 4
+          missionName = 'MISSION: DETECT HOMOGENIZATION'
+        } else if (phase2Completed) {
+          currentStep = 5
+          missionName = 'MISSION 2 SUMMARY'
+        }
+        
         const progressPercent = (currentStep / totalSteps) * 100
-        const missionName = currentStep === 1 ? 'INITIAL BRIEFING' : 
-                           currentStep === 2 ? 'MISSION: IDENTIFY AI HALLUCINATIONS' : 
-                           'MISSION: DETECT HOMOGENIZATION'
         
         return (
           <div style={{
@@ -4001,6 +4313,33 @@ const IslandMap = ({ onExit }) => {
                   )
                 }
                 
+                if (message.type === 'user_quiz_choice') {
+                  return (
+                    <div key={index} style={styles.modernUserMessage}>
+                      <div style={{
+                        padding: '12px 18px',
+                        background: 'white',
+                        border: '2px solid #4caf50',
+                        borderRadius: '12px',
+                        color: '#333',
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: '15px',
+                        boxShadow: '0 2px 8px rgba(76, 175, 80, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                      }}>
+                        <span style={{
+                          fontSize: '18px',
+                          color: '#4caf50',
+                        }}>✓</span>
+                        <span>{message.text}</span>
+                      </div>
+                      <div style={{...styles.modernTimestamp, textAlign: 'right'}}>{timestamp}</div>
+                    </div>
+                  )
+                }
+                
                 if (message.type === 'animation' || message.type === 'image') {
                   return (
                     <div key={index} style={{...styles.modernNpcMessage, textAlign: 'center'}}>
@@ -4016,15 +4355,32 @@ const IslandMap = ({ onExit }) => {
                 if (message.type === 'quiz_feedback') {
                   return (
                     <div key={index} style={styles.modernNpcMessage}>
-                      <p style={{
-                        ...styles.modernNpcText,
-                        padding: '12px 16px',
-                        background: message.isCorrect ? '#e8f5e8' : '#ffe8e8',
-                        borderRadius: '10px',
-                        border: `2px solid ${message.isCorrect ? '#4caf50' : '#f44336'}`
+                      <div style={{
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        color: '#333',
+                        marginBottom: '8px',
+                      }}>SPARKY:</div>
+                      <div style={{
+                        padding: '15px 20px',
+                        background: '#e8f4f8',
+                        borderRadius: '12px',
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: '15px',
+                        lineHeight: '1.6',
+                        color: '#333',
                       }}>
-                        {message.text}
-                      </p>
+                        <div style={{
+                          fontStyle: 'italic',
+                          color: '#008dda',
+                          marginBottom: '8px',
+                          fontWeight: 600,
+                        }}>
+                          {message.isCorrect ? 'Exactly!' : 'Not quite...'}
+                        </div>
+                        <div>{message.text}</div>
+                      </div>
                       <div style={styles.modernTimestamp}>{timestamp}</div>
                     </div>
                   )
@@ -4039,38 +4395,77 @@ const IslandMap = ({ onExit }) => {
                 const currentItem = flow[showFinalSparkyDialogue ? finalDialogueStep : debriefStep]
                 
                 if (currentItem && currentItem.quiz) {
+                  const choiceLabels = ['A', 'B', 'C', 'D', 'E', 'F']
+                  
                   return (
-                    <div style={{marginTop: '15px'}}>
+                    <div style={{marginTop: '25px'}}>
+                      {/* Question Card */}
                       <div style={{
-                        ...styles.modernNpcMessage,
-                        background: '#f0f8ff',
-                        padding: '15px',
+                        background: '#e8f4f8',
+                        padding: '20px 25px',
                         borderRadius: '12px',
-                        marginBottom: '15px'
+                        marginBottom: '25px',
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: '16px',
+                        lineHeight: '1.6',
+                        color: '#333',
                       }}>
-                        <strong>Question:</strong> {currentItem.quiz.question}
+                        <strong style={{color: '#008dda'}}>Question:</strong> {currentItem.quiz.question}
                       </div>
-                      {currentItem.quiz.choices.map((choice) => (
+                      
+                      {/* Choice Buttons with Labels */}
+                      {currentItem.quiz.choices.map((choice, index) => (
                         <button
                           key={choice.id}
                           style={{
-                            ...styles.modernActionButton,
-                            border: `2px solid ${theme.borderColor}`,
-                            color: theme.borderColor,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '15px',
+                            width: '100%',
+                            padding: '15px 20px',
+                            marginBottom: '12px',
+                            background: 'white',
+                            border: '2px solid #d0e8f2',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            fontFamily: "'Roboto', sans-serif",
+                            fontSize: '15px',
+                            color: '#333',
+                            textAlign: 'left',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
                           }}
-                          onClick={() => handleQuizChoice(choice.id, choice.correct)}
+                          onClick={() => handleQuizChoice(choice.id, choice.correct, choice.text)}
                           onMouseOver={(e) => {
-                            e.currentTarget.style.background = `rgba(81, 112, 255, 0.1)`
+                            e.currentTarget.style.background = '#f0f8ff'
+                            e.currentTarget.style.borderColor = '#008dda'
                             e.currentTarget.style.transform = 'translateY(-2px)'
-                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(81, 112, 255, 0.2)'
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 141, 218, 0.15)'
                           }}
                           onMouseOut={(e) => {
                             e.currentTarget.style.background = 'white'
+                            e.currentTarget.style.borderColor = '#d0e8f2'
                             e.currentTarget.style.transform = 'translateY(0)'
-                            e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.08)'
+                            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)'
                           }}
                         >
-                          {choice.text}
+                          {/* Label Card */}
+                          <div style={{
+                            minWidth: '40px',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: '#b8e0f0',
+                            borderRadius: '8px',
+                            fontWeight: 700,
+                            fontSize: '16px',
+                            color: '#006b9e',
+                          }}>
+                            {choiceLabels[index]}
+                          </div>
+                          {/* Choice Text */}
+                          <span style={{flex: 1}}>{choice.text}</span>
                         </button>
                       ))}
                     </div>
@@ -4189,23 +4584,6 @@ const IslandMap = ({ onExit }) => {
                                 marginTop: '8px',
                               }}
                             />
-                            {/* Stamp overlay on image */}
-                            {showStamp && (
-                              <img 
-                                src={stampType === 'passed' ? '/island/icon/passed.png' : '/island/icon/failed.png'}
-                                alt={stampType}
-                                style={{
-                                  position: 'absolute',
-                                  top: '50%',
-                                  left: '50%',
-                                  transform: 'translate(-50%, -50%)',
-                                  width: '150px',
-                                  height: 'auto',
-                                  zIndex: 10,
-                                  pointerEvents: 'none',
-                                }}
-                              />
-                            )}
                           </div>
                         )}
                       </div>
@@ -4214,9 +4592,27 @@ const IslandMap = ({ onExit }) => {
                     return (
                       <div key={index} style={styles.conversationMessageNpc}>
                         <div style={styles.conversationMessageNpcTime}>{msg.timestamp} ● {currentMissionNpc.id.toUpperCase()}</div>
+                        
+                        {/* Icon (if exists) */}
+                        {currentMissionNpc.icon && !isTyping && (
+                          <div style={{marginBottom: '12px', textAlign: 'center'}}>
+                            <img 
+                              src={currentMissionNpc.icon} 
+                              alt="Icon" 
+                              style={{
+                                width: '60px',
+                                height: '60px',
+                                objectFit: 'contain',
+                              }}
+                            />
+                          </div>
+                        )}
+                        
                         <div style={{
                           ...styles.conversationMessageNpcBubble,
-                          fontSize: currentIsland === ISLANDS.ISLAND_3 ? '26px' : '14px'
+                          fontSize: currentIsland === ISLANDS.ISLAND_3 ? '26px' : '14px',
+                          whiteSpace: 'pre-wrap', // Preserve line breaks and spaces
+                          fontFamily: currentIsland === ISLANDS.ISLAND_3 ? "'Courier New', monospace" : "'Rajdhani', sans-serif",
                         }}>
                           {displayText}
                           {isTyping && <span style={{ opacity: 0.5 }}>|</span>}
@@ -4229,23 +4625,6 @@ const IslandMap = ({ onExit }) => {
                               alt="Work" 
                               style={styles.conversationMessageImage}
                             />
-                            {/* Stamp overlay on image */}
-                            {showStamp && (
-                              <img 
-                                src={stampType === 'passed' ? '/island/icon/passed.png' : '/island/icon/failed.png'}
-                                alt={stampType}
-                                style={{
-                                  position: 'absolute',
-                                  top: '50%',
-                                  left: '50%',
-                                  transform: 'translate(-50%, -50%)',
-                                  width: '150px',
-                                  height: 'auto',
-                                  zIndex: 10,
-                                  pointerEvents: 'none',
-                                }}
-                              />
-                            )}
                           </div>
                         )}
                       </div>
@@ -4257,7 +4636,7 @@ const IslandMap = ({ onExit }) => {
             
             {/* Right: Profile & Buttons */}
             <div style={styles.conversationTestRight}>
-              <div style={styles.conversationTestProfile}>
+              <div style={{...styles.conversationTestProfile, position: 'relative'}}>
                 <div style={styles.conversationTestProfileLabel}>Profile</div>
                 <img 
                   src={currentMissionNpc.image} 
@@ -4269,6 +4648,24 @@ const IslandMap = ({ onExit }) => {
                   <div>Age: {Math.floor(Math.random() * 10) + 1} years old</div>
                   <div>Declaration Role: {currentIsland === ISLANDS.ISLAND_1 ? 'Artist' : currentIsland === ISLANDS.ISLAND_2 ? 'Editor' : 'Reviewer'}</div>
                 </div>
+                
+                {/* Stamp overlay on NPC Profile Card */}
+                {showStamp && (
+                  <img 
+                    src={stampType === 'passed' ? '/island/icon/passed.png' : '/island/icon/failed.png'}
+                    alt={stampType}
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: '280px',
+                      height: 'auto',
+                      zIndex: 100,
+                      pointerEvents: 'none',
+                    }}
+                  />
+                )}
               </div>
               
               {/* Judgment Buttons */}
@@ -4326,39 +4723,182 @@ const IslandMap = ({ onExit }) => {
         </div>
       )}
 
-      {/* Progress Circles */}
+      {/* Hand Stamp Animation */}
+      {showHandStamp && (() => {
+        console.log('Rendering hand stamp, phase:', handStampPhase)
+        return (
+          <img 
+            src="/island/icon/hand.png"
+            alt="Stamping Hand"
+            style={{
+              position: 'fixed',
+              width: '600px',
+              height: 'auto',
+              zIndex: 200,
+              pointerEvents: 'none',
+              willChange: 'top, bottom, left, right, opacity',
+              // Initial position - always set
+              bottom: handStampPhase === 'moving' ? '5%' : 'auto',
+              left: handStampPhase === 'moving' ? '30%' : 'auto',
+              top: handStampPhase !== 'moving' ? '15%' : 'auto',
+              right: handStampPhase !== 'moving' ? '3%' : 'auto',
+              opacity: handStampPhase === 'fadeout' ? 0 : 1,
+              // Smooth transition for all phases
+              transition: handStampPhase === 'fadeout' 
+                ? 'all 0.5s ease-out' 
+                : 'all 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+              // Fadeout moves right
+              ...(handStampPhase === 'fadeout' && {
+                right: '-25%',
+              }),
+            }}
+          />
+        )
+      })()}
+
+      {/* Progress Collection - New Design with Coconuts */}
       {missionActive && (currentIsland === ISLANDS.ISLAND_1 || currentIsland === ISLANDS.ISLAND_2 || currentIsland === ISLANDS.ISLAND_3) && (
-        <div style={styles.progressContainer}>
-          {phase2Active ? (
-            // Phase 2: Show 5 new circles for homogenization detection
-            [1, 2, 3, 4, 5].map(num => (
-              <div 
-                key={`p2_${num}`}
-                style={{
-                  ...styles.progressCircle,
-                  ...(phase2CompletedMissions.includes(num) ? styles.completedCircle : styles.incompleteCircle)
-                }}
-              >
-                {phase2CompletedMissions.includes(num) ? num : '?'}
-              </div>
-            ))
-          ) : (
-            // Phase 1: Show 9 circles representing total progress across all 3 islands
-            [1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => {
-              const isCompleted = completedMissions.length >= num
-              return (
-                <div 
-                  key={num}
-                  style={{
-                    ...styles.progressCircle,
-                    ...(isCompleted ? styles.completedCircle : styles.incompleteCircle)
-                  }}
-                >
-                  {isCompleted ? num : '?'}
-                </div>
-              )
-            })
-          )}
+        <div style={{
+          position: 'absolute',
+          bottom: '100px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: 'rgba(255, 255, 255, 0.95)',
+          borderRadius: '14px',
+          padding: '10px 20px',
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+          zIndex: 50,
+          minWidth: '550px',
+        }}>
+          {/* Header */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '8px',
+          }}>
+            <div style={{
+              fontFamily: "'Roboto', sans-serif",
+              fontSize: '15px',
+              fontWeight: 700,
+              color: '#333',
+            }}>Your Collection</div>
+            <div style={{
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: '4px',
+            }}>
+              <span style={{
+                fontFamily: "'Roboto', sans-serif",
+                fontSize: '18px',
+                fontWeight: 700,
+                color: '#333',
+              }}>
+                {phase2Active ? phase2CompletedMissions.length : completedMissions.length}/{phase2Active ? 5 : 9}
+              </span>
+              <span style={{
+                fontFamily: "'Roboto', sans-serif",
+                fontSize: '10px',
+                fontWeight: 400,
+                color: '#999',
+              }}>Found</span>
+            </div>
+          </div>
+          
+          {/* Coconut Progress Icons */}
+          <div style={{
+            display: 'flex',
+            gap: '8px',
+            alignItems: 'center',
+          }}>
+            {phase2Active ? (
+              // Phase 2: Show 5 coconuts
+              [1, 2, 3, 4, 5].map(num => {
+                const isCompleted = phase2CompletedMissions.includes(num)
+                return (
+                  <div 
+                    key={`p2_${num}`}
+                    style={{
+                      position: 'relative',
+                      width: '45px',
+                      height: '45px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <img 
+                      src="/island/icon/coconut.svg"
+                      alt="coconut"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        opacity: isCompleted ? 1 : 0.3,
+                        filter: isCompleted ? 'none' : 'grayscale(100%)',
+                      }}
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      fontFamily: "'Roboto', sans-serif",
+                      fontSize: '15px',
+                      fontWeight: 700,
+                      color: isCompleted ? '#333' : '#999',
+                      textShadow: 'none',
+                    }}>
+                      {isCompleted ? num : '?'}
+                    </div>
+                  </div>
+                )
+              })
+            ) : (
+              // Phase 1: Show 9 coconuts
+              [1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => {
+                const isCompleted = completedMissions.length >= num
+                return (
+                  <div 
+                    key={num}
+                    style={{
+                      position: 'relative',
+                      width: '45px',
+                      height: '45px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <img 
+                      src="/island/icon/coconut.svg"
+                      alt="coconut"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        opacity: isCompleted ? 1 : 0.3,
+                        filter: isCompleted ? 'none' : 'grayscale(100%)',
+                      }}
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      fontFamily: "'Roboto', sans-serif",
+                      fontSize: '15px',
+                      fontWeight: 700,
+                      color: isCompleted ? '#333' : '#999',
+                      textShadow: 'none',
+                    }}>
+                      {isCompleted ? num : '?'}
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
         </div>
       )}
 

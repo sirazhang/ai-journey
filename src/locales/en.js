@@ -67,7 +67,7 @@ export const en = {
   sparkyIntro8: "Yes! Please! I need you to find these AI impostors and remove them from the system.",
   sparkyIntro9: "Good question. Even though they are smart, they have big weaknesses. Listen carefully.",
   sparkyIntro10: "First is Hallucinations (The 'Daydreaming').",
-  sparkyIntro11: "Sometimes, they get too confident and just make things up. They might draw hands with six fingers, or tell you facts that are total lies. If it looks or sounds impossible, it's a hallucination!",
+  sparkyIntro11: "Sometimes, they gets overconfident and makes things up! 🖐️ Six-fingered hands? 🐙 Octopuses running banks? If it sounds too weird to be true—it's probably an AI hallucination!",
   sparkyIntro12: "Perfect. Here is your mission:",
   sparkyIntro13: "Go talk to the workers on the islands. Ask them to show you their photos or writing.",
   sparkyIntro14: "If you spot mistakes or copies, mark them down. There are 9 spies hidden in total. Good luck, Agent!",
