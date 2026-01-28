@@ -4389,8 +4389,8 @@ const GlacierMap = ({ onExit }) => {
         </button>
       )}
 
-      {/* NPC Glitch - Only show in inside, court, and rooftop scenes */}
-      {(currentScene === 'inside' || currentScene === 'court' || currentScene === 'rooftop') && (
+      {/* NPC Glitch - Show in different scenes with different positions */}
+      {(currentScene === 'outside' || currentScene === 'hallway' || currentScene === 'inside' || currentScene === 'court' || currentScene === 'rooftop') && (
         <div 
           style={{
             ...styles.npc,

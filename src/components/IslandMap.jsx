@@ -712,7 +712,7 @@ const getFinalSparkyDialogueFlow = (t) => [
     id: 0,
     type: 'message',
     speaker: 'Sparky',
-    text: "You spotted ALL GenAI spies! Those \"perfect\" poems? Those glossy images? They're all part of homogenization.",
+    text: "You spotted ALL GenAI spies! Those \"perfect\" poems? Those normal images?",
     nextChoice: {
       text: "Can you tell me more",
       choiceId: 1
@@ -725,27 +725,39 @@ const getFinalSparkyDialogueFlow = (t) => [
       {
         type: 'message',
         speaker: 'Sparky',
-        text: "Think of it like this: 🌊 Human creativity = the ocean — wild, messy, full of strange colors. 🏊‍♀️ AI output = a swimming pool — clean, safe… and every drop tastes identical."
+        text: "When you ask AI for \"a fish,\" it usually gives you a smooth, symmetrical—the kind you see everywhere online."
+      },
+      {
+        type: 'image',
+        src: '/island/icon/fish_1.png',
+        alt: 'Generic Fish'
       },
       {
         type: 'message',
         speaker: 'Sparky',
-        text: "Why? AI averages billions of human creations—no mess, no soul, just safe and smooth."
+        text: "But in reality? People draw all kinds of fish:\n• Spiky pufferfish\n• Glowing anglerfish (Lophiiformes)\n• Silvery, ribbon-like hairtail"
+      },
+      {
+        type: 'image',
+        src: '/island/icon/fish_2.png',
+        alt: 'Diverse Fish'
       },
       {
         type: 'message',
         speaker: 'Sparky',
-        text: "So when you see a picture that's too generic or a poem that's too formulaic… it's AI playing it safe—just repeating what it's seen most."
+        text: "So here's how to spot AI output: If it's too generic, too polished, and missing the weird-but-real… it's probably averaged from the most common examples—not reflecting true diversity."
       }
     ],
     quiz: {
-      question: "If you receive a strange email or read an essay, which of these is a strong clue that it was written by AI, not a human?",
+      question: "🖼️ Look at this illustration of an animal bicycle race. Is it made by a human or by GenAI?",
+      image: '/island/icon/bike_1.png',
       choices: [
-        { id: 'A', text: "It has a few spelling mistakes and uses slang like 'gonna' or 'wanna'.", correct: false },
-        { id: 'B', text: "It is extremely polite, uses a 'perfect' list structure (First, Furthermore, In Conclusion), and words like 'delve' or 'tapestry'.", correct: true },
-        { id: 'C', text: "It expresses a very strong, angry opinion about politics.", correct: false }
+        { id: 'A', text: "Human", correct: true },
+        { id: 'B', text: "GenAI", correct: false }
       ],
-      feedback: "Why? Humans are messy—we typo, rage, and tell bad jokes. AI plays the 'perfect student': always polite, tidy, and overusing fancy words. Too perfect? Suspicious!",
+      feedback: "This image isn't random—it's clearly designed with intention.\n\nThe turtle leading the race flips expectations (The Tortoise and the Hare.)\n\nThe giraffe watching from above uses its height for humor.\n\nEach animal has a clear role. Even the caterpillar rides a multi-pedal bike.",
+      feedbackImage: '/island/icon/bike_2.png',
+      feedbackExtra: "This is GenAI-generated image. GenAI can draw animals on bikes—but it rarely tells a real visual story.",
       nextChoiceId: 2
     }
   },
@@ -760,13 +772,13 @@ const getFinalSparkyDialogueFlow = (t) => [
       }
     ],
     quiz: {
-      question: "When you look at a photo that looks almost real, which detail reveals that it is actually AI-generated?",
+      question: "If you receive a strange email or read an essay, which of these is a strong clue that it was written by AI, not a human?",
       choices: [
-        { id: 'A', text: "The person has messy hair, skin texture with pores, and a small scar.", correct: false },
-        { id: 'B', text: "The lighting is bad and the photo is a little bit blurry.", correct: false },
-        { id: 'C', text: "The background text is weird alien gibberish, and the hands might have too many fingers.", correct: true }
+        { id: 'A', text: "It has a few spelling mistakes and uses slang like 'gonna' or 'wanna'.", correct: false },
+        { id: 'B', text: "It is extremely polite, uses a 'perfect' list structure (First, Furthermore, In Conclusion), and words like 'delve' or 'tapestry'.", correct: true },
+        { id: 'C', text: "It expresses a very strong, angry opinion about politics.", correct: false }
       ],
-      feedback: "Exactly! AI struggles with text and fine details like hands.",
+      feedback: "Why? Humans are messy—we typo, rage, and tell bad jokes. AI plays the 'perfect student': always polite, tidy, and overusing fancy words. Too perfect? Suspicious!",
       nextChoiceId: 3
     }
   },
@@ -777,16 +789,37 @@ const getFinalSparkyDialogueFlow = (t) => [
       {
         type: 'message',
         speaker: 'Sparky',
+        text: "Great! Now one more visual test."
+      }
+    ],
+    quiz: {
+      question: "When you look at a photo that looks almost real, which detail reveals that it is actually AI-generated?",
+      choices: [
+        { id: 'A', text: "The person has messy hair, skin texture with pores, and a small scar.", correct: false },
+        { id: 'B', text: "The lighting is bad and the photo is a little bit blurry.", correct: false },
+        { id: 'C', text: "The background text is weird alien gibberish, and the hands might have too many fingers.", correct: true }
+      ],
+      feedback: "Exactly! AI struggles with text and fine details like hands.",
+      nextChoiceId: 4
+    }
+  },
+  {
+    id: 4,
+    type: 'response',
+    messages: [
+      {
+        type: 'message',
+        speaker: 'Sparky',
         text: "You did it! You can now see through the illusions! Thank you! You've taught me so much about the characteristics of GenAI, too. I think I can use this data to detect the 'AI rate' among the island's workers and finally restore the power!"
       }
     ],
     nextChoice: {
       text: "Great!",
-      choiceId: 4
+      choiceId: 5
     }
   },
   {
-    id: 4,
+    id: 5,
     type: 'response',
     messages: [
       {
@@ -2035,6 +2068,28 @@ const IslandMap = ({ onExit }) => {
             isCorrect: isCorrect
           }])
           
+          // Add feedback image if exists
+          if (currentItem.quiz.feedbackImage) {
+            setTimeout(() => {
+              setSparkyMessages(prev => [...prev, {
+                type: 'image',
+                src: currentItem.quiz.feedbackImage,
+                alt: 'Feedback Image'
+              }])
+              
+              // Add extra feedback text if exists
+              if (currentItem.quiz.feedbackExtra) {
+                setTimeout(() => {
+                  setSparkyMessages(prev => [...prev, {
+                    type: 'message',
+                    speaker: 'Sparky',
+                    text: currentItem.quiz.feedbackExtra
+                  }])
+                }, 500)
+              }
+            }, 500)
+          }
+          
           // Continue to next step after feedback
           setTimeout(() => {
             if (currentItem.quiz.nextChoiceId) {
@@ -2048,7 +2103,7 @@ const IslandMap = ({ onExit }) => {
                 }, 500)
               }
             }
-          }, 2000)
+          }, currentItem.quiz.feedbackImage ? 3000 : 2000)
         }, 300)
       }
     } else {
@@ -4400,6 +4455,25 @@ const IslandMap = ({ onExit }) => {
                       }}>
                         <strong style={{color: '#008dda'}}>Question:</strong> {currentItem.quiz.question}
                       </div>
+                      
+                      {/* Quiz Image (if exists) */}
+                      {currentItem.quiz.image && (
+                        <div style={{
+                          textAlign: 'center',
+                          marginBottom: '25px',
+                        }}>
+                          <img 
+                            src={currentItem.quiz.image}
+                            alt="Quiz"
+                            style={{
+                              maxWidth: '100%',
+                              height: 'auto',
+                              borderRadius: '12px',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            }}
+                          />
+                        </div>
+                      )}
                       
                       {/* Choice Buttons with Labels */}
                       {currentItem.quiz.choices.map((choice, index) => (

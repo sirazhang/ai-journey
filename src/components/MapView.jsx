@@ -891,11 +891,14 @@ const MapView = ({ onRegionClick }) => {
           
           {getHoveredRegionData()?.available ? (
             <>
+              {/* Show "Start" if no progress, "Continue" if there is progress */}
               <button 
                 style={styles.goButton}
                 onClick={() => {
                   playSelectSound()
-                  onRegionClick(selectedRegion)
+                  // When progress is 0, just start normally (don't pass startOver)
+                  // When progress > 0, continue from where left off
+                  onRegionClick(selectedRegion, false)
                 }}
                 onMouseOver={(e) => {
                   e.target.style.background = '#333'
@@ -906,10 +909,11 @@ const MapView = ({ onRegionClick }) => {
                   e.target.style.transform = 'scale(1)'
                 }}
               >
-                {t('continue')}
+                {regionProgress[selectedRegion] === 0 ? t('start') : t('continue')}
               </button>
               
-              {(selectedRegion === 'fungi' || selectedRegion === 'desert') && (
+              {/* Show "Start Over" button only if there is progress */}
+              {regionProgress[selectedRegion] > 0 && (
                 <button 
                   style={styles.startOverButton}
                   onClick={() => {
