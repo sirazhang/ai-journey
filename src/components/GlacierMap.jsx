@@ -5337,7 +5337,7 @@ const GlacierMap = ({ onExit }) => {
       )}
       
       {/* Data Center Arrow - show after rooftop quiz completion */}
-      {showDataCenterArrow && currentScene === 'rooftop' && (
+      {showDataCenterArrow && currentScene === 'inside' && (
         <div 
           style={{
             position: 'absolute',
