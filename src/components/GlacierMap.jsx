@@ -3535,7 +3535,7 @@ const GlacierMap = ({ onExit }) => {
       transform: 'translate(-50%, -50%)',
       width: '80%',
       maxWidth: '900px',
-      height: '85vh',
+      maxHeight: '85vh',
       background: 'rgba(60, 60, 60, 0.95)',
       backdropFilter: 'blur(20px)',
       borderRadius: '20px',
@@ -3544,6 +3544,7 @@ const GlacierMap = ({ onExit }) => {
       display: 'flex',
       flexDirection: 'column',
       gap: '20px',
+      overflow: 'auto',
     },
     coCreationDialogue: {
       background: '#fff',
@@ -3610,19 +3611,22 @@ const GlacierMap = ({ onExit }) => {
     coCreationElementsArea: {
       display: 'flex',
       flexWrap: 'wrap',
-      gap: '15px',
+      gap: '10px',
       justifyContent: 'center',
-      padding: '20px',
+      padding: '15px',
+      maxHeight: '200px',
+      overflow: 'auto',
     },
     coCreationElementTag: {
-      padding: '12px 24px',
-      borderRadius: '25px',
-      fontSize: '16px',
+      padding: '10px 20px',
+      borderRadius: '20px',
+      fontSize: '14px',
       fontFamily: "'Roboto Mono', monospace",
       color: '#fff',
       cursor: 'pointer',
       transition: 'all 0.2s',
       fontWeight: '500',
+      border: 'none',
     },
     // NPC9 sharing dialogue styles
     npc9SharingContainer: {
@@ -6069,7 +6073,7 @@ const GlacierMap = ({ onExit }) => {
           left: '50%',
           transform: 'translate(-50%, -50%)',
           width: memoryPhase === 'footstepRecall' ? '70vw' : '800px',
-          height: '90vh',
+          maxHeight: '90vh',
           background: 'rgba(20, 20, 30, 0.95)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
@@ -6080,13 +6084,14 @@ const GlacierMap = ({ onExit }) => {
           flexDirection: 'column',
           boxShadow: '0 12px 48px rgba(0, 0, 0, 0.6)',
           zIndex: 3000,
+          overflow: 'auto',
         }}>
           {/* Header */}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '20px',
+            marginBottom: '15px',
             flexShrink: 0,
           }}>
             <div style={{
@@ -6112,9 +6117,9 @@ const GlacierMap = ({ onExit }) => {
           {/* Instructions */}
           <div style={{
             fontFamily: "'Roboto', sans-serif",
-            fontSize: '16px',
+            fontSize: '14px',
             color: '#fff',
-            marginBottom: '20px',
+            marginBottom: '15px',
             textAlign: 'center',
             flexShrink: 0,
           }}>
@@ -6128,12 +6133,12 @@ const GlacierMap = ({ onExit }) => {
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '12px',
+              gap: '10px',
               width: '100%',
-              maxWidth: '600px',
-              maxHeight: '600px',
+              maxWidth: '500px',
               margin: '0 auto',
               alignSelf: 'center',
+              flex: '1 1 auto',
             }}>
               {Array.from({ length: 16 }).map((_, index) => {
                 const hasFootprint = snowPathFootprints.includes(index)
