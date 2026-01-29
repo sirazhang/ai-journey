@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import useSoundEffects from '../hooks/useSoundEffects'
+import useTypingSound from '../hooks/useTypingSound'
 import { useLanguage } from '../contexts/LanguageContext'
 
 // Add CSS animations
@@ -365,6 +366,7 @@ const DesertMap = ({ onExit }) => {
 
   // Sound effects
   const { playClickSound, playCameraSound, playStampSound, playSafeSound, playAlertSound } = useSoundEffects()
+  const { startTypingSound, stopTypingSound } = useTypingSound('/sound/desert_typing.wav')
 
   // Mission 3 states
   const [showMission3, setShowMission3] = useState(false)
@@ -503,6 +505,7 @@ const DesertMap = ({ onExit }) => {
     let charIndex = 0
     setDisplayedText('')
     setIsTyping(true)
+    startTypingSound() // Start typing sound
 
     const typingInterval = setInterval(() => {
       if (charIndex < fullText.length) {
@@ -510,6 +513,7 @@ const DesertMap = ({ onExit }) => {
         charIndex++
       } else {
         setIsTyping(false)
+        stopTypingSound() // Stop typing sound when done
         clearInterval(typingInterval)
         
         // Auto-progress to next dialogue part after 2 seconds
@@ -524,8 +528,11 @@ const DesertMap = ({ onExit }) => {
       }
     }, 30)
 
-    return () => clearInterval(typingInterval)
-  }, [currentDialogue, showDialogue, currentNpcType, currentDialogueStep])
+    return () => {
+      clearInterval(typingInterval)
+      stopTypingSound() // Clean up typing sound
+    }
+  }, [currentDialogue, showDialogue, currentNpcType, currentDialogueStep, startTypingSound, stopTypingSound])
 
   // Cursor blink effect
   useEffect(() => {
@@ -835,6 +842,7 @@ const DesertMap = ({ onExit }) => {
       if (isTyping) {
         setDisplayedText(currentDialogue.text)
         setIsTyping(false)
+        stopTypingSound() // Stop typing sound when skipping
       } else if (currentDialogue.step === 'intro' || currentDialogue.step === 'briefing') {
         handleMission3Continue()
       } else if (currentDialogue.showMission3Interface) {
@@ -856,6 +864,7 @@ const DesertMap = ({ onExit }) => {
       // Skip typing animation
       setDisplayedText(currentDialogue.text)
       setIsTyping(false)
+      stopTypingSound() // Stop typing sound when skipping
     } else {
       if (currentDialogue.isSpecial && currentDialogue.nextAction) {
         // Handle special Mission 2 dialogues
@@ -1268,6 +1277,7 @@ const DesertMap = ({ onExit }) => {
     if (isTyping) {
       setDisplayedText(currentDialogue.text)
       setIsTyping(false)
+      stopTypingSound() // Stop typing sound when skipping
       return
     }
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
+import useTypingSound from '../hooks/useTypingSound'
 import { useLanguage } from '../contexts/LanguageContext'
 
 // Summary dialogue sequence
@@ -745,6 +746,7 @@ const getDialogueSequences = (t) => ({
 
 const GlacierMap = ({ onExit }) => {
   const { t, language } = useLanguage()
+  const { startTypingSound, stopTypingSound } = useTypingSound('/sound/glacier_typing.wav')
   
   // Helper function to get current timestamp
   const getCurrentTimestamp = () => {
@@ -1018,6 +1020,19 @@ const GlacierMap = ({ onExit }) => {
       }
     }
   }, [currentDialogueIndex, currentDialogues.length, isTyping, showDialogue, currentScene])
+
+  // Handle typing sound for all typing states
+  useEffect(() => {
+    const anyTyping = isTyping || summaryIsTyping || npc5IsTyping || npc6IsTyping || npc9IsTyping
+    
+    if (anyTyping) {
+      startTypingSound()
+    } else {
+      stopTypingSound()
+    }
+    
+    return () => stopTypingSound()
+  }, [isTyping, summaryIsTyping, npc5IsTyping, npc6IsTyping, npc9IsTyping, startTypingSound, stopTypingSound])
 
   // Typing effect for dialogue
   useEffect(() => {

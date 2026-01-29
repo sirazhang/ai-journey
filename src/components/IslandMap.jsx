@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import useBackgroundMusic from '../hooks/useBackgroundMusic'
 import useSoundEffects from '../hooks/useSoundEffects'
+import useTypingSound from '../hooks/useTypingSound'
 import { useLanguage } from '../contexts/LanguageContext'
 
 // Island positions
@@ -1181,6 +1182,7 @@ const IslandMap = ({ onExit }) => {
   // Sound effects and music
   useBackgroundMusic('/sound/island.mp3')
   const { playClickSound } = useSoundEffects()
+  const { startTypingSound, stopTypingSound } = useTypingSound('/sound/island_typing.wav')
   
   // Save progress to localStorage
   useEffect(() => {
@@ -1236,6 +1238,17 @@ const IslandMap = ({ onExit }) => {
       }
     }
   }, [])
+  
+  // Handle Sparky typing sound
+  useEffect(() => {
+    if (sparkyIsTyping) {
+      startTypingSound()
+    } else {
+      stopTypingSound()
+    }
+    
+    return () => stopTypingSound()
+  }, [sparkyIsTyping, startTypingSound, stopTypingSound])
   
   // Auto-trigger NPC dialogues when entering islands (without mission active)
   useEffect(() => {
@@ -2242,6 +2255,7 @@ const IslandMap = ({ onExit }) => {
     if (isTyping) {
       setDisplayedText(currentDialogue.text)
       setIsTyping(false)
+      stopTypingSound() // Stop typing sound when skipping
     } else {
       // Check if there are more dialogues for the current island
       if (currentDialogueIsland) {
@@ -2296,6 +2310,7 @@ const IslandMap = ({ onExit }) => {
     let charIndex = 0
     setDisplayedText('')
     setIsTyping(true)
+    startTypingSound() // Start typing sound
 
     const typingInterval = setInterval(() => {
       if (charIndex < fullText.length) {
@@ -2303,6 +2318,7 @@ const IslandMap = ({ onExit }) => {
         charIndex++
       } else {
         setIsTyping(false)
+        stopTypingSound() // Stop typing sound
         clearInterval(typingInterval)
         
         // Auto-advance to next dialogue after typing completes
@@ -2323,8 +2339,11 @@ const IslandMap = ({ onExit }) => {
       }
     }, 30)
 
-    return () => clearInterval(typingInterval)
-  }, [currentDialogue, showDialogue, currentDialogueIndex, currentDialogueIsland])
+    return () => {
+      clearInterval(typingInterval)
+      stopTypingSound() // Clean up typing sound
+    }
+  }, [currentDialogue, showDialogue, currentDialogueIndex, currentDialogueIsland, startTypingSound, stopTypingSound])
   
   // New Conversation Test typing effect - disabled, now using typeNextMessage function
   // useEffect removed to use manual typeNextMessage control

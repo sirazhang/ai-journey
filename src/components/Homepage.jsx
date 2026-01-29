@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import useSoundEffects from '../hooks/useSoundEffects'
+import useTypingSound from '../hooks/useTypingSound'
 import { useLanguage } from '../contexts/LanguageContext'
 
 const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
