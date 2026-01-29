@@ -346,6 +346,107 @@ const rooftopQuizData = {
   finalMessage: "Great! I think order is finally being restored here."
 }
 
+// Fill the Blank questions data
+const fillBlankQuestions = [
+  {
+    id: 1,
+    text: "Before training an AI model, we must ______ personal details like names and birthdates.",
+    correctAnswer: "remove",
+    options: ["remove", "copy", "keep"]
+  },
+  {
+    id: 2,
+    text: "Names, birthdates, and addresses are examples of ______ information.",
+    correctAnswer: "personal",
+    options: ["personal", "public", "fake"]
+  },
+  {
+    id: 3,
+    text: "Sharing location or health data without care could put someone at serious ______.",
+    correctAnswer: "risk",
+    options: ["risk", "speed", "cost"]
+  },
+  {
+    id: 4,
+    text: "Even public photos shouldn't be used for AI training without clear ______.",
+    correctAnswer: "permission",
+    options: ["permission", "filters", "likes"]
+  },
+  {
+    id: 5,
+    text: "If private data isn't protected, someone could be ______ from the dataset.",
+    correctAnswer: "identified",
+    options: ["identified", "deleted", "ignored"]
+  }
+]
+
+// Privacy Data Identification documents
+const privacyDocuments = [
+  {
+    id: 1,
+    title: "Student Profile Card",
+    subtitle: "Carefully examine the terminal output and mark all protected information",
+    header: "Data File #STU-8842 — Status: ⚠️ Requires Privacy Review",
+    content: `Full Name: Alex Chen
+Age: 13
+Pronouns: They/Them
+School: Maplewood Middle School
+Grade: 8th Grade
+Homeroom Teacher: Ms. Rivera
+Favorite Subject: Robotics & Space Science
+Recent Project: Built a solar-powered rover that won 2nd place at the Regional STEM Fair!
+Test Average: 92% (Math), 89% (Science)
+Club Membership: Coding Club, Eco-Warriors Team
+Home Address: 456 Pine Street, Apartment 3B, New Haven, CT 06511
+Parent/Guardian Contact: (555) 123-4567 (Mom's cell)`,
+    items: [
+      { id: "name1", label: "Personal Name", text: "Alex Chen", hint: "Full Name: Alex Chen" },
+      { id: "address1", label: "Home Address", text: "456 Pine Street, Apartment 3B, New Haven, CT 06511", hint: "Home Address: 456 Pine Street, Apartment 3B, New Haven, CT 06511" },
+      { id: "phone1", label: "Phone Number", text: "(555) 123-4567", hint: "Parent/Guardian Contact: (555) 123-4567" }
+    ]
+  },
+  {
+    id: 2,
+    title: "ROBOT LOG: SHIFT-DELTA-10",
+    subtitle: "Carefully examine the terminal output and mark all protected information",
+    header: "DATE: 3045.03.18 | ORIGIN: Sector 7-G",
+    content: `TO: Overseer Lena Rostova
+FROM: Maintenance Unit X-J9
+SUBJECT: Unauthorized Access Alert
+
+At 0600 hours, a security breach was detected near the Sky Bridge Terminal, coordinates 48.22°N, -116.77°W. Surveillance footage shows an individual identified as Zara Lin (ID: KX-777-WP) accessed the system using a forged authentication key.
+The subject was seen carrying a blue backpack and wearing a white helmet with red stripes. They fled toward the Northern Transit Zone after disabling the alarm. Please update protocol Sigma-9 and relay this information to the central hub in New Haven.`,
+    items: [
+      { id: "geo1", label: "Precise Geolocation", text: "48.22°N, -116.77°W", hint: "coordinates 48.22°N, -116.77°W" },
+      { id: "id1", label: "Unique Identifier", text: "KX-777-WP", hint: "(ID: KX-777-WP)" },
+      { id: "name2", label: "Personal Name", text: "Lena Rostova", hint: "TO: Overseer Lena Rostova" },
+      { id: "name3", label: "Personal Name", text: "Zara Lin", hint: "identified as Zara Lin" }
+    ]
+  },
+  {
+    id: 3,
+    title: "SOCIAL POST: FROSTGRAM-ALERT-03",
+    subtitle: "Carefully examine the terminal output and mark all protected information",
+    header: "Platform: GlacierGram (a futuristic social app for young explorers)\nUser: @Aurora_Frost\nPost Status: ⚠️ Publicly Visible – Needs Privacy Review!",
+    content: `"YAY! I'm officially 13 today! 🎂❄️
+Mom surprised me with a zero-gravity cake!
+You can call me to say hi anytime → (555) 888-1234
+P.S. My room is on the second floor of 102 Icewind Lane, Glaciera City — wave if you fly by! 🛸
+#TeenExplorer #BirthdaySelfie #HomeBase"
+
+📍 Location Tag: 102 Icewind Lane
+🕒 Posted: March 5, 2026 at 9:03 AM`,
+    hasImage: true,
+    imagePath: "/glacier/mission/social.png",
+    items: [
+      { id: "image1", label: "Facial Image", text: "[Image]", isImage: true },
+      { id: "address2", label: "Home Address", text: "102 Icewind Lane, Glaciera City", hint: "102 Icewind Lane" },
+      { id: "phone2", label: "Phone Number", text: "(555) 888-1234", hint: "(555) 888-1234" },
+      { id: "birthdate1", label: "Exact Birthdate", text: "I'm officially 13 today + March 5", hint: "I'm officially 13 today", isMultiPart: true, parts: ["I'm officially 13 today", "March 5"] }
+    ]
+  }
+]
+
 // Complete scene NPC data
 const completeSceneNpcs = [
   {
