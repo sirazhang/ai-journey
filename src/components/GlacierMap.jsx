@@ -920,7 +920,7 @@ const GlacierMap = ({ onExit }) => {
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0)
   const [displayedText, setDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(false)
-  const [showArrow, setShowArrow] = useState(false)
+  const [showArrow, setShowArrow] = useState(savedProgress?.showArrow || false) // Load arrow state from saved progress
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [dialogueHistory, setDialogueHistory] = useState([]) // For inside scene dialogue history
   const [waitingForUserInput, setWaitingForUserInput] = useState(false)
@@ -1025,6 +1025,7 @@ const GlacierMap = ({ onExit }) => {
   // Data Center and Privacy Task states
   const [showDataCenterArrow, setShowDataCenterArrow] = useState(false)
   const [showFillBlankTask, setShowFillBlankTask] = useState(false)
+  const [showFillBlankComplete, setShowFillBlankComplete] = useState(false) // Show completion dialogue
   const [fillBlankProgress, setFillBlankProgress] = useState(0) // 0-5
   const [fillBlankAnswers, setFillBlankAnswers] = useState([null, null, null, null, null])
   const [draggedOption, setDraggedOption] = useState(null)
@@ -1101,6 +1102,7 @@ const GlacierMap = ({ onExit }) => {
       courtSummaryCompleted,
       hasSeenInsideIntro,
       rooftopCompletedTasks,
+      showArrow, // Save arrow state
       isComplete: currentScene === 'complete',
     }
     saveProgress(progress)
@@ -1114,7 +1116,7 @@ const GlacierMap = ({ onExit }) => {
         localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
       }
     }
-  }, [currentScene, completedCases, showSummaryDialogue, showElevatorArrow, courtSummaryCompleted, hasSeenInsideIntro, rooftopCompletedTasks])
+  }, [currentScene, completedCases, showSummaryDialogue, showElevatorArrow, courtSummaryCompleted, hasSeenInsideIntro, rooftopCompletedTasks, showArrow])
 
   // 使用useMemo来避免每次渲染都重新创建dialogues
   const dialogueSequences = useMemo(() => getDialogueSequences(t), [t])
@@ -1909,6 +1911,8 @@ const GlacierMap = ({ onExit }) => {
     if (!draggedOption) return
     
     const question = fillBlankQuestions[questionIndex]
+    
+    // Set the answer first to show visual feedback
     const newAnswers = [...fillBlankAnswers]
     newAnswers[questionIndex] = draggedOption
     setFillBlankAnswers(newAnswers)
@@ -1916,21 +1920,29 @@ const GlacierMap = ({ onExit }) => {
     // Check if answer is correct
     if (draggedOption === question.correctAnswer) {
       playCorrectSound()
-      setFillBlankProgress(fillBlankProgress + 1)
       
-      // If all questions answered, show completion dialogue after delay
-      if (fillBlankProgress + 1 === 5) {
-        setTimeout(() => {
-          setShowFillBlankTask(false)
-          // Show Momo dialogue
-          alert("Remember:\nNames, birthdays, photos—they're personal.\nWe must remove them, ask for permission, and never share carelessly.\nReady for the next mission?")
-          // TODO: Replace alert with proper dialogue
-          setShowPrivacyTask(true)
-        }, 1000)
-      }
+      // Wait a bit to show the green feedback, then move to next question
+      setTimeout(() => {
+        const newProgress = fillBlankProgress + 1
+        setFillBlankProgress(newProgress)
+        
+        // If all questions answered, show completion dialogue
+        if (newProgress === 5) {
+          setTimeout(() => {
+            setShowFillBlankTask(false)
+            setShowFillBlankComplete(true)
+          }, 500)
+        }
+      }, 600)
     } else {
       playWrongSound()
-      // Allow retry - don't increment progress
+      
+      // Clear wrong answer after 800ms to allow retry
+      setTimeout(() => {
+        const clearedAnswers = [...fillBlankAnswers]
+        clearedAnswers[questionIndex] = null
+        setFillBlankAnswers(clearedAnswers)
+      }, 800)
     }
     
     setDraggedOption(null)
@@ -1938,6 +1950,20 @@ const GlacierMap = ({ onExit }) => {
   
   const handleFillBlankDragOver = (e) => {
     e.preventDefault()
+  }
+  
+  // Add click handler as fallback for mobile/accessibility
+  const handleFillBlankOptionClick = (option) => {
+    if (fillBlankProgress < 5) {
+      setDraggedOption(option)
+      handleFillBlankDrop(fillBlankProgress)
+    }
+  }
+  
+  // Handle Fill the Blank completion dialogue
+  const handleFillBlankCompleteClose = () => {
+    setShowFillBlankComplete(false)
+    setShowPrivacyTask(true)
   }
   
   // Privacy Task handlers
@@ -4820,7 +4846,7 @@ const GlacierMap = ({ onExit }) => {
       {/* Inside Scene Dialogue System - Modern Design */}
       {currentScene === 'inside' && showDialogue && !showSummaryDialogue && (() => {
         const theme = getNpcTheme('momo')
-        const totalSteps = 4
+        const totalSteps = 5
         const currentStep = 1 // Inside dialogue is step 1
         const progressPercent = (currentStep / totalSteps) * 100
         
@@ -5265,7 +5291,7 @@ const GlacierMap = ({ onExit }) => {
       {/* Summary Dialogue System - Modern Design (Based on Reference Image 2) */}
       {showSummaryDialogue && (() => {
         const theme = getNpcTheme('momo')
-        const totalSteps = 4
+        const totalSteps = 5
         const currentStep = 2 // Summary dialogue is step 2
         const progressPercent = (currentStep / totalSteps) * 100
         
@@ -7350,6 +7376,57 @@ const GlacierMap = ({ onExit }) => {
         )
       })()}
       
+      {/* Data Center - Back Button (Left Arrow) */}
+      {currentScene === 'datacenter' && (
+        <div
+          style={{
+            position: 'absolute',
+            left: '20px',
+            top: '20px',
+            width: '60px',
+            height: '60px',
+            cursor: 'pointer',
+            zIndex: 100,
+            transition: 'transform 0.2s',
+          }}
+          onClick={() => {
+            setCurrentScene('inside')
+            setShowFillBlankTask(false)
+            setShowFillBlankComplete(false)
+            setShowPrivacyTask(false)
+            setShowDataCenterArrow(false)
+          }}
+          onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+          onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <img
+            src="/jungle/icon/left.png"
+            alt="Back"
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          />
+        </div>
+      )}
+      
+      {/* Data Center - Glitch NPC (Top Right) */}
+      {currentScene === 'datacenter' && (
+        <div
+          style={{
+            position: 'absolute',
+            right: '20px',
+            top: '20px',
+            width: '150px',
+            height: '150px',
+            zIndex: 100,
+          }}
+        >
+          <img
+            src="/npc/npc_glacier.gif"
+            alt="Glitch"
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          />
+        </div>
+      )}
+      
       {/* Data Center Momo NPC */}
       {currentScene === 'datacenter' && (
         <div 
@@ -7427,11 +7504,21 @@ const GlacierMap = ({ onExit }) => {
                       <span 
                         onDrop={() => handleFillBlankDrop(fillBlankProgress)}
                         onDragOver={handleFillBlankDragOver}
+                        onClick={() => {
+                          // Clear answer on click to allow retry
+                          if (fillBlankAnswers[fillBlankProgress]) {
+                            const clearedAnswers = [...fillBlankAnswers]
+                            clearedAnswers[fillBlankProgress] = null
+                            setFillBlankAnswers(clearedAnswers)
+                          }
+                        }}
                         style={{
                           display: 'inline-block',
                           minWidth: '150px',
                           height: '40px',
-                          border: '2px dashed #004aad',
+                          border: fillBlankAnswers[fillBlankProgress] ? 
+                            (fillBlankAnswers[fillBlankProgress] === fillBlankQuestions[fillBlankProgress].correctAnswer ? 
+                              '2px solid #4f7f30' : '2px solid #FF0845') : '2px dashed #004aad',
                           borderRadius: '8px',
                           margin: '0 10px',
                           verticalAlign: 'middle',
@@ -7442,10 +7529,11 @@ const GlacierMap = ({ onExit }) => {
                           fontWeight: 'bold',
                           textAlign: 'center',
                           lineHeight: '40px',
-                          cursor: 'pointer',
+                          cursor: fillBlankAnswers[fillBlankProgress] ? 'pointer' : 'default',
+                          transition: 'all 0.3s ease',
                         }}
                       >
-                        {fillBlankAnswers[fillBlankProgress] || ''}
+                        {fillBlankAnswers[fillBlankProgress] || 'Drop here'}
                       </span>
                     )}
                   </span>
@@ -7459,6 +7547,7 @@ const GlacierMap = ({ onExit }) => {
                     key={i}
                     draggable
                     onDragStart={() => handleFillBlankDragStart(option)}
+                    onClick={() => handleFillBlankOptionClick(option)}
                     style={{
                       padding: '15px 30px',
                       background: 'white',
@@ -7469,14 +7558,15 @@ const GlacierMap = ({ onExit }) => {
                       cursor: 'grab',
                       boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1)',
                       transition: 'transform 0.2s, box-shadow 0.2s',
+                      userSelect: 'none',
                     }}
                     onMouseOver={(e) => {
-                      e.target.style.transform = 'translateY(-4px)'
-                      e.target.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.3), 0 3px 6px rgba(0, 0, 0, 0.15)'
+                      e.currentTarget.style.transform = 'translateY(-4px)'
+                      e.currentTarget.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.3), 0 3px 6px rgba(0, 0, 0, 0.15)'
                     }}
                     onMouseOut={(e) => {
-                      e.target.style.transform = 'translateY(0)'
-                      e.target.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1)'
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1)'
                     }}
                   >
                     {option}
@@ -7487,6 +7577,65 @@ const GlacierMap = ({ onExit }) => {
           )}
         </div>
       )}
+      
+      {/* Fill the Blank Completion Dialogue */}
+      {currentScene === 'datacenter' && showFillBlankComplete && (() => {
+        const theme = getNpcTheme('momo')
+        
+        return (
+          <div style={{
+            ...styles.modernDialogueContainer,
+            border: `3px solid ${theme.borderColor}`,
+            maxWidth: '700px',
+          }}>
+            {/* Header */}
+            <div style={styles.modernDialogueHeader}>
+              {/* NPC Info */}
+              <div style={styles.modernNpcInfo}>
+                <img 
+                  src={theme.avatar} 
+                  alt="Momo" 
+                  style={styles.modernNpcAvatar}
+                />
+                <div>
+                  <div style={styles.modernNpcName}>Momo</div>
+                  <div style={styles.modernNpcStatus}>Station Supervisor</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Dialogue Content */}
+            <div style={styles.modernDialogueContent}>
+              <div style={styles.modernNpcMessage}>
+                <div style={styles.modernNpcSpeaker}>MOMO:</div>
+                <p style={styles.modernNpcText}>
+                  Remember:<br/><br/>
+                  Names, birthdays, photos—they're personal.<br/><br/>
+                  We must remove them, ask for permission, and never share carelessly.<br/><br/>
+                  Ready for the next mission?
+                </p>
+                <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
+              </div>
+              
+              <button
+                onClick={handleFillBlankCompleteClose}
+                style={styles.modernActionButton}
+                onMouseOver={(e) => {
+                  e.target.style.borderColor = theme.borderColor
+                  e.target.style.transform = 'translateX(5px)'
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.borderColor = '#E0E0E0'
+                  e.target.style.transform = 'translateX(0)'
+                }}
+              >
+                <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                Yes
+              </button>
+            </div>
+          </div>
+        )
+      })()}
       
       {/* Privacy Data Identification Task */}
       {currentScene === 'datacenter' && showPrivacyTask && (
