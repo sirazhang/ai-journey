@@ -41,6 +41,10 @@ const useSoundEffects = () => {
     playSound('/sound/wrong.mp3', 0.7)
   }, [playSound])
 
+  const playMarkSound = useCallback(() => {
+    playSound('/sound/mark.wav', 0.7)
+  }, [playSound])
+
   return {
     playSound,
     playClickSound,
@@ -49,7 +53,8 @@ const useSoundEffects = () => {
     playSafeSound,
     playAlertSound,
     playCorrectSound,
-    playWrongSound
+    playWrongSound,
+    playMarkSound
   }
 }
 

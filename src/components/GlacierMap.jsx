@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import useTypingSound from '../hooks/useTypingSound'
+import useSoundEffects from '../hooks/useSoundEffects'
 import { useLanguage } from '../contexts/LanguageContext'
 
 // Summary dialogue sequence
@@ -848,6 +849,7 @@ const getDialogueSequences = (t) => ({
 const GlacierMap = ({ onExit }) => {
   const { t, language } = useLanguage()
   const { startTypingSound, stopTypingSound } = useTypingSound('/sound/glacier_typing.wav')
+  const { playCorrectSound, playWrongSound, playClickSound, playMarkSound } = useSoundEffects()
   
   // Helper function to get current timestamp
   const getCurrentTimestamp = () => {
@@ -1896,6 +1898,133 @@ const GlacierMap = ({ onExit }) => {
   const handleRooftopQuizClose = () => {
     setShowRooftopQuiz(false)
     setShowDataCenterArrow(true) // Show arrow to Data Center
+  }
+  
+  // Fill the Blank handlers
+  const handleFillBlankDragStart = (option) => {
+    setDraggedOption(option)
+  }
+  
+  const handleFillBlankDrop = (questionIndex) => {
+    if (!draggedOption) return
+    
+    const question = fillBlankQuestions[questionIndex]
+    const newAnswers = [...fillBlankAnswers]
+    newAnswers[questionIndex] = draggedOption
+    setFillBlankAnswers(newAnswers)
+    
+    // Check if answer is correct
+    if (draggedOption === question.correctAnswer) {
+      playCorrectSound()
+      setFillBlankProgress(fillBlankProgress + 1)
+      
+      // If all questions answered, show completion dialogue after delay
+      if (fillBlankProgress + 1 === 5) {
+        setTimeout(() => {
+          setShowFillBlankTask(false)
+          // Show Momo dialogue
+          alert("Remember:\nNames, birthdays, photos—they're personal.\nWe must remove them, ask for permission, and never share carelessly.\nReady for the next mission?")
+          // TODO: Replace alert with proper dialogue
+          setShowPrivacyTask(true)
+        }, 1000)
+      }
+    } else {
+      playWrongSound()
+      // Allow retry - don't increment progress
+    }
+    
+    setDraggedOption(null)
+  }
+  
+  const handleFillBlankDragOver = (e) => {
+    e.preventDefault()
+  }
+  
+  // Privacy Task handlers
+  const handlePrivacyMouseDown = (e) => {
+    setPrivacySelecting(true)
+    setPrivacySelectionStart({ x: e.clientX, y: e.clientY })
+  }
+  
+  const handlePrivacyMouseMove = (e) => {
+    if (privacySelecting) {
+      setPrivacySelectionEnd({ x: e.clientX, y: e.clientY })
+    }
+  }
+  
+  const handlePrivacyMouseUp = (e) => {
+    if (!privacySelecting) return
+    
+    setPrivacySelecting(false)
+    
+    // Check if selection matches any privacy item
+    const selection = window.getSelection().toString().trim()
+    if (selection) {
+      checkPrivacySelection(selection)
+    }
+    
+    setPrivacySelectionStart(null)
+    setPrivacySelectionEnd(null)
+  }
+  
+  const checkPrivacySelection = (selection) => {
+    const currentDoc = privacyDocuments[privacyTaskDocument - 1]
+    const matchedItem = currentDoc.items.find(item => {
+      if (item.isMultiPart) {
+        return item.parts.some(part => selection.includes(part))
+      }
+      return selection.includes(item.text) || selection.includes(item.hint)
+    })
+    
+    if (matchedItem && !privacyFoundItems.includes(matchedItem.id)) {
+      playMarkSound()
+      setPrivacyFoundItems([...privacyFoundItems, matchedItem.id])
+    } else if (!matchedItem) {
+      playWrongSound()
+    }
+  }
+  
+  const handlePrivacySubmit = () => {
+    const currentDoc = privacyDocuments[privacyTaskDocument - 1]
+    const allFound = currentDoc.items.every(item => privacyFoundItems.includes(item.id))
+    
+    if (allFound) {
+      playCorrectSound()
+      
+      if (privacyTaskDocument < 3) {
+        // Move to next document
+        setTimeout(() => {
+          setPrivacyTaskDocument(privacyTaskDocument + 1)
+          setPrivacyFoundItems([])
+        }, 500)
+      } else {
+        // All documents complete
+        setTimeout(() => {
+          setShowPrivacyTask(false)
+          // Show final dialogue and enable color map
+          alert("You did it! You protected the privacy by removing name, address, phone, and photo.\nNow all data is safe to use — great work!")
+          // TODO: Replace with proper dialogue
+          // Trigger color map enable
+          setCurrentScene('reloading')
+          setReloadingProgress(0)
+          
+          let progress = 0
+          const loadingInterval = setInterval(() => {
+            progress += 2
+            setReloadingProgress(progress)
+            
+            if (progress >= 100) {
+              clearInterval(loadingInterval)
+              setTimeout(() => {
+                setCurrentScene('complete')
+              }, 500)
+            }
+          }, 50)
+        }, 1000)
+      }
+    } else {
+      playWrongSound()
+    }
   }
   
   // Handle Glitch NPC click
@@ -7215,6 +7344,145 @@ const GlacierMap = ({ onExit }) => {
           </div>
         )
       })()}
+      
+      {/* Data Center Momo NPC */}
+      {currentScene === 'datacenter' && (
+        <div 
+          style={{
+            position: 'absolute',
+            right: '450px',
+            bottom: '0px',
+            width: '300px',
+            height: '300px',
+            zIndex: 50,
+          }}
+        >
+          <img 
+            src="/glacier/npc/momo.png"
+            alt="Momo"
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          />
+        </div>
+      )}
+      
+      {/* Fill the Blank Task */}
+      {currentScene === 'datacenter' && showFillBlankTask && (
+        <div style={{
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '800px',
+          background: 'rgba(255, 255, 255, 0.8)',
+          backdropFilter: 'blur(10px)',
+          borderRadius: '20px',
+          padding: '40px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+          zIndex: 200,
+        }}>
+          {/* Header */}
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px'}}>
+            <div style={{fontSize: '24px', fontWeight: 'bold', color: '#333'}}>Fill the Blank</div>
+            <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+              {[0, 1, 2, 3, 4].map(i => (
+                <div key={i} style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  background: i < fillBlankProgress ? '#004aad' : '#e0e0e0',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontWeight: 'bold',
+                }}>
+                  {i < fillBlankProgress ? '✓' : ''}
+                </div>
+              ))}
+              <div style={{marginLeft: '10px', fontSize: '20px', fontWeight: 'bold', color: '#004aad'}}>
+                {fillBlankProgress}/5
+              </div>
+            </div>
+          </div>
+          
+          {/* Current Question */}
+          {fillBlankProgress < 5 && (
+            <>
+              <div style={{
+                fontSize: '20px',
+                lineHeight: '1.6',
+                marginBottom: '30px',
+                color: '#333',
+                minHeight: '80px',
+              }}>
+                {fillBlankQuestions[fillBlankProgress].text.split('______').map((part, i, arr) => (
+                  <span key={i}>
+                    {part}
+                    {i < arr.length - 1 && (
+                      <span 
+                        onDrop={() => handleFillBlankDrop(fillBlankProgress)}
+                        onDragOver={handleFillBlankDragOver}
+                        style={{
+                          display: 'inline-block',
+                          minWidth: '150px',
+                          height: '40px',
+                          border: '2px dashed #004aad',
+                          borderRadius: '8px',
+                          margin: '0 10px',
+                          verticalAlign: 'middle',
+                          background: fillBlankAnswers[fillBlankProgress] ? 
+                            (fillBlankAnswers[fillBlankProgress] === fillBlankQuestions[fillBlankProgress].correctAnswer ? 
+                              '#4f7f30' : '#FF0845') : 'rgba(0, 74, 173, 0.1)',
+                          color: fillBlankAnswers[fillBlankProgress] ? 'white' : 'transparent',
+                          fontWeight: 'bold',
+                          textAlign: 'center',
+                          lineHeight: '40px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        {fillBlankAnswers[fillBlankProgress] || ''}
+                      </span>
+                    )}
+                  </span>
+                ))}
+              </div>
+              
+              {/* Options */}
+              <div style={{display: 'flex', gap: '20px', justifyContent: 'center'}}>
+                {fillBlankQuestions[fillBlankProgress].options.map((option, i) => (
+                  <div
+                    key={i}
+                    draggable
+                    onDragStart={() => handleFillBlankDragStart(option)}
+                    style={{
+                      padding: '15px 30px',
+                      background: 'white',
+                      border: '2px solid #333',
+                      borderRadius: '12px',
+                      fontSize: '18px',
+                      fontWeight: 'bold',
+                      cursor: 'grab',
+                      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1)',
+                      transition: 'transform 0.2s, box-shadow 0.2s',
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.transform = 'translateY(-4px)'
+                      e.target.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.3), 0 3px 6px rgba(0, 0, 0, 0.15)'
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.transform = 'translateY(0)'
+                      e.target.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1)'
+                    }}
+                  >
+                    {option}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+      
     </div>
   )
 }
