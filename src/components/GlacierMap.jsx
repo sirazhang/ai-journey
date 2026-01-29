@@ -7483,6 +7483,240 @@ const GlacierMap = ({ onExit }) => {
         </div>
       )}
       
+      {/* Privacy Data Identification Task */}
+      {currentScene === 'datacenter' && showPrivacyTask && (
+        <div style={{
+          position: 'absolute',
+          left: '50%',
+          top: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '90%',
+          maxWidth: '1400px',
+          height: '85%',
+          display: 'flex',
+          gap: '30px',
+          zIndex: 200,
+          cursor: `url(/glacier/icon/marker.png) 12 12, crosshair`,
+        }}>
+          {/* Left: Document Content */}
+          <div style={{
+            flex: 1,
+            background: 'rgba(255, 255, 255, 0.9)',
+            borderRadius: '20px',
+            padding: '30px',
+            overflow: 'auto',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+          }}
+          onMouseDown={handlePrivacyMouseDown}
+          onMouseMove={handlePrivacyMouseMove}
+          onMouseUp={handlePrivacyMouseUp}
+          >
+            <div style={{fontFamily: "'Roboto Mono', monospace", fontSize: '14px', lineHeight: '1.8', color: '#333'}}>
+              <div style={{fontSize: '18px', fontWeight: 'bold', marginBottom: '10px'}}>
+                Privacy Data identification
+              </div>
+              <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '5px'}}>
+                {privacyDocuments[privacyTaskDocument - 1].title}
+              </div>
+              <div style={{fontSize: '12px', color: '#666', marginBottom: '20px'}}>
+                {privacyDocuments[privacyTaskDocument - 1].subtitle}
+              </div>
+              
+              {privacyDocuments[privacyTaskDocument - 1].header && (
+                <div style={{marginBottom: '15px', whiteSpace: 'pre-line'}}>
+                  {privacyDocuments[privacyTaskDocument - 1].header}
+                </div>
+              )}
+              
+              {privacyDocuments[privacyTaskDocument - 1].hasImage && (
+                <div style={{marginBottom: '20px', textAlign: 'center'}}>
+                  <img 
+                    src={privacyDocuments[privacyTaskDocument - 1].imagePath}
+                    alt="Social Post"
+                    style={{
+                      maxWidth: '100%',
+                      borderRadius: '12px',
+                      filter: privacyFoundItems.includes('image1') ? 'blur(20px)' : 'none',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => {
+                      if (!privacyFoundItems.includes('image1')) {
+                        playMarkSound()
+                        setPrivacyFoundItems([...privacyFoundItems, 'image1'])
+                      }
+                    }}
+                  />
+                </div>
+              )}
+              
+              <div style={{whiteSpace: 'pre-line', position: 'relative'}}>
+                {privacyDocuments[privacyTaskDocument - 1].content.split('\n').map((line, i) => {
+                  // Check if this line contains any found items
+                  const foundItem = privacyDocuments[privacyTaskDocument - 1].items.find(item => 
+                    !item.isImage && privacyFoundItems.includes(item.id) && line.includes(item.text)
+                  )
+                  
+                  if (foundItem) {
+                    const parts = line.split(foundItem.text)
+                    return (
+                      <div key={i} style={{marginBottom: '5px'}}>
+                        {parts[0]}
+                        <span style={{
+                          background: '#000',
+                          color: '#000',
+                          padding: '2px 4px',
+                          borderRadius: '4px',
+                        }}>
+                          {foundItem.text}
+                        </span>
+                        {parts[1]}
+                      </div>
+                    )
+                  }
+                  
+                  return <div key={i} style={{marginBottom: '5px'}}>{line}</div>
+                })}
+              </div>
+            </div>
+          </div>
+          
+          {/* Right: Progress Card */}
+          <div style={{
+            width: '350px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px',
+          }}>
+            {/* Top Card: Items Found */}
+            <div style={{
+              background: 'white',
+              borderRadius: '16px',
+              padding: '25px',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+            }}>
+              <div style={{fontSize: '16px', fontWeight: 'bold', marginBottom: '15px'}}>Items Found</div>
+              
+              <div style={{marginBottom: '15px'}}>
+                <div style={{fontSize: '12px', color: '#666', marginBottom: '5px'}}>Total Progress</div>
+                <div style={{fontSize: '18px', fontWeight: 'bold', color: '#004aad', marginBottom: '8px'}}>
+                  {privacyFoundItems.length}/{privacyDocuments[privacyTaskDocument - 1].items.length}
+                </div>
+                <div style={{
+                  width: '100%',
+                  height: '8px',
+                  background: 'rgba(0, 74, 173, 0.2)',
+                  borderRadius: '4px',
+                  overflow: 'hidden',
+                }}>
+                  <div style={{
+                    width: `${(privacyFoundItems.length / privacyDocuments[privacyTaskDocument - 1].items.length) * 100}%`,
+                    height: '100%',
+                    background: '#004aad',
+                    transition: 'width 0.3s ease',
+                  }} />
+                </div>
+              </div>
+              
+              {/* Checklist */}
+              <div style={{marginBottom: '20px'}}>
+                {privacyDocuments[privacyTaskDocument - 1].items.map(item => (
+                  <div key={item.id} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    marginBottom: '10px',
+                  }}>
+                    {privacyFoundItems.includes(item.id) ? (
+                      <img src="/glacier/icon/complete.svg" alt="Complete" style={{width: '20px', height: '20px'}} />
+                    ) : (
+                      <div style={{
+                        width: '20px',
+                        height: '20px',
+                        border: '2px solid #ccc',
+                        borderRadius: '50%',
+                      }} />
+                    )}
+                    <div style={{
+                      fontSize: '13px',
+                      color: privacyFoundItems.includes(item.id) ? '#4f7f30' : '#666',
+                      fontWeight: privacyFoundItems.includes(item.id) ? 'bold' : 'normal',
+                    }}>
+                      {item.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div style={{
+                fontSize: '12px',
+                color: '#666',
+                lineHeight: '1.5',
+                marginBottom: '15px',
+                padding: '12px',
+                background: '#f5f5f5',
+                borderRadius: '8px',
+              }}>
+                Circle all private information in the log.<br/>
+                Then click "Submit" to check if you found them all!
+              </div>
+              
+              {/* Submit Button */}
+              {privacyFoundItems.length === privacyDocuments[privacyTaskDocument - 1].items.length && (
+                <button
+                  onClick={handlePrivacySubmit}
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    background: '#000',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s',
+                  }}
+                  onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
+                  onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                >
+                  Submit
+                </button>
+              )}
+            </div>
+            
+            {/* Bottom: Task Progress */}
+            <div style={{
+              background: 'white',
+              borderRadius: '16px',
+              padding: '20px',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+            }}>
+              <div style={{fontSize: '14px', fontWeight: 'bold', marginBottom: '15px'}}>
+                Privacy Data identification
+              </div>
+              <div style={{display: 'flex', gap: '15px', justifyContent: 'center'}}>
+                {[1, 2, 3].map(i => (
+                  <div key={i} style={{
+                    width: '50px',
+                    height: '50px',
+                    borderRadius: '50%',
+                    background: i < privacyTaskDocument ? '#004aad' : i === privacyTaskDocument ? '#004aad' : '#e0e0e0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontWeight: 'bold',
+                    fontSize: '18px',
+                  }}>
+                    {i < privacyTaskDocument ? '✓' : i}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
     </div>
   )
 }
