@@ -86,7 +86,7 @@ const GameInterface = ({ onComplete }) => {
     let result = text
     highlights.forEach(highlight => {
       const regex = new RegExp(`(${highlight})`, 'gi')
-      result = result.replace(regex, `<span style="color: #FFBBC4; font-weight: 500;">$1</span>`)
+      result = result.replace(regex, `<span style="color: #FFFFFF; font-weight: 600;">$1</span>`)
     })
     return <span dangerouslySetInnerHTML={{ __html: result }} />
   }
@@ -136,19 +136,19 @@ const GameInterface = ({ onComplete }) => {
     dialogueBox: {
       padding: '30px 40px',
       borderRadius: '25px',
-      background: 'rgba(255, 255, 255, 0.08)',
+      background: 'rgba(71, 23, 101, 0.7)', // Reduced opacity for better glassmorphism
       backdropFilter: 'blur(20px)',
       WebkitBackdropFilter: 'blur(20px)',
-      border: '1px solid rgba(255, 255, 255, 0.18)',
-      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(100, 149, 237, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+      border: '2px solid rgba(205, 165, 247, 0.3)',
+      boxShadow: '0 8px 32px 0 rgba(71, 23, 101, 0.5)',
       position: 'relative',
     },
     dialogueText: {
       fontFamily: "'Roboto', sans-serif",
       fontSize: '18px',
       fontWeight: 400,
-      color: '#fff',
-      lineHeight: 1.7,
+      color: '#CDA5F7', // Light purple for regular text
+      lineHeight: 2.0, // Increased line spacing
       marginBottom: '20px',
       textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)',
     },
@@ -171,15 +171,15 @@ const GameInterface = ({ onComplete }) => {
       fontSize: '14px',
       fontWeight: 500,
       color: '#fff',
-      background: 'linear-gradient(135deg, rgba(81, 112, 255, 0.6), rgba(75, 0, 130, 0.6))',
+      background: '#CDA5F7', // Light purple background
       backdropFilter: 'blur(10px)',
       WebkitBackdropFilter: 'blur(10px)',
-      border: '1px solid rgba(100, 149, 237, 0.5)',
+      border: '1px solid rgba(205, 165, 247, 0.8)',
       padding: '10px 30px',
       borderRadius: '20px',
       cursor: 'pointer',
       transition: 'all 0.2s',
-      boxShadow: '0 0 15px rgba(81, 112, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+      boxShadow: '0 0 15px rgba(205, 165, 247, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
       textShadow: '0 1px 2px rgba(0, 0, 0, 0.5)',
     },
     skipButton: {
@@ -257,13 +257,13 @@ const GameInterface = ({ onComplete }) => {
                 style={styles.continueButton}
                 onClick={handleContinue}
                 onMouseOver={(e) => {
-                  e.target.style.background = 'linear-gradient(135deg, rgba(81, 112, 255, 0.8), rgba(75, 0, 130, 0.8))'
-                  e.target.style.boxShadow = '0 0 20px rgba(81, 112, 255, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+                  e.target.style.background = '#B88FE8' // Darker purple on hover
+                  e.target.style.boxShadow = '0 0 20px rgba(205, 165, 247, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
                   e.target.style.transform = 'scale(1.02)'
                 }}
                 onMouseOut={(e) => {
-                  e.target.style.background = 'linear-gradient(135deg, rgba(81, 112, 255, 0.6), rgba(75, 0, 130, 0.6))'
-                  e.target.style.boxShadow = '0 0 15px rgba(81, 112, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+                  e.target.style.background = '#CDA5F7'
+                  e.target.style.boxShadow = '0 0 15px rgba(205, 165, 247, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
                   e.target.style.transform = 'scale(1)'
                 }}
               >

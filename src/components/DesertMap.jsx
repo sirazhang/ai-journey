@@ -89,18 +89,36 @@ const npcDialogues = {
     text: "Warning! This desert is dangerous. We need to find that yellow robot, 'Alpha,' immediately! He should be in the castle ahead.",
     speaker: 'Glitch'
   },
-  npc1: {
-    text: "Run! Just run! The castle's defense system has gone mad! It's attacking everyone! Unless you are looking for 'Alpha'... He's still deep inside ➡️, trying to shut down the system!",
-    speaker: 'NPC 1'
-  },
-  npc2: {
-    text: "Don't go there! The castle ⬅️ thinks we are monsters! Run away!",
-    speaker: 'NPC 2'
-  },
-  gatekeeper: {
-    text: "You... you must be looking for Alpha. He's inside the main hall. But the castle is terrifying right now. You can try zooming in to check the situation, but I'm not risking my life going in there.",
-    speaker: 'Gatekeeper'
-  },
+  npc1: [
+    {
+      text: "Run! Just run! The castle's defense system has gone mad! It's attacking everyone!",
+      speaker: 'NPC1'
+    },
+    {
+      text: "Unless you are looking for 'Alpha'... He's still deep inside ➡️, trying to shut down the system!",
+      speaker: 'NPC1'
+    }
+  ],
+  npc2: [
+    {
+      text: "Don't go there! The castle ⬅️ thinks we are monsters!",
+      speaker: 'NPC2'
+    },
+    {
+      text: "Run away!",
+      speaker: 'NPC2'
+    }
+  ],
+  gatekeeper: [
+    {
+      text: "You... you must be looking for Alpha. He's inside the main hall. But the castle is terrifying right now.",
+      speaker: 'Gatekeeper'
+    },
+    {
+      text: "You can try zooming in to check the situation, but I'm not risking my life going in there.",
+      speaker: 'Gatekeeper'
+    }
+  ],
   // Post-Mission 3 NPCs (Color mode)
   npc5: {
     text: "Enjoy the colors, human. I will keep watch—quietly this time.",
@@ -125,7 +143,7 @@ const alphaDialogueFlow = [
   {
     type: 'message',
     speaker: 'Alpha',
-    text: "Zzz... zzz... Hello, humans. Apologies for the blackout. As you can see, the staff have all fled. There is no one left to run the power generators."
+    text: "Hello, **humans**. Sorry for the sudden blackout. As you can see, the staff have all fled."
   },
   {
     type: 'choice',
@@ -134,7 +152,7 @@ const alphaDialogueFlow = [
   {
     type: 'message',
     speaker: 'Alpha',
-    text: "It's a long story. It started with the Sandstorm Festival... The sandstorm has obscured the sensors. The AI's vision is blurry and full of noise."
+    text: "Here's what happened: During the annual **Sandstorm**, a massive dust storm rolled in. The camera feeds are now full of noise, glare, and motion blur."
   },
   {
     type: 'choice',
@@ -143,7 +161,7 @@ const alphaDialogueFlow = [
   {
     type: 'message',
     speaker: 'Alpha',
-    text: "Critically, the system cannot distinguish between 'employees covered in sand' and 'Giant Sandworms'. It thinks my colleagues are monsters, so it attacked them!"
+    text: "**Critical issue**: Our vision AI has never been trained on workers covered in sand. In its eyes, workers look like… well… **giant sandworms**. It attacked the staff."
   },
   {
     type: 'choice',
@@ -152,16 +170,11 @@ const alphaDialogueFlow = [
   {
     type: 'message',
     speaker: 'Alpha',
-    text: "We need to retrain the algorithm immediately. The current system has never seen workers in a sandstorm before. Please help me collect photos of workers covered in sand. The more, the better!"
+    text: "We need your help right now: 📸 Please send photos or video clips of **workers in sandstorm conditions**—hoods up, goggles on, half-buried in dust, whatever you've got."
   },
   {
-    type: 'choice',
-    text: "Continue"
-  },
-  {
-    type: 'message',
-    speaker: 'Alpha',
-    text: "We need to teach the AI that these 'fuzzy shapes' are actually friends, not sandworms."
+    type: 'missionAccept',
+    text: "Mission Accepted"
   }
 ]
 
@@ -179,35 +192,18 @@ const alphaPhase2DialogueFlow = [
     image: '/desert/sample.png'
   },
   {
-    type: 'choice',
-    text: "Continue"
-  },
-  {
     type: 'message',
     speaker: 'Alpha',
     text: "Look. The 'workers' I learned about before were clear, like the left image. But in the photos you took, there is flying sand everywhere."
   },
   {
-    type: 'choice',
-    text: "Continue"
-  },
-  {
     type: 'message',
     speaker: 'Alpha',
-    text: "In the AI world, we call this interference—sand, rain, or blurry pixels—'Noise'. Just like looking through dirty glasses, Noise reduces Data Quality."
-  },
-  {
-    type: 'choice',
-    text: "Continue"
-  },
-  {
-    type: 'message',
-    speaker: 'Alpha',
-    text: "Before we start retraining, why did AI mistake the employee holding a broom for a 'Sandworm'?"
+    text: "In the AI world, we call this interference—sand, rain, or blurry pixels—'**Noise**'. Just like looking through dirty glasses, **Noise** reduces Data Quality."
   },
   {
     type: 'quiz',
-    question: "Why did AI mistake the employee for a Sandworm?",
+    question: "Now tell me, Why did AI mistake the employee?",
     options: [
       { text: "Because I am stupid and my chip is broken.", correct: false },
       { text: "Because 'Noise' (sand) lowered the data quality and hid the features.", correct: true },
@@ -220,18 +216,52 @@ const alphaPhase2DialogueFlow = [
     text: "Exactly! High-quality Data is crucial for AI. Since we have to use these 'noisy' photos now..."
   },
   {
-    type: 'choice',
-    text: "Continue"
+    type: 'message',
+    speaker: 'Alpha',
+    text: "I need you to help me distinguish: which ones are real humans and which ones are just noise. Let's start labeling!"
+  }
+]
+
+// Mission 2 completion dialogue flow (after all images are labeled)
+const mission2CompletionFlow = [
+  {
+    type: 'message',
+    speaker: 'Alpha',
+    text: "Thank you for your corrections. Now, a quick question: 🔍 What's the scientific term for what you just did to help me fix those images?"
+  },
+  {
+    type: 'quiz',
+    question: "What's the scientific term for what you just did?",
+    options: [
+      { text: "A. Data Mining", correct: false },
+      { text: "B. Data Labeling", correct: true },
+      { text: "C. Data Cleaning", correct: false }
+    ]
   },
   {
     type: 'message',
     speaker: 'Alpha',
-    text: "I need you to help me distinguish: which ones are real humans and which ones are just noise. Let's start labeling!"
+    text: "Exactly—**Data Labeling**! Think of AI like a curious student. And you? You're the teacher. That's the heart of **Supervised Learning**."
+  },
+  {
+    type: 'message',
+    speaker: 'Alpha',
+    text: "—but wait. ⚠️ Alert! New anomaly detected. I can observe actions… but I still struggle with meaning."
+  },
+  {
+    type: 'message',
+    speaker: 'Alpha',
+    text: "The same action—a raised arm, a flashing light, a sudden movement—can mean completely different things depending on the surroundings."
+  },
+  {
+    type: 'message',
+    speaker: 'Alpha',
+    text: "Let's analyze how Environmental Context alters my judgment."
   },
   {
     type: 'action',
-    text: "GO",
-    action: 'startLabeling'
+    text: "Accepted",
+    action: 'startMission3'
   }
 ]
 
@@ -253,8 +283,8 @@ const DesertMap = ({ onExit }) => {
     switch(npcName.toLowerCase()) {
       case 'alpha':
         return {
-          borderColor: '#FFD700',
-          progressColor: '#FFD700',
+          borderColor: '#FABA14',
+          progressColor: '#FABA14',
           avatar: '/desert/npc/npc4.png'
         }
       case 'sparky':
@@ -271,8 +301,8 @@ const DesertMap = ({ onExit }) => {
         }
       default:
         return {
-          borderColor: '#FFD700',
-          progressColor: '#FFD700',
+          borderColor: '#FABA14',
+          progressColor: '#FABA14',
           avatar: '/desert/npc/npc4.png'
         }
     }
@@ -281,6 +311,9 @@ const DesertMap = ({ onExit }) => {
   const [currentSegment, setCurrentSegment] = useState(SEGMENTS.SEGMENT_1)
   const [showDialogue, setShowDialogue] = useState(false)
   const [currentDialogue, setCurrentDialogue] = useState(null)
+  const [currentNpcType, setCurrentNpcType] = useState(null) // Track which NPC is speaking
+  const [currentDialogueStep, setCurrentDialogueStep] = useState(0) // Track multi-part dialogue step
+  const [glitchInput, setGlitchInput] = useState('') // For Glitch chat input
   const [displayedText, setDisplayedText] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [showCursor, setShowCursor] = useState(true)
@@ -292,6 +325,7 @@ const DesertMap = ({ onExit }) => {
   
   // Mission 1 states
   const [missionStarted, setMissionStarted] = useState(false)
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
   const [showCamera, setShowCamera] = useState(false)
   const [showPhoto, setShowPhoto] = useState(false)
   const [currentPhotoObject, setCurrentPhotoObject] = useState(null)
@@ -300,11 +334,18 @@ const DesertMap = ({ onExit }) => {
   
   // Phase 2 states
   const [isPhase2, setIsPhase2] = useState(false)
+  const [phase2Completed, setPhase2Completed] = useState(false) // Track if Phase 2 is completed
   const [currentPhase2Step, setCurrentPhase2Step] = useState(0)
   const [waitingForPhase2Choice, setWaitingForPhase2Choice] = useState(false)
   const [phase2Messages, setPhase2Messages] = useState([])
   const [showQuiz, setShowQuiz] = useState(false)
   const [selectedAnswer, setSelectedAnswer] = useState(null)
+  
+  // Mission 2 completion states
+  const [isMission2Completion, setIsMission2Completion] = useState(false)
+  const [mission2CompletionMessages, setMission2CompletionMessages] = useState([])
+  const [currentMission2CompletionStep, setCurrentMission2CompletionStep] = useState(0)
+  const [showMission2CompletionQuiz, setShowMission2CompletionQuiz] = useState(false)
   
   // Alpha dialogue typing states
   const [alphaDisplayedText, setAlphaDisplayedText] = useState('')
@@ -316,6 +357,7 @@ const DesertMap = ({ onExit }) => {
   const [showProgressBar, setShowProgressBar] = useState(false)
   const [progressValue, setProgressValue] = useState(0)
   const [showMission2, setShowMission2] = useState(false)
+  const [showMission2StartButton, setShowMission2StartButton] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [mission2Results, setMission2Results] = useState([])
   const [showGlitchWarning, setShowGlitchWarning] = useState(false)
@@ -328,8 +370,10 @@ const DesertMap = ({ onExit }) => {
   const [showMission3, setShowMission3] = useState(false)
   const [mission3Phase, setMission3Phase] = useState('intro') // 'intro', 'sample', 'puzzle1', 'puzzle2', 'puzzle3', 'quiz1', 'quiz2', 'complete'
   const [selectedTag, setSelectedTag] = useState(null)
+  const [clickedTags, setClickedTags] = useState([]) // Track clicked tags in sample phase
   const [showAlphaIcon, setShowAlphaIcon] = useState(false)
   const [currentPuzzle, setCurrentPuzzle] = useState(null)
+  const [wrongAnswerIndex, setWrongAnswerIndex] = useState(null) // Track wrong answer selection
   
   // Post-Mission 3 states
   const [showMission3Loading, setShowMission3Loading] = useState(false)
@@ -343,9 +387,9 @@ const DesertMap = ({ onExit }) => {
       image: '/desert/Mission/sample.png',
       aiLogic: 'AI Logic: "No movement detected → Worker is dead."',
       tags: [
-        { id: 'game', text: 'Game Area', correct: true, update: 'Updated AI Logic: "User is simulating injury within a game. Status: PLAYING."' },
-        { id: 'distance', text: 'Distance: Far away', correct: true, update: 'Updated AI Logic: "Visual resolution low. Status: INSUFFICIENT DATA."' },
-        { id: 'time', text: 'Time observed: 1 second', correct: true, update: 'Updated AI Logic: "Observation window too short. Status: PAUSED."' }
+        { id: 'game', text: 'Safe Zone: Playground', correct: true, update: 'Updated AI Logic: "User is simulating injury within a game. Status: PLAYING."' },
+        { id: 'distance', text: 'Observer at a Distance', correct: true, update: 'Updated AI Logic: "Visual resolution low. Status: INSUFFICIENT DATA."' },
+        { id: 'time', text: 'Short Observation Window', correct: true, update: 'Updated AI Logic: "Observation window too short. Status: PAUSED."' }
       ]
     },
     puzzles: [
@@ -449,7 +493,7 @@ const DesertMap = ({ onExit }) => {
     }
   }, [currentSegment, currentView, missionStarted, capturedObjects])
 
-  // Typing effect
+  // Typing effect with auto-progression for multi-part dialogues
   useEffect(() => {
     if (!currentDialogue || !showDialogue) return
     
@@ -467,11 +511,21 @@ const DesertMap = ({ onExit }) => {
       } else {
         setIsTyping(false)
         clearInterval(typingInterval)
+        
+        // Auto-progress to next dialogue part after 2 seconds
+        const dialogue = npcDialogues[currentNpcType]
+        if (Array.isArray(dialogue) && currentDialogueStep < dialogue.length - 1) {
+          setTimeout(() => {
+            const nextStep = currentDialogueStep + 1
+            setCurrentDialogueStep(nextStep)
+            setCurrentDialogue(dialogue[nextStep])
+          }, 2000) // Wait 2 seconds before showing next part
+        }
       }
     }, 30)
 
     return () => clearInterval(typingInterval)
-  }, [currentDialogue, showDialogue])
+  }, [currentDialogue, showDialogue, currentNpcType, currentDialogueStep])
 
   // Cursor blink effect
   useEffect(() => {
@@ -480,6 +534,39 @@ const DesertMap = ({ onExit }) => {
     }, 500)
     return () => clearInterval(cursorInterval)
   }, [])
+
+  // Track cursor position for custom camera cursor
+  useEffect(() => {
+    if (!missionStarted || colorMode || capturedObjects.length >= 11) return
+    
+    const handleMouseMove = (e) => {
+      setCursorPosition({ x: e.clientX, y: e.clientY })
+    }
+    
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [missionStarted, colorMode, capturedObjects.length])
+
+  // Auto-show dialogue when entering a new segment with NPCs
+  useEffect(() => {
+    // Don't auto-show during missions, in castle/gate views, or when showing Alpha dialogue
+    if (missionStarted || colorMode || currentView !== 'desert' || showAlphaDialogue) return
+    
+    // Don't auto-show if currently in Mission 2 (check if dialogue has isMission2 flag)
+    if (currentDialogue && currentDialogue.isMission2) return
+    
+    // Close any existing dialogue first
+    setShowDialogue(false)
+    
+    // Auto-show dialogue based on current segment
+    if (currentSegment === SEGMENTS.SEGMENT_1) {
+      setTimeout(() => handleNpcClick('npc1'), 300) // Show NPC1 dialogue
+    } else if (currentSegment === SEGMENTS.SEGMENT_2) {
+      setTimeout(() => handleNpcClick('gatekeeper'), 300) // Show Gatekeeper dialogue
+    } else if (currentSegment === SEGMENTS.SEGMENT_3) {
+      setTimeout(() => handleNpcClick('npc2'), 300) // Show NPC2 dialogue
+    }
+  }, [currentSegment, missionStarted, colorMode, currentView, showAlphaDialogue, currentDialogue])
 
   // Loading text typing effect
   useEffect(() => {
@@ -547,7 +634,18 @@ const DesertMap = ({ onExit }) => {
   }
 
   const handleNpcClick = (npcType) => {
-    setCurrentDialogue(npcDialogues[npcType])
+    const dialogue = npcDialogues[npcType]
+    setCurrentNpcType(npcType) // Track which NPC is speaking
+    
+    // Check if dialogue is an array (multi-part)
+    if (Array.isArray(dialogue)) {
+      setCurrentDialogue(dialogue[0])
+      setCurrentDialogueStep(0)
+    } else {
+      setCurrentDialogue(dialogue)
+      setCurrentDialogueStep(0)
+    }
+    
     setShowDialogue(true)
   }
 
@@ -558,10 +656,177 @@ const DesertMap = ({ onExit }) => {
         text: `Mission Progress: ${capturedObjects.length}/11 objects photographed. Keep exploring!`,
         speaker: 'Glitch'
       })
+      setCurrentNpcType('glitch')
       setShowDialogue(true)
     } else {
       // Show original Glitch dialogue
+      setCurrentNpcType('glitch')
       handleNpcClick('glitch')
+    }
+  }
+
+  // Handle Glitch chat send
+  const handleGlitchSend = () => {
+    if (glitchInput.trim()) {
+      console.log('User message to Glitch:', glitchInput)
+      // Here you can add logic to handle the user's message
+      setGlitchInput('') // Clear input after sending
+    }
+  }
+
+  // Handle Enter key in input
+  const handleGlitchInputKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleGlitchSend()
+    }
+  }
+
+  // Format text to highlight "Alpha" in bold and red, and **text** in bold yellow
+  const formatDialogueText = (text) => {
+    if (!text) return text
+    
+    // First handle **text** for bold yellow
+    const segments = []
+    let currentText = text
+    let segmentIndex = 0
+    
+    // Split by **text** pattern
+    const boldPattern = /(\*\*.*?\*\*)/g
+    const boldParts = currentText.split(boldPattern)
+    
+    boldParts.forEach((part, idx) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        // This is bold yellow text
+        const content = part.slice(2, -2)
+        segments.push(
+          <span key={`bold-${segmentIndex++}`} style={{ fontWeight: 'bold', color: '#FABA14' }}>
+            {content}
+          </span>
+        )
+      } else {
+        // Now split this part by 'Alpha' for red highlighting
+        const alphaParts = part.split(/(Alpha|'Alpha')/)
+        alphaParts.forEach((alphaPart, alphaIdx) => {
+          if (alphaPart === 'Alpha' || alphaPart === "'Alpha'") {
+            segments.push(
+              <span key={`alpha-${segmentIndex++}`} style={{ fontWeight: 'bold', color: '#FF0845' }}>
+                {alphaPart}
+              </span>
+            )
+          } else if (alphaPart) {
+            segments.push(alphaPart)
+          }
+        })
+      }
+    })
+    
+    return segments
+  }
+
+  // Format Glitch dialogue text - 'Alpha' in white, rest in light purple
+  const formatGlitchText = (text) => {
+    if (!text) return text
+    
+    // Split by 'Alpha' and wrap it with span
+    const parts = text.split(/('Alpha'|Alpha)/)
+    return parts.map((part, index) => {
+      if (part === 'Alpha' || part === "'Alpha'") {
+        return (
+          <span key={index} style={{ fontWeight: 'bold', color: '#FFFFFF' }}>
+            {part}
+          </span>
+        )
+      }
+      return part
+    })
+  }
+
+  // Format text with bold markdown (**text**)
+  const formatTextWithBold = (text) => {
+    if (!text) return text
+    
+    const parts = text.split(/(\*\*[^*]+\*\*)/)
+    return parts.map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        const boldText = part.slice(2, -2)
+        return (
+          <strong key={index} style={{ fontWeight: 'bold' }}>
+            {boldText}
+          </strong>
+        )
+      }
+      return part
+    })
+  }
+
+  // Get dialogue position based on NPC type
+  const getDialoguePosition = (npcType) => {
+    switch(npcType) {
+      case 'glitch':
+        // Glitch is at top: 15px, right: 15px, width: 120px
+        // Dialogue should be to the left and top of NPC
+        return {
+          position: 'absolute',
+          top: '15px', // Align with NPC top
+          right: '145px', // NPC right (15px) + NPC width (120px) + gap (10px)
+          width: '300px',
+          zIndex: 100,
+        }
+      case 'npc1':
+        // npc1 is at bottom: 20%, left: 20%, height: 50vh
+        // Dialogue should be at top-right of NPC
+        return {
+          position: 'absolute',
+          bottom: 'calc(20% + 50vh - 20px)', // NPC bottom + NPC height - offset for top alignment
+          left: 'calc(20% + 350px)', // NPC left + NPC width + gap (increased from 200px)
+          width: '48%',
+          maxWidth: '600px',
+          zIndex: 100,
+        }
+      case 'npc2':
+        // npc2 is at bottom: 25%, right: 25%, height: 50vh
+        // Dialogue should be at top-left of NPC (but since it's on right side, move it left)
+        return {
+          position: 'absolute',
+          bottom: 'calc(25% + 50vh - 20px)', // NPC bottom + NPC height - offset for top alignment
+          right: 'calc(25% + 350px)', // NPC right + NPC width + gap (increased from 200px)
+          width: '48%',
+          maxWidth: '600px',
+          zIndex: 100,
+        }
+      case 'gatekeeper':
+        // gatekeeper is at bottom: 15%, left: 5%, height: 25vh (moved left)
+        // Dialogue should be at right of NPC, moved down to middle/bottom area
+        return {
+          position: 'absolute',
+          bottom: 'calc(15% + 5vh)', // Further reduced to move dialogue down more
+          left: 'calc(5% + 250px)', // NPC left (5%) + NPC width + gap
+          width: '48%',
+          maxWidth: '600px',
+          zIndex: 100,
+        }
+      case 'npc5':
+      case 'npc6':
+      case 'npc7':
+        // Mission 3 NPCs - adjusted position: moved down, right, and wider
+        return {
+          position: 'absolute',
+          bottom: '50px', // Moved down from 100px to 50px
+          left: '5%', // Moved right from 2% to 5%
+          width: '60%', // Increased from 48% to 60%
+          maxWidth: '750px', // Increased from 600px to 750px
+          zIndex: 100,
+        }
+      default:
+        // Default position
+        return {
+          position: 'absolute',
+          bottom: '100px',
+          left: '2%',
+          width: '48%',
+          maxWidth: '600px',
+          zIndex: 100,
+        }
     }
   }
 
@@ -607,6 +872,7 @@ const DesertMap = ({ onExit }) => {
 
   const handleZoomClick = () => {
     setCurrentView('gate')
+    setShowDialogue(false) // Close dialogue when entering gate view
   }
 
   const handleBackToDesert = () => {
@@ -615,15 +881,36 @@ const DesertMap = ({ onExit }) => {
 
   const handleBackToGate = () => {
     setCurrentView('gate')
+    setShowDialogue(false) // Close dialogue when going back to gate
   }
 
   const handleArrowClick = () => {
     setCurrentView('castle')
+    setShowDialogue(false) // Close dialogue when entering castle view
     // 不自动开始对话，等待用户点击NPC4
   }
 
   const handleAlphaClick = () => {
     console.log('Alpha clicked. Captured objects:', capturedObjects.length)
+    
+    // If currently in Mission 2 (showing dialogue box with isMission2), don't restart
+    if (currentDialogue && currentDialogue.isMission2) {
+      console.log('Already in Mission 2, ignoring click')
+      return
+    }
+    
+    // If Phase 2 is completed, don't restart
+    if (phase2Completed) {
+      console.log('Phase 2 already completed, ignoring click')
+      return
+    }
+    
+    // If already in Phase 2 dialogue, don't restart
+    if (isPhase2 && showAlphaDialogue) {
+      console.log('Already in Phase 2 dialogue, ignoring click')
+      return
+    }
+    
     // Check if all 11 objects are collected
     if (capturedObjects.length === 11) {
       console.log('Starting Phase 2 dialogue')
@@ -672,12 +959,18 @@ const DesertMap = ({ onExit }) => {
     setCurrentAlphaStep(nextStep)
     console.log('Next step will be:', nextStep)
     
-    // 检查下一项是否是选择
-    if (nextStep < alphaDialogueFlow.length && alphaDialogueFlow[nextStep].type === 'choice') {
-      console.log('Next item is a choice:', alphaDialogueFlow[nextStep])
-      setWaitingForChoice(true)
+    // 检查下一项是否是选择或任务接受按钮
+    if (nextStep < alphaDialogueFlow.length) {
+      const nextItemType = alphaDialogueFlow[nextStep].type
+      if (nextItemType === 'choice' || nextItemType === 'missionAccept') {
+        console.log('Next item is a choice or mission accept:', alphaDialogueFlow[nextStep])
+        setWaitingForChoice(true)
+      } else {
+        console.log('Next item is not a choice')
+        setWaitingForChoice(false)
+      }
     } else {
-      console.log('Next item is not a choice or dialogue ended')
+      console.log('Dialogue ended')
       setWaitingForChoice(false)
     }
   }
@@ -718,12 +1011,23 @@ const DesertMap = ({ onExit }) => {
     
     // 添加Alpha的回应
     if (nextStep < alphaDialogueFlow.length) {
-      console.log('Adding Alpha response:', alphaDialogueFlow[nextStep])
-      setTimeout(() => {
-        addAlphaMessage(alphaDialogueFlow[nextStep], nextStep)
-      }, 500)
+      const nextItem = alphaDialogueFlow[nextStep]
+      console.log('Adding Alpha response:', nextItem)
+      
+      if (nextItem.type === 'missionAccept') {
+        // Show mission accept button instead of continuing
+        setWaitingForChoice(true)
+      } else {
+        setTimeout(() => {
+          addAlphaMessage(nextItem, nextStep)
+        }, 500)
+      }
     } else {
-      console.log('Dialogue completed')
+      console.log('Dialogue completed, starting mission')
+      // Close dialogue and start mission after a delay
+      setTimeout(() => {
+        handleCloseAlphaDialogue()
+      }, 2000) // Wait 2 seconds before closing and starting mission
     }
   }
 
@@ -759,6 +1063,12 @@ const DesertMap = ({ onExit }) => {
       setShowCamera(false)
       setShowPhoto(true)
       setCapturedObjects(prev => [...prev, objectId])
+      
+      // Auto-close photo after 3 seconds
+      setTimeout(() => {
+        setShowPhoto(false)
+        setCurrentPhotoObject(null)
+      }, 3000)
     }, 1500)
   }
 
@@ -769,37 +1079,63 @@ const DesertMap = ({ onExit }) => {
 
   const addPhase2Message = (dialogueItem, stepOverride = null) => {
     const currentStep = stepOverride !== null ? stepOverride : currentPhase2Step
-    console.log('Adding Phase 2 message:', dialogueItem, 'Current step:', currentStep)
+    console.log('=== addPhase2Message ===')
+    console.log('Current step:', currentStep)
+    console.log('Dialogue item:', dialogueItem)
+    console.log('Total flow length:', alphaPhase2DialogueFlow.length)
+    
     setPhase2Messages(prev => [...prev, dialogueItem])
     
     const nextStep = currentStep + 1
     setCurrentPhase2Step(nextStep)
+    console.log('Next step will be:', nextStep)
     
     if (nextStep < alphaPhase2DialogueFlow.length) {
       const nextItem = alphaPhase2DialogueFlow[nextStep]
-      console.log('Next Phase 2 item:', nextItem)
+      console.log('Next item type:', nextItem.type)
+      console.log('Next item:', nextItem)
       
       if (nextItem.type === 'choice') {
+        console.log('Setting waiting for choice')
         setWaitingForPhase2Choice(true)
         setShowQuiz(false)
       } else if (nextItem.type === 'quiz') {
+        console.log('Showing quiz')
         setShowQuiz(true)
         setWaitingForPhase2Choice(false)
       } else if (nextItem.type === 'action') {
+        console.log('Showing action button')
         setWaitingForPhase2Choice(false)
         setShowQuiz(false)
       } else if (nextItem.type === 'message') {
         // Auto-continue to next message after a delay
+        console.log('Auto-continuing to next message in 2 seconds')
         setWaitingForPhase2Choice(false)
         setShowQuiz(false)
         setTimeout(() => {
+          console.log('Executing auto-continue to:', nextItem)
           addPhase2Message(nextItem, nextStep)
-        }, 1000)
+        }, 2000) // 2 seconds delay for better readability
         return // Don't set waiting state since we're auto-continuing
       }
     } else {
+      console.log('Reached end of Phase 2 dialogue - starting model.gif and progress bar')
       setWaitingForPhase2Choice(false)
       setShowQuiz(false)
+      // Auto-start model.gif and progress bar after a delay
+      setTimeout(() => {
+        // Close Alpha dialogue
+        setShowAlphaDialogue(false)
+        setIsPhase2(false)
+        setPhase2Completed(true)
+        
+        // Show model.gif and progress bar
+        setShowModelGif(true)
+        setTimeout(() => {
+          setShowProgressBar(true)
+          animateProgressBar()
+        }, 500)
+      }, 2000)
     }
   }
 
@@ -845,20 +1181,29 @@ const DesertMap = ({ onExit }) => {
 
   const handleStartLabeling = () => {
     playClickSound() // Add click sound effect
-    console.log('Starting labeling phase...')
+    console.log('=== handleStartLabeling - Starting Mission 2 ===')
+    console.log('Closing Alpha dialogue...')
     setShowAlphaDialogue(false)
+    setIsPhase2(false) // Reset Phase 2 flag
+    setPhase2Completed(true) // Mark Phase 2 as completed
+    setShowMission2StartButton(false)
     
-    // Show model.gif
-    setShowModelGif(true)
-    
-    // Start progress bar after a short delay
-    setTimeout(() => {
-      setShowProgressBar(true)
-      animateProgressBar()
-    }, 500)
+    // Directly show Mission 2 interface in left dialogue box
+    setCurrentDialogue({
+      text: "Mission 2: Friend or Foe Decoder",
+      speaker: 'Alpha',
+      isMission2: true,
+      step: 'interface',
+      showMission2Interface: true
+    })
+    setCurrentNpcType('alpha')
+    setCurrentImageIndex(0)
+    setMission2Results([])
+    setShowDialogue(true)
   }
 
   const animateProgressBar = () => {
+    console.log('=== animateProgressBar ===')
     let progress = 0
     const interval = setInterval(() => {
       progress += 2
@@ -866,6 +1211,7 @@ const DesertMap = ({ onExit }) => {
       
       if (progress >= 100) {
         clearInterval(interval)
+        console.log('Progress complete! Starting Mission 2 briefing...')
         // Hide model.gif and progress bar, show Alpha dialogue for Mission 2 briefing
         setTimeout(() => {
           setShowModelGif(false)
@@ -877,14 +1223,45 @@ const DesertMap = ({ onExit }) => {
   }
 
   const startMission2Briefing = () => {
-    // Use the left dialogue box for Mission 2 briefing
-    setCurrentDialogue({
-      text: "Data received! Analyzing the 'blurry photos' you brought back... Beep... Zzz... Warning! Due to high noise levels, my Confidence Level is critically low.",
+    console.log('=== startMission2Briefing ===')
+    // Show briefing in the right-side Alpha dialogue box (same as Phase 2)
+    setIsPhase2(true) // Keep using Phase 2 dialogue box
+    setShowAlphaDialogue(true)
+    
+    // Add first briefing message
+    const briefingMessage = {
+      type: 'message',
       speaker: 'Alpha',
-      isMission2: true,
-      step: 'briefing1'
-    })
-    setShowDialogue(true)
+      text: "Data received! Analyzing the 'blurry photos' you brought back... Beep... Zzz... Warning! Due to high noise levels, my Confidence Level is critically low."
+    }
+    
+    console.log('Adding briefing message:', briefingMessage)
+    setPhase2Messages([briefingMessage])
+    
+    // Add second message
+    setTimeout(() => {
+      const secondMessage = {
+        type: 'message',
+        speaker: 'Alpha',
+        text: "I'll do my best to guess what's in the photos—but I need your human intuition to verify!"
+      }
+      setPhase2Messages(prev => [...prev, secondMessage])
+      
+      // Add third message with mission order
+      setTimeout(() => {
+        const thirdMessage = {
+          type: 'message',
+          speaker: 'Alpha',
+          text: "Mission Order: Watch the screen closely.\n\nIf my judgment is correct, click ✅ [Confirm].\n\nIf I mistake a broom for a weapon or a rock for a monster, click ❌ [Reject] and help me learn!"
+        }
+        setPhase2Messages(prev => [...prev, thirdMessage])
+        
+        // Show Accepted button
+        setWaitingForPhase2Choice(false)
+        setShowQuiz(false)
+        setShowMission2StartButton(true)
+      }, 2000)
+    }, 2000)
   }
 
   const handleMission2DialogueClick = () => {
@@ -974,20 +1351,111 @@ const DesertMap = ({ onExit }) => {
         showMission2Interface: true
       })
     } else {
-      // Mission 2 complete
-      setCurrentDialogue({
-        text: "Calibration complete! Thank you for the corrections.",
-        speaker: 'Alpha',
-        isMission2: true,
-        step: 'complete'
-      })
+      // Mission 2 complete - close left dialogue and show right dialogue
+      console.log('=== Mission 2 Complete ===')
+      setShowDialogue(false)
+      
+      // Show completion dialogue in right-side Alpha dialogue box
+      setIsMission2Completion(true)
+      setShowAlphaDialogue(true)
+      setMission2CompletionMessages([])
+      setCurrentMission2CompletionStep(0)
+      setShowMission2CompletionQuiz(false)
+      
+      setTimeout(() => {
+        addMission2CompletionMessage(mission2CompletionFlow[0])
+      }, 500)
     }
   }
 
+  const addMission2CompletionMessage = (dialogueItem, stepOverride = null) => {
+    const currentStep = stepOverride !== null ? stepOverride : currentMission2CompletionStep
+    console.log('=== addMission2CompletionMessage ===')
+    console.log('Current step:', currentStep)
+    console.log('Dialogue item:', dialogueItem)
+    
+    setMission2CompletionMessages(prev => [...prev, dialogueItem])
+    
+    const nextStep = currentStep + 1
+    setCurrentMission2CompletionStep(nextStep)
+    
+    if (nextStep < mission2CompletionFlow.length) {
+      const nextItem = mission2CompletionFlow[nextStep]
+      console.log('Next item type:', nextItem.type)
+      
+      if (nextItem.type === 'quiz') {
+        console.log('Showing quiz')
+        setShowMission2CompletionQuiz(true)
+      } else if (nextItem.type === 'action') {
+        console.log('Showing action button')
+        // Action button will be rendered
+      } else if (nextItem.type === 'message') {
+        // Auto-continue to next message after a delay
+        console.log('Auto-continuing to next message in 2 seconds')
+        setTimeout(() => {
+          addMission2CompletionMessage(nextItem, nextStep)
+        }, 2000)
+        return
+      }
+    } else {
+      console.log('Reached end of Mission 2 completion dialogue')
+    }
+  }
+
+  const handleMission2CompletionQuizAnswer = (answerIndex) => {
+    const quiz = mission2CompletionFlow[currentMission2CompletionStep]
+    const selectedOption = quiz.options[answerIndex]
+    
+    // Add user's answer
+    setMission2CompletionMessages(prev => [...prev, { 
+      type: 'choice', 
+      text: selectedOption.text, 
+      isUser: true,
+      isCorrect: selectedOption.correct
+    }])
+    
+    // Show correct answer and continue
+    setTimeout(() => {
+      setShowMission2CompletionQuiz(false)
+      const nextStep = currentMission2CompletionStep + 1
+      setCurrentMission2CompletionStep(nextStep)
+      
+      if (nextStep < mission2CompletionFlow.length) {
+        addMission2CompletionMessage(mission2CompletionFlow[nextStep], nextStep)
+      }
+    }, 1000)
+  }
+
+  const handleStartMission3 = () => {
+    playClickSound()
+    console.log('Starting Mission 3: Environmental Context Analysis')
+    setShowAlphaDialogue(false)
+    setIsMission2Completion(false)
+    
+    // Start Mission 3 directly with sample interface in left dialogue box
+    setCurrentDialogue({
+      text: "Mission 3: Environmental Context Analysis",
+      speaker: 'Alpha',
+      isMission3: true,
+      step: 'sample',
+      showMission3Interface: true
+    })
+    setCurrentNpcType('alpha')
+    setShowDialogue(true)
+    setMission3Phase('sample')
+    setSelectedTag(null)
+  }
+
   const handleMission2QuizAnswer = (answer) => {
+    playClickSound()
     const isCorrect = answer === 'B'
     
+    // Map answer letter to index for wrong answer highlighting
+    const answerIndex = answer === 'A' ? 0 : answer === 'B' ? 1 : 2
+    
     if (isCorrect) {
+      // Clear wrong answer state
+      setWrongAnswerIndex(null)
       setCurrentDialogue({
         text: "Correct! It's called Data Labeling. AI is like a student, and we acted as teachers, telling it 'this is right, that is wrong.' This is known as Supervised Learning!",
         speaker: 'Alpha',
@@ -996,12 +1464,13 @@ const DesertMap = ({ onExit }) => {
         showNextButton: true
       })
     } else {
+      // Play wrong sound and highlight wrong answer
+      playWrongSound()
+      setWrongAnswerIndex(answerIndex)
+      // Keep quiz visible with error message
       setCurrentDialogue({
-        text: "Haha, sounds close, but the professional term is B. Data Labeling. We need to put the correct 'labels' on data so the AI can learn.",
-        speaker: 'Alpha',
-        isMission2: true,
-        step: 'result',
-        showNextButton: true
+        ...currentDialogue,
+        error: 'Try again! Think about what we just did to help the AI learn.'
       })
     }
   }
@@ -1045,6 +1514,7 @@ const DesertMap = ({ onExit }) => {
       })
       setMission3Phase('sample')
       setSelectedTag(null)
+      setClickedTags([]) // Reset clicked tags for sample phase
     } else if (mission3Phase === 'sample') {
       // Start first puzzle in dialogue
       setCurrentDialogue({
@@ -1057,6 +1527,7 @@ const DesertMap = ({ onExit }) => {
       setMission3Phase('puzzle1')
       setCurrentPuzzle(mission3Data.puzzles[0])
       setSelectedTag(null)
+      setClickedTags([]) // Reset clicked tags for puzzle phase
     } else if (mission3Phase === 'puzzle1') {
       setCurrentDialogue({
         text: "Mission 3: Environmental Context Analysis",
@@ -1083,16 +1554,11 @@ const DesertMap = ({ onExit }) => {
       // Start quiz phase with first question
       setMission3Phase('quiz1')
       setCurrentDialogue({
-        text: "Threats cleared. I almost activated the defense lasers against a celebration and a worker fighting the wind. I need to update my core logic. Why did the meaning of the 'Iron Sheet' change completely?",
+        text: "Threats cleared.\n\nI nearly fired the defense lasers—at a celebration… and a worker just battling the wind.\n\nMy core logic failed me.",
         speaker: 'Alpha',
         isMission3: true,
-        step: 'quiz1',
-        showQuiz: true,
-        quizOptions: [
-          { text: "A. Because the iron sheet changed shape.", correct: false },
-          { text: "B. Because context (the weather) changes how we interpret an action.", correct: true },
-          { text: "C. Because the worker yelled at me.", correct: false }
-        ]
+        step: 'quiz1_intro',
+        showContinueButton: true
       })
     }
   }
@@ -1100,6 +1566,11 @@ const DesertMap = ({ onExit }) => {
   const handleMission3TagClick = (tag) => {
     playClickSound()
     setSelectedTag(tag)
+    
+    // Track clicked tags in sample phase
+    if (mission3Phase === 'sample' && !clickedTags.includes(tag.id)) {
+      setClickedTags(prev => [...prev, tag.id])
+    }
     
     // For sample phase, all tags are correct and show safe icon
     if (mission3Phase === 'sample') {
@@ -1116,7 +1587,7 @@ const DesertMap = ({ onExit }) => {
       }
     }
     
-    // Hide icon after 2 seconds and show update text
+    // Hide icon after 2 seconds
     setTimeout(() => {
       setShowAlphaIcon(false)
     }, 2000)
@@ -1145,16 +1616,20 @@ const DesertMap = ({ onExit }) => {
     
     if (mission3Phase === 'quiz1') {
       if (isCorrect) {
-        // Show correct feedback and continue button
+        // Clear wrong answer state and show correct feedback
+        setWrongAnswerIndex(null)
         setCurrentDialogue({
-          text: "Affirmative. The action (holding the sheet) stayed the same, but the context (sandstorm) changed the meaning. If you hadn't helped me, I would have attacked them. What does this teach us about AI?",
+          text: "The action didn't change. Only the context did—the sandstorm, the setting, the intent.",
           speaker: 'Alpha',
           isMission3: true,
           step: 'quiz1_feedback',
           showContinueButton: true
         })
       } else {
-        // Show incorrect feedback and let them try again
+        // Play wrong sound and highlight wrong answer
+        playWrongSound()
+        setWrongAnswerIndex(answerIndex)
+        // Keep the quiz visible with error state
         setCurrentDialogue({
           ...currentDialogue,
           error: 'Try again! Think about what changed between the scenarios.'
@@ -1162,9 +1637,10 @@ const DesertMap = ({ onExit }) => {
       }
     } else if (mission3Phase === 'quiz2') {
       if (isCorrect) {
-        // Show final feedback and done button
+        // Clear wrong answer state and show final feedback
+        setWrongAnswerIndex(null)
         setCurrentDialogue({
-          text: "Exactly. I process data, but you provide the 'Common Sense' and context that I lack. System Reboot: Successful. Defense Mode: Deactivated. Thank you, Young Engineers! You collected data I didn't recognize. You corrected my wrong judgments.",
+          text: "Exactly.\n\nI process data—but you bring the common sense and context I'll never have on my own.",
           speaker: 'Alpha',
           isMission3: true,
           step: 'complete',
@@ -1172,6 +1648,9 @@ const DesertMap = ({ onExit }) => {
         })
         setMission3Phase('complete')
       } else {
+        // Play wrong sound and highlight wrong answer
+        playWrongSound()
+        setWrongAnswerIndex(answerIndex)
         setCurrentDialogue({
           ...currentDialogue,
           error: 'Think about what AI might be missing that humans naturally understand.'
@@ -1182,20 +1661,40 @@ const DesertMap = ({ onExit }) => {
 
   const handleMission3QuizContinue = () => {
     playClickSound()
-    // Move to second quiz question
-    setMission3Phase('quiz2')
-    setCurrentDialogue({
-      text: "If you hadn't helped me, I would have attacked them. What does this teach us about AI?",
-      speaker: 'Alpha',
-      isMission3: true,
-      step: 'quiz2',
-      showQuiz: true,
-      quizOptions: [
-        { text: "A. AI is always right and doesn't need humans.", correct: false },
-        { text: "B. AI can sometimes lack 'Common Sense' without human context.", correct: true },
-        { text: "C. AI hates holidays.", correct: false }
-      ]
-    })
+    
+    // Clear wrong answer state when continuing
+    setWrongAnswerIndex(null)
+    
+    if (currentDialogue.step === 'quiz1_intro') {
+      // Show first quiz question
+      setCurrentDialogue({
+        text: "Why did the meaning of the 'Iron Sheet' change completely?",
+        speaker: 'Alpha',
+        isMission3: true,
+        step: 'quiz1',
+        showQuiz: true,
+        quizOptions: [
+          { text: "A. Because the iron sheet changed shape.", correct: false },
+          { text: "B. Because context (the weather) changes how we interpret an action.", correct: true },
+          { text: "C. Because the worker yelled at me.", correct: false }
+        ]
+      })
+    } else if (currentDialogue.step === 'quiz1_feedback') {
+      // Show second quiz question
+      setMission3Phase('quiz2')
+      setCurrentDialogue({
+        text: "If you hadn't helped me, I would have attacked them. What does this teach us about AI?",
+        speaker: 'Alpha',
+        isMission3: true,
+        step: 'quiz2',
+        showQuiz: true,
+        quizOptions: [
+          { text: "A. AI is always right and doesn't need humans.", correct: false },
+          { text: "B. AI can sometimes lack 'Common Sense' without human context.", correct: true },
+          { text: "C. AI hates holidays.", correct: false }
+        ]
+      })
+    }
   }
 
 
@@ -1231,6 +1730,7 @@ const DesertMap = ({ onExit }) => {
       position: 'relative',
       overflow: 'hidden',
       background: '#f4e4bc',
+      cursor: missionStarted && !colorMode && capturedObjects.length < 11 ? 'none' : 'default', // Hide default cursor during mission (before completion)
     },
     backgroundImage: {
       position: 'absolute',
@@ -1321,7 +1821,7 @@ const DesertMap = ({ onExit }) => {
     },
     gatekeeper: {
       bottom: '15%',
-      left: '15%',
+      left: '5%', // Moved left from 15% to 5% to avoid blocking arrow
       width: 'auto',
       height: '25vh',
       maxHeight: '25vh',
@@ -1475,48 +1975,162 @@ const DesertMap = ({ onExit }) => {
     },
     glitchDialogueContainer: {
       position: 'absolute',
-      top: '20px',
-      right: '150px', // 在Glitch NPC左侧
+      top: '15px', // 与NPC顶部对齐
+      right: '145px', // 紧贴NPC左侧 (NPC right:15px + width:120px + 10px间距)
       width: '300px',
       zIndex: 100,
     },
     dialogueBox: {
-      padding: '20px 30px',
-      borderRadius: '15px',
-      background: 'rgba(255, 255, 255, 0.95)',
-      border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(255,255,255,0.95), rgba(255,255,255,0.95)), linear-gradient(90deg, #5170FF, #FFBBC4)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
-      cursor: 'pointer',
+      padding: '40px 30px 20px 30px', // Increased top padding for speaker label
+      borderRadius: '20px',
+      background: '#FFF1B5', // Yellow background
+      border: '3px solid #43302E',
+      cursor: 'default', // Remove pointer cursor since no clicking needed
+      position: 'relative',
+    },
+    glitchDialogueBox: {
+      background: 'rgba(71, 23, 101, 0.85)', // #471765 with glassmorphism
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      border: '2px solid rgba(205, 165, 247, 0.3)',
+      boxShadow: '0 8px 32px 0 rgba(71, 23, 101, 0.37)',
     },
     dialogueText: {
-      fontFamily: "'Roboto', sans-serif",
-      fontSize: '16px',
+      fontFamily: "'Coming Soon', cursive",
+      fontSize: '18px',
       color: '#333',
-      lineHeight: 1.6,
+      lineHeight: 1.8,
       margin: 0,
     },
-    continueButton: {
-      position: 'absolute',
-      bottom: '15px',
-      right: '20px',
-      fontFamily: "'Roboto', sans-serif",
-      fontSize: '14px',
-      fontWeight: 600,
-      color: '#333', // 黑字
-      backgroundColor: 'transparent',
-      border: 'none',
-      cursor: 'pointer',
-      textTransform: 'uppercase',
-      letterSpacing: '1px',
+    glitchDialogueText: {
+      color: '#CDA5F7', // Light purple for regular text
+      lineHeight: 2.0, // Increased line spacing
     },
     speaker: {
+      fontFamily: "'Coming Soon', cursive",
+      fontSize: '16px',
+      fontWeight: 700,
+      color: '#43302E', // Dark brown color
+      marginBottom: '12px',
+      padding: '8px 16px',
+      background: '#43302E',
+      color: '#FFF1B5',
+      borderRadius: '8px',
+      display: 'inline-block',
+      position: 'absolute',
+      top: '-18px', // Moved up more to create space
+      left: '20px',
+    },
+    glitchSpeaker: {
+      background: '#471765',
+      color: '#CDA5F7',
+      border: '2px solid rgba(205, 165, 247, 0.5)',
+    },
+    // MapView-style Glitch dialogue (top-right)
+    glitchDialogueMapStyle: {
+      position: 'absolute',
+      top: '20px',
+      right: '150px',
+      padding: '20px',
+      borderRadius: '20px',
+      background: 'rgba(255, 255, 255, 0.98)',
+      border: '3px solid #af4dca',
+      zIndex: 100,
+      minWidth: '280px',
+      maxWidth: '320px',
+      boxShadow: '0 4px 20px rgba(175, 77, 202, 0.3)',
+    },
+    glitchDialogueHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      marginBottom: '15px',
+    },
+    glitchDialogueAvatar: {
+      width: '40px',
+      height: '40px',
+      borderRadius: '50%',
+      backgroundColor: '#af4dca',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+    },
+    glitchDialogueAvatarIcon: {
+      fontSize: '24px',
+    },
+    glitchDialogueName: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '16px',
+      fontWeight: 700,
+      color: '#af4dca',
+      margin: 0,
+    },
+    glitchDialogueTextMapStyle: {
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '12px',
-      fontWeight: 600,
-      color: '#5170FF',
-      marginBottom: '8px',
+      fontSize: '14px',
+      color: '#333',
+      lineHeight: 1.6,
+      margin: '0 0 15px 0',
+    },
+    glitchDialogueInputContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      backgroundColor: '#d9d7de',
+      borderRadius: '20px',
+      border: '2px solid #d9d7de',
+      overflow: 'hidden',
+      transition: 'border-color 0.2s',
+    },
+    glitchDialogueInput: {
+      flex: 1,
+      padding: '10px 15px',
+      border: 'none',
+      backgroundColor: 'transparent',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '13px',
+      color: '#333',
+      outline: 'none',
+    },
+    glitchDialogueDivider: {
+      width: '2px',
+      height: '24px',
+      backgroundColor: '#af4dca',
+      margin: '0 8px',
+      flexShrink: 0,
+    },
+    glitchDialogueSendButton: {
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '8px 12px',
+      transition: 'all 0.2s',
+      flexShrink: 0,
+    },
+    glitchDialogueSendIcon: {
+      width: '24px',
+      height: '24px',
+      objectFit: 'contain',
+    },
+    glitchDialogueCloseButton: {
+      position: 'absolute',
+      top: '15px',
+      right: '15px',
+      background: 'none',
+      border: 'none',
+      fontSize: '20px',
+      color: '#999',
+      cursor: 'pointer',
+      padding: '0',
+      width: '24px',
+      height: '24px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'all 0.2s',
     },
     optionButton: {
       display: 'block',
@@ -1564,7 +2178,7 @@ const DesertMap = ({ onExit }) => {
       alignItems: 'center',
     },
     cameraIcon: {
-      width: '200px',
+      width: '400px', // Doubled from 200px
       height: 'auto', // 自动高度以保持原始比例
       animation: 'pulse 1.5s ease-in-out',
     },
@@ -1583,8 +2197,8 @@ const DesertMap = ({ onExit }) => {
     },
     photoFrame: {
       position: 'relative',
-      width: '1200px', // Increased from 400px (3x)
-      height: '1500px', // Increased from 500px (3x)
+      width: '800px', // Reduced from 1200px
+      height: '1000px', // Reduced from 1500px
       backgroundImage: 'url(/desert/icon/photo.png)',
       backgroundSize: 'contain',
       backgroundRepeat: 'no-repeat',
@@ -1593,16 +2207,17 @@ const DesertMap = ({ onExit }) => {
       flexDirection: 'column',
       justifyContent: 'center',
       alignItems: 'center',
-      padding: '180px 120px 240px 120px', // Increased from 60px 40px 80px 40px (3x)
+      padding: '120px 80px 160px 80px', // Reduced from 180px 120px 240px 120px
+      transition: 'transform 0.3s ease-in-out', // Add transition for smooth scaling
     },
     photoBackground: {
-      width: '840px', // Increased from 280px (3x)
-      height: '600px', // Increased from 200px (3x)
+      width: '560px', // Reduced from 840px
+      height: '400px', // Reduced from 600px
       background: 'transparent',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      marginBottom: '60px', // Increased from 20px (3x)
+      marginBottom: '40px', // Reduced from 60px
       overflow: 'hidden',
     },
     photoObjectImage: {
@@ -1612,25 +2227,25 @@ const DesertMap = ({ onExit }) => {
     },
     photoDescription: {
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '42px', // Increased from 14px (3x)
+      fontSize: '28px', // Reduced from 42px
       color: '#333',
       textAlign: 'center',
       lineHeight: 1.4,
-      maxWidth: '840px', // Increased from 280px (3x)
+      maxWidth: '560px', // Reduced from 840px
       background: 'rgba(255, 255, 255, 0.9)',
-      padding: '30px', // Increased from 10px (3x)
+      padding: '20px', // Reduced from 30px
       borderRadius: '15px', // Increased from 5px (3x)
     },
     photoCloseButton: {
       position: 'absolute',
-      top: '30px', // Increased from 10px (3x)
-      right: '30px', // Increased from 10px (3x)
+      top: '20px', // Reduced from 30px
+      right: '20px', // Reduced from 30px
       background: 'rgba(255, 255, 255, 0.8)',
       border: 'none',
       borderRadius: '50%',
-      width: '90px', // Increased from 30px (3x)
-      height: '90px', // Increased from 30px (3x)
-      fontSize: '48px', // Increased from 16px (3x)
+      width: '60px', // Reduced from 90px
+      height: '60px', // Reduced from 90px
+      fontSize: '32px', // Reduced from 48px
       cursor: 'pointer',
       color: '#333',
       display: 'flex',
@@ -1644,27 +2259,56 @@ const DesertMap = ({ onExit }) => {
       left: '50%',
       transform: 'translateX(-50%)',
       display: 'flex',
-      gap: '10px',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '15px',
       zIndex: 60,
     },
-    progressCircle: {
-      width: '40px',
-      height: '40px',
-      borderRadius: '50%',
-      background: 'rgba(255, 255, 255, 0.8)',
-      border: '2px solid #ccc',
+    progressHeader: {
+      background: 'rgba(255, 255, 255, 0.65)',
+      border: '3px solid #FABA14',
+      borderRadius: '25px',
+      padding: '10px 30px',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '16px',
+      fontWeight: 600,
+      color: '#333',
+    },
+    progressGrid: {
       display: 'flex',
+      gap: '10px',
+    },
+    progressBox: {
+      width: '80px',
+      height: '80px',
+      borderRadius: '8px',
+      background: 'rgba(211, 211, 214, 0.65)',
+      border: '3px dashed white',
+      display: 'flex',
+      flexDirection: 'column',
       justifyContent: 'center',
       alignItems: 'center',
       fontFamily: "'Roboto', sans-serif",
-      fontSize: '14px',
+      fontSize: '40px',
       fontWeight: 'bold',
-      color: '#666',
-    },
-    progressCircleCompleted: {
-      background: 'rgba(81, 112, 255, 0.9)',
-      border: '2px solid #5170FF',
       color: 'white',
+      transition: 'all 0.3s',
+    },
+    progressBoxCompleted: {
+      background: 'rgba(211, 211, 214, 1)',
+      border: '3px solid white',
+    },
+    progressBoxImage: {
+      width: '60px', // Increased from 50px
+      height: '60px', // Increased from 50px
+      objectFit: 'contain',
+      marginBottom: '3px',
+    },
+    progressBoxLabel: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '11px',
+      fontWeight: 600,
+      color: '#333',
     },
     // Phase 2 specific styles
     comparisonImage: {
@@ -1743,7 +2387,7 @@ const DesertMap = ({ onExit }) => {
       alignItems: 'center',
     },
     modelGif: {
-      width: '400px',
+      width: '1200px',
       height: 'auto',
       marginBottom: '30px',
     },
@@ -1757,7 +2401,7 @@ const DesertMap = ({ onExit }) => {
     },
     progressBar: {
       height: '100%',
-      background: 'linear-gradient(90deg, #5170FF, #FFBBC4)',
+      background: '#FABA14', // 黄色进度条
       borderRadius: '10px',
       transition: 'width 0.1s ease',
     },
@@ -2117,22 +2761,38 @@ const DesertMap = ({ onExit }) => {
       justifyContent: 'center',
       marginBottom: '15px',
     },
+    mission3TagHintText: {
+      fontFamily: "'Roboto Mono', monospace",
+      fontSize: '11px',
+      color: '#333', // 深色
+      textAlign: 'center',
+      marginBottom: '10px',
+      fontWeight: 300,
+    },
     mission3TagInDialogue: {
-      padding: '10px 18px', // 稍微增加padding
-      border: '2px solid #5170FF',
-      borderRadius: '25px',
-      background: 'white',
+      padding: '8px 15px',
+      border: '2px solid #7c4b00',
+      borderRadius: '8px', // 减小圆角
+      background: '#f0e2b1',
       cursor: 'pointer',
-      fontFamily: "'Roboto', sans-serif",
-      fontSize: '13px',
-      fontWeight: 500,
-      color: '#5170FF',
+      fontFamily: "'Roboto Mono', monospace",
+      fontSize: '12px',
+      fontWeight: 300, // 细字体
+      color: '#7c4b00',
       transition: 'all 0.2s',
       minWidth: '100px',
       textAlign: 'center',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+    },
+    mission3TagIcon: {
+      width: '16px',
+      height: '16px',
+      objectFit: 'contain',
     },
     mission3TagSelectedInDialogue: {
-      background: '#5170FF',
+      background: '#7c4b00',
       color: 'white',
       transform: 'scale(1.05)',
     },
@@ -2141,10 +2801,10 @@ const DesertMap = ({ onExit }) => {
       width: '100%',
       padding: '12px 20px',
       border: 'none',
-      borderRadius: '25px',
-      background: 'linear-gradient(90deg, #5170FF, #FFBBC4)',
+      borderRadius: '8px',
+      background: '#7c4b00',
       color: 'white',
-      fontFamily: "'Roboto', sans-serif",
+      fontFamily: "'Roboto Mono', monospace",
       fontSize: '14px',
       fontWeight: 600,
       cursor: 'pointer',
@@ -2244,16 +2904,16 @@ const DesertMap = ({ onExit }) => {
       transform: 'scale(1.05)',
     },
     mission3UpdateText: {
-      fontFamily: "'Roboto', sans-serif",
-      fontSize: '14px',
+      fontFamily: "'Roboto Mono', monospace",
+      fontSize: '13px',
       fontWeight: 600,
-      color: '#28a745',
+      color: 'white',
       marginTop: '15px',
       textAlign: 'center',
-      background: '#d4edda',
-      padding: '10px',
+      background: '#496f48',
+      padding: '12px',
       borderRadius: '8px',
-      border: '1px solid #c3e6cb',
+      boxShadow: '0 4px 8px rgba(0,0,0,0.3)', // 立体阴影
       minHeight: '40px',
       display: 'flex',
       alignItems: 'center',
@@ -2274,12 +2934,12 @@ const DesertMap = ({ onExit }) => {
     },
     alphaIconOverlay: {
       position: 'fixed',
-      bottom: '30%', // 距底部30%
-      right: '5%',   // 距右边5%
-      width: '100px',
-      height: '100px',
+      bottom: '30%',
+      right: '8%',
+      width: '250px',
+      height: '250px',
       zIndex: 400,
-      animation: 'bounce 0.6s ease-out',
+      // Removed animation to keep position stable
     },
     alphaIcon: {
       width: '100%',
@@ -2458,7 +3118,7 @@ const DesertMap = ({ onExit }) => {
       maxWidth: '85%',
     },
     modernUserBubble: {
-      background: '#FFD700', // Yellow theme for Alpha
+      background: '#FABA14', // Yellow theme for Alpha
       padding: '12px 18px',
       borderRadius: '18px',
       boxShadow: '0 2px 6px rgba(255, 215, 0, 0.3)',
@@ -2498,10 +3158,31 @@ const DesertMap = ({ onExit }) => {
       boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
       marginTop: '8px',
     },
+    customCursor: {
+      position: 'fixed',
+      pointerEvents: 'none',
+      zIndex: 9999,
+      width: '32px',
+      height: '32px',
+      transform: 'translate(-16px, -16px)', // Center the cursor
+    },
   }
 
   return (
     <div style={styles.container}>
+      {/* Custom Camera Cursor */}
+      {missionStarted && !colorMode && capturedObjects.length < 11 && (
+        <img 
+          src="/desert/icon/camera2.png"
+          alt="Camera Cursor"
+          style={{
+            ...styles.customCursor,
+            left: `${cursorPosition.x}px`,
+            top: `${cursorPosition.y}px`,
+          }}
+        />
+      )}
+      
       <img 
         src={getBackgroundImage()}
         alt="Desert Background" 
@@ -2519,6 +3200,65 @@ const DesertMap = ({ onExit }) => {
       <div style={styles.glitchNpc} onClick={handleGlitchClick}>
         <img src="/npc/npc_desert.png" alt="Glitch" style={styles.glitchImage} />
       </div>
+
+      {/* Glitch Dialogue (MapView style) */}
+      {showDialogue && currentNpcType === 'glitch' && (
+        <div style={styles.glitchDialogueMapStyle}>
+          {/* Close button */}
+          <button
+            style={styles.glitchDialogueCloseButton}
+            onClick={() => setShowDialogue(false)}
+            onMouseOver={(e) => {
+              e.target.style.color = '#333'
+            }}
+            onMouseOut={(e) => {
+              e.target.style.color = '#999'
+            }}
+          >
+            ✕
+          </button>
+          
+          {/* Header with avatar and name */}
+          <div style={styles.glitchDialogueHeader}>
+            <div style={styles.glitchDialogueAvatar}>
+              <span style={styles.glitchDialogueAvatarIcon}>👾</span>
+            </div>
+            <h4 style={styles.glitchDialogueName}>Glitch</h4>
+          </div>
+          
+          {/* Dialogue text */}
+          <p style={styles.glitchDialogueTextMapStyle}>
+            {currentDialogue.text}
+          </p>
+          
+          {/* Input container */}
+          <div style={styles.glitchDialogueInputContainer}>
+            <input
+              type="text"
+              placeholder="Ask Glitch anything..."
+              value={glitchInput}
+              onChange={(e) => setGlitchInput(e.target.value)}
+              onKeyPress={handleGlitchInputKeyPress}
+              style={styles.glitchDialogueInput}
+            />
+            <div style={styles.glitchDialogueDivider}></div>
+            <button
+              onClick={handleGlitchSend}
+              style={styles.glitchDialogueSendButton}
+              onMouseOver={(e) => {
+                e.target.style.transform = 'scale(1.1)'
+              }}
+              onMouseOut={(e) => {
+                e.target.style.transform = 'scale(1)'
+              }}
+            >
+              <svg style={styles.glitchDialogueSendIcon} viewBox="0 0 24 24" fill="#af4dca">
+                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Desert view navigation and NPCs */}
       {currentView === 'desert' && (
@@ -2692,20 +3432,40 @@ const DesertMap = ({ onExit }) => {
       {/* Mission Progress Tracker - only show in non-color mode */}
       {!colorMode && missionStarted && currentView === 'desert' && (
         <div style={styles.progressTracker}>
-          {['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11'].map(objectId => {
-            const isCompleted = capturedObjects.includes(objectId)
-            return (
-              <div
-                key={objectId}
-                style={{
-                  ...styles.progressCircle,
-                  ...(isCompleted ? styles.progressCircleCompleted : {})
-                }}
-              >
-                {isCompleted ? objectId : '?'}
-              </div>
-            )
-          })}
+          {/* Progress Header */}
+          <div style={styles.progressHeader}>
+            Progress: {capturedObjects.length}/11 Found
+          </div>
+          
+          {/* Progress Grid */}
+          <div style={styles.progressGrid}>
+            {['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11'].map(objectId => {
+              const isCompleted = capturedObjects.includes(objectId)
+              
+              return (
+                <div
+                  key={objectId}
+                  style={{
+                    ...styles.progressBox,
+                    ...(isCompleted ? styles.progressBoxCompleted : {})
+                  }}
+                >
+                  {isCompleted ? (
+                    <>
+                      <img 
+                        src={`/desert/object/${objectId}.png`}
+                        alt={`NPC${objectId}`}
+                        style={styles.progressBoxImage}
+                      />
+                      <div style={styles.progressBoxLabel}>NPC{objectId}</div>
+                    </>
+                  ) : (
+                    '?'
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
       )}
 
@@ -2749,20 +3509,51 @@ const DesertMap = ({ onExit }) => {
         </>
       )}
 
-      {/* Regular NPC Dialogue */}
-      {showDialogue && currentDialogue && (
-        <div style={currentDialogue.speaker === 'Glitch' ? styles.glitchDialogueContainer : styles.dialogueContainer}>
-          <div style={styles.dialogueBox} onClick={currentDialogue.showMission2Interface || currentDialogue.showMission3Interface || currentDialogue.showQuiz || currentDialogue.showNextButton || currentDialogue.showContinueButton || currentDialogue.showDoneButton ? undefined : handleDialogueClick}>
-            <div style={styles.speaker}>{currentDialogue.speaker}</div>
-            <p style={styles.dialogueText}>
-              {displayedText}
-              <span style={styles.cursor}></span>
-            </p>
+      {/* Regular NPC Dialogue (excluding Glitch) */}
+      {showDialogue && currentDialogue && currentNpcType !== 'glitch' && (
+        <div style={getDialoguePosition(currentNpcType)}>
+          <div style={{
+            ...styles.dialogueBox,
+            ...(currentNpcType === 'glitch' ? styles.glitchDialogueBox : {})
+          }} onClick={currentDialogue.showMission2Interface || currentDialogue.showMission3Interface || currentDialogue.showQuiz || currentDialogue.showNextButton || currentDialogue.showContinueButton || currentDialogue.showDoneButton ? undefined : handleDialogueClick}>
+            <div style={{
+              ...styles.speaker,
+              ...(currentNpcType === 'glitch' ? styles.glitchSpeaker : {})
+            }}>{currentDialogue.speaker}</div>
+            {!currentDialogue.showMission2Interface && !currentDialogue.showMission3Interface && (
+              <p style={{
+                ...styles.dialogueText,
+                ...(currentNpcType === 'glitch' ? styles.glitchDialogueText : {})
+              }}>
+                {currentNpcType === 'glitch' ? formatGlitchText(displayedText) : formatDialogueText(displayedText)}
+                {isTyping && <span style={styles.cursor}></span>}
+              </p>
+            )}
             
             {/* Mission 2 Interface - Inside Dialogue Box */}
             {currentDialogue.showMission2Interface && (
-              <div style={styles.mission2InterfaceInDialogue}>
-                <div style={styles.mission2TitleInDialogue}>Mission 2: The Identity Filter</div>
+              <>
+                {/* Typing text above Mission 2 interface */}
+                <p style={{
+                  ...styles.dialogueText,
+                  ...(currentNpcType === 'glitch' ? styles.glitchDialogueText : {})
+                }}>
+                  {formatDialogueText("Is the AI's judgment correct?")}
+                  {isTyping && <span style={styles.cursor}></span>}
+                </p>
+                
+                <div style={styles.mission2InterfaceInDialogue}>
+                  {/* Progress - centered and larger */}
+                  <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '15px'}}>
+                    <div style={{color: '#FABA14', fontSize: '24px', fontWeight: 'bold'}}>
+                      {currentImageIndex + 1}/5
+                    </div>
+                  </div>
+                  
+                  {/* Instruction Text */}
+                  <div style={{color: 'white', fontSize: '12px', marginBottom: '15px', textAlign: 'center', opacity: 0.9}}>
+                    Is this person a real worker? Select CONFIRMED if yes, REJECTED if no.
+                  </div>
                 
                 <div style={styles.mission2ImageDisplayInDialogue}>
                   <img 
@@ -2813,12 +3604,22 @@ const DesertMap = ({ onExit }) => {
                     <span style={styles.mission2ButtonTextInDialogueNew}>Rejected</span>
                   </button>
                 </div>
-              </div>
+                </div>
+              </>
             )}
             
             {/* Mission 3 Interface */}
             {currentDialogue.showMission3Interface && (
               <div style={styles.mission3InterfaceContainer}>
+                {/* Progress Display at Top */}
+                {mission3Phase !== 'sample' && (
+                  <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '15px'}}>
+                    <div style={{color: '#FABA14', fontSize: '24px', fontWeight: 'bold'}}>
+                      {mission3Phase === 'puzzle1' ? '1/3' : mission3Phase === 'puzzle2' ? '2/3' : '3/3'}
+                    </div>
+                  </div>
+                )}
+                
                 {/* AI Logic Text Above Image */}
                 <div style={styles.mission3LogicTextAboveImage}>
                   {mission3Phase === 'sample' ? mission3Data.sample.aiLogic : currentPuzzle?.aiLogic}
@@ -2842,8 +3643,15 @@ const DesertMap = ({ onExit }) => {
                 </div>
 
                 {/* Updated AI Logic Text */}
-                <div style={styles.mission3UpdateTextAboveButtons}>
-                  {selectedTag ? selectedTag.update : 'Select a context tag to update AI logic'}
+                {selectedTag && (
+                  <div style={styles.mission3UpdateTextAboveButtons}>
+                    {selectedTag.update}
+                  </div>
+                )}
+
+                {/* Hint Text */}
+                <div style={styles.mission3TagHintText}>
+                  Tap one at a time — each tag tells the AI something new!
                 </div>
 
                 {/* Context Tags */}
@@ -2858,30 +3666,32 @@ const DesertMap = ({ onExit }) => {
                       onClick={() => handleMission3TagClick(tag)}
                       onMouseOver={(e) => {
                         if (selectedTag?.id !== tag.id) {
-                          e.target.style.background = '#f0f0f0'
+                          e.target.style.background = '#e8d9a0'
                         }
                       }}
                       onMouseOut={(e) => {
                         if (selectedTag?.id !== tag.id) {
-                          e.target.style.background = 'white'
+                          e.target.style.background = '#f0e2b1'
                         }
                       }}
                     >
+                      <img src="/desert/icon/tag.svg" alt="tag" style={styles.mission3TagIcon} />
                       {tag.text}
                     </button>
                   ))}
                 </div>
 
                 {/* Continue Button */}
-                {selectedTag && (mission3Phase === 'sample' || selectedTag.correct) && (
+                {((mission3Phase === 'sample' && clickedTags.length === 3) || 
+                  (mission3Phase !== 'sample' && selectedTag && selectedTag.correct)) && (
                   <button 
                     style={styles.mission3ContinueButtonInDialogue}
                     onClick={handleMission3Continue}
                     onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
                     onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
                   >
-                    {mission3Phase === 'puzzle3' ? 'Complete Analysis' : 
-                     mission3Phase === 'sample' ? 'Continue to Puzzles' : 'Next Puzzle'}
+                    {mission3Phase === 'puzzle3' ? 'All Clear' : 
+                     mission3Phase === 'sample' ? 'Start' : 'Next'}
                   </button>
                 )}
               </div>
@@ -2896,13 +3706,32 @@ const DesertMap = ({ onExit }) => {
                     currentDialogue.quizOptions.map((option, index) => (
                       <button 
                         key={index}
-                        style={styles.finalQuizOption}
-                        onClick={() => currentDialogue.isMission3 ? 
-                          handleMission3QuizAnswer(index, option.correct) : 
-                          handleMission2QuizAnswer(option.text.charAt(0))
-                        }
-                        onMouseOver={(e) => e.target.style.background = '#f0f0f0'}
-                        onMouseOut={(e) => e.target.style.background = 'white'}
+                        style={{
+                          ...styles.finalQuizOption,
+                          ...(wrongAnswerIndex === index ? {
+                            border: '2px solid #FF0845',
+                            background: '#ffe0e6'
+                          } : {})
+                        }}
+                        onClick={() => {
+                          if (currentDialogue.isMission3) {
+                            handleMission3QuizAnswer(index, option.correct)
+                          } else {
+                            handleMission2QuizAnswer(option.text.charAt(0))
+                          }
+                        }}
+                        onMouseOver={(e) => {
+                          if (wrongAnswerIndex !== index) {
+                            e.target.style.background = '#f0f0f0'
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (wrongAnswerIndex !== index) {
+                            e.target.style.background = 'white'
+                          } else {
+                            e.target.style.background = '#ffe0e6'
+                          }
+                        }}
                       >
                         {option.text}
                       </button>
@@ -2911,26 +3740,74 @@ const DesertMap = ({ onExit }) => {
                     // Mission 2 Quiz - Static options (fallback)
                     <>
                       <button 
-                        style={styles.finalQuizOption}
+                        style={{
+                          ...styles.finalQuizOption,
+                          ...(wrongAnswerIndex === 0 ? {
+                            border: '2px solid #FF0845',
+                            background: '#ffe0e6'
+                          } : {})
+                        }}
                         onClick={() => handleMission2QuizAnswer('A')}
-                        onMouseOver={(e) => e.target.style.background = '#f0f0f0'}
-                        onMouseOut={(e) => e.target.style.background = 'white'}
+                        onMouseOver={(e) => {
+                          if (wrongAnswerIndex !== 0) {
+                            e.target.style.background = '#f0f0f0'
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (wrongAnswerIndex !== 0) {
+                            e.target.style.background = 'white'
+                          } else {
+                            e.target.style.background = '#ffe0e6'
+                          }
+                        }}
                       >
                         A. Changing AI's Glasses
                       </button>
                       <button 
-                        style={styles.finalQuizOption}
+                        style={{
+                          ...styles.finalQuizOption,
+                          ...(wrongAnswerIndex === 1 ? {
+                            border: '2px solid #FF0845',
+                            background: '#ffe0e6'
+                          } : {})
+                        }}
                         onClick={() => handleMission2QuizAnswer('B')}
-                        onMouseOver={(e) => e.target.style.background = '#f0f0f0'}
-                        onMouseOut={(e) => e.target.style.background = 'white'}
+                        onMouseOver={(e) => {
+                          if (wrongAnswerIndex !== 1) {
+                            e.target.style.background = '#f0f0f0'
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (wrongAnswerIndex !== 1) {
+                            e.target.style.background = 'white'
+                          } else {
+                            e.target.style.background = '#ffe0e6'
+                          }
+                        }}
                       >
                         B. Data Labeling / Annotation
                       </button>
                       <button 
-                        style={styles.finalQuizOption}
+                        style={{
+                          ...styles.finalQuizOption,
+                          ...(wrongAnswerIndex === 2 ? {
+                            border: '2px solid #FF0845',
+                            background: '#ffe0e6'
+                          } : {})
+                        }}
                         onClick={() => handleMission2QuizAnswer('C')}
-                        onMouseOver={(e) => e.target.style.background = '#f0f0f0'}
-                        onMouseOut={(e) => e.target.style.background = 'white'}
+                        onMouseOver={(e) => {
+                          if (wrongAnswerIndex !== 2) {
+                            e.target.style.background = '#f0f0f0'
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (wrongAnswerIndex !== 2) {
+                            e.target.style.background = 'white'
+                          } else {
+                            e.target.style.background = '#ffe0e6'
+                          }
+                        }}
                       >
                         C. Magic Reshuffling
                       </button>
@@ -2985,21 +3862,6 @@ const DesertMap = ({ onExit }) => {
                 MISSION COMPLETE
               </button>
             )}
-
-            {/* Regular Continue Button - Only show when no special interfaces are active */}
-            {!currentDialogue.showMission2Interface && 
-             !currentDialogue.showMission3Interface && 
-             !currentDialogue.showQuiz && 
-             !currentDialogue.showNextButton && 
-             !currentDialogue.showContinueButton && 
-             !currentDialogue.showDoneButton && (
-              <button
-                style={styles.continueButton}
-                onClick={handleDialogueClick}
-              >
-                {isTyping ? 'Skip' : 'CONTINUE'}
-              </button>
-            )}
           </div>
         </div>
       )}
@@ -3008,7 +3870,7 @@ const DesertMap = ({ onExit }) => {
       {showAlphaDialogue && (() => {
         const theme = getNpcTheme('alpha')
         const totalSteps = 3
-        const currentStep = isPhase2 ? 2 : 1 // Phase 1 is step 1, Phase 2 is step 2
+        const currentStep = isMission2Completion ? 3 : (isPhase2 ? 2 : 1) // Phase 1 is step 1, Phase 2 is step 2, Mission 2 Completion is step 3
         const progressPercent = (currentStep / totalSteps) * 100
         
         return (
@@ -3023,7 +3885,7 @@ const DesertMap = ({ onExit }) => {
                   ...styles.modernMissionTitle,
                   color: theme.borderColor
                 }}>
-                  {isPhase2 ? 'MISSION: DATA ANALYSIS' : 'MISSION: CASTLE DEFENSE'}
+                  {isMission2Completion ? 'MISSION: DATA LABELING COMPLETE' : (isPhase2 ? 'MISSION: DATA ANALYSIS' : 'MISSION: CASTLE DEFENSE')}
                 </div>
                 <div style={styles.modernStepIndicator}>
                   Step {currentStep} of {totalSteps}
@@ -3077,11 +3939,11 @@ const DesertMap = ({ onExit }) => {
                       <p style={styles.modernNpcText}>
                         {currentTypingMessage && currentTypingMessage === message ? (
                           <>
-                            {alphaDisplayedText}
+                            {formatTextWithBold(alphaDisplayedText)}
                             {alphaIsTyping && <span style={{ opacity: 0.5 }}>|</span>}
                           </>
                         ) : (
-                          message.text
+                          formatTextWithBold(message.text)
                         )}
                       </p>
                       <div style={styles.modernTimestamp}>{timestamp}</div>
@@ -3110,19 +3972,50 @@ const DesertMap = ({ onExit }) => {
               {/* Phase 1 Choice Button */}
               {!isPhase2 && waitingForChoice && currentAlphaStep < alphaDialogueFlow.length && (
                 <button 
-                  style={styles.modernActionButton}
-                  onClick={() => handleAlphaChoice(alphaDialogueFlow[currentAlphaStep].text)}
+                  style={{
+                    ...styles.modernActionButton,
+                    ...(alphaDialogueFlow[currentAlphaStep].type === 'missionAccept' ? {
+                      background: theme.borderColor,
+                      color: '#fff',
+                      fontWeight: 'bold',
+                      fontSize: '16px',
+                      padding: '15px 30px',
+                      border: 'none',
+                    } : {})
+                  }}
+                  onClick={() => {
+                    if (alphaDialogueFlow[currentAlphaStep].type === 'missionAccept') {
+                      // Close dialogue and start mission immediately
+                      handleCloseAlphaDialogue()
+                    } else {
+                      handleAlphaChoice(alphaDialogueFlow[currentAlphaStep].text)
+                    }
+                  }}
                   onMouseOver={(e) => {
-                    e.target.style.borderColor = theme.borderColor
-                    e.target.style.transform = 'translateX(5px)'
+                    if (alphaDialogueFlow[currentAlphaStep].type === 'missionAccept') {
+                      e.target.style.transform = 'scale(1.05)'
+                    } else {
+                      e.target.style.borderColor = theme.borderColor
+                      e.target.style.transform = 'translateX(5px)'
+                    }
                   }}
                   onMouseOut={(e) => {
-                    e.target.style.borderColor = '#E0E0E0'
-                    e.target.style.transform = 'translateX(0)'
+                    if (alphaDialogueFlow[currentAlphaStep].type === 'missionAccept') {
+                      e.target.style.transform = 'scale(1)'
+                    } else {
+                      e.target.style.borderColor = '#E0E0E0'
+                      e.target.style.transform = 'translateX(0)'
+                    }
                   }}
                 >
-                  <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
-                  {alphaDialogueFlow[currentAlphaStep].text}
+                  {alphaDialogueFlow[currentAlphaStep].type === 'missionAccept' ? (
+                    alphaDialogueFlow[currentAlphaStep].text
+                  ) : (
+                    <>
+                      <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                      {alphaDialogueFlow[currentAlphaStep].text}
+                    </>
+                  )}
                 </button>
               )}
 
@@ -3134,7 +4027,7 @@ const DesertMap = ({ onExit }) => {
                   return (
                     <div key={index} style={styles.modernNpcMessage}>
                       <div style={styles.modernNpcSpeaker}>ALPHA:</div>
-                      <p style={styles.modernNpcText}>{message.text}</p>
+                      <p style={styles.modernNpcText}>{formatDialogueText(message.text)}</p>
                       {message.image && (
                         <img src={message.image} alt="Comparison" style={{width: '100%', height: 'auto', borderRadius: '10px', marginTop: '8px'}} />
                       )}
@@ -3219,10 +4112,8 @@ const DesertMap = ({ onExit }) => {
                 </div>
               )}
 
-              {/* Action Button (GO) */}
-              {isPhase2 && !waitingForPhase2Choice && !showQuiz && 
-               currentPhase2Step < alphaPhase2DialogueFlow.length && 
-               alphaPhase2DialogueFlow[currentPhase2Step].type === 'action' && (
+              {/* Accepted Button - Start Mission 2 (replaces WHY button) */}
+              {isPhase2 && showMission2StartButton && (
                 <button 
                   style={styles.modernActionButton}
                   onClick={handleStartLabeling}
@@ -3236,7 +4127,99 @@ const DesertMap = ({ onExit }) => {
                   }}
                 >
                   <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
-                  {alphaPhase2DialogueFlow[currentPhase2Step].text}
+                  Accepted
+                </button>
+              )}
+
+              {/* Mission 2 Completion Messages */}
+              {isMission2Completion && mission2CompletionMessages.map((message, index) => {
+                const timestamp = getCurrentTimestamp()
+                
+                if (message.type === 'message') {
+                  return (
+                    <div key={index} style={styles.modernNpcMessage}>
+                      <div style={styles.modernNpcSpeaker}>ALPHA:</div>
+                      <p style={styles.modernNpcText}>{formatDialogueText(message.text)}</p>
+                      <div style={styles.modernTimestamp}>{timestamp}</div>
+                    </div>
+                  )
+                }
+                
+                if (message.type === 'choice' && message.isUser) {
+                  return (
+                    <div key={index} style={styles.modernUserMessage}>
+                      <div style={styles.modernUserSpeaker}>YOU:</div>
+                      <div style={{
+                        ...styles.modernUserBubble,
+                        background: message.isCorrect === true ? '#28a745' : 
+                                   message.isCorrect === false ? '#dc3545' : theme.borderColor
+                      }}>
+                        <p style={{
+                          ...styles.modernUserText,
+                          color: message.isCorrect !== undefined ? 'white' : '#333'
+                        }}>
+                          {message.text}
+                          {message.isCorrect === true && ' ✓'}
+                          {message.isCorrect === false && ' ✗'}
+                        </p>
+                      </div>
+                      <div style={{...styles.modernTimestamp, textAlign: 'right'}}>{timestamp}</div>
+                    </div>
+                  )
+                }
+                
+                return null
+              })}
+
+              {/* Mission 2 Completion Quiz */}
+              {isMission2Completion && showMission2CompletionQuiz && currentMission2CompletionStep < mission2CompletionFlow.length && (
+                <div style={{width: '100%', marginTop: '10px'}}>
+                  <div style={styles.modernNpcMessage}>
+                    <div style={styles.modernNpcSpeaker}>ALPHA:</div>
+                    <p style={{...styles.modernNpcText, fontWeight: 600}}>
+                      {mission2CompletionFlow[currentMission2CompletionStep].question}
+                    </p>
+                  </div>
+                  
+                  {mission2CompletionFlow[currentMission2CompletionStep].options.map((option, index) => (
+                    <button
+                      key={index}
+                      style={styles.modernActionButton}
+                      onClick={() => handleMission2CompletionQuizAnswer(index)}
+                      onMouseOver={(e) => {
+                        e.target.style.borderColor = theme.borderColor
+                        e.target.style.transform = 'translateX(5px)'
+                      }}
+                      onMouseOut={(e) => {
+                        e.target.style.borderColor = '#E0E0E0'
+                        e.target.style.transform = 'translateX(0)'
+                      }}
+                    >
+                      <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                      {option.text}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Accepted Button - Start Mission 3 */}
+              {isMission2Completion && !showMission2CompletionQuiz && 
+               currentMission2CompletionStep < mission2CompletionFlow.length && 
+               mission2CompletionFlow[currentMission2CompletionStep].type === 'action' && (
+                <button 
+                  style={styles.modernActionButton}
+                  onClick={handleStartMission3}
+                  onMouseOver={(e) => {
+                    e.target.style.borderColor = theme.borderColor
+                    e.target.style.transform = 'translateX(5px)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.borderColor = '#E0E0E0'
+                    e.target.style.transform = 'translateX(0)'
+                  }}
+                >
+                  <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                  {mission2CompletionFlow[currentMission2CompletionStep].text}
                 </button>
               )}
             </div>
