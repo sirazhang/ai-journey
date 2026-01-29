@@ -919,6 +919,19 @@ const GlacierMap = ({ onExit }) => {
   const [npc9UserInput, setNpc9UserInput] = useState('')
   const [npc9ShowResponse, setNpc9ShowResponse] = useState(false)
   
+  // Data Center and Privacy Task states
+  const [showDataCenterArrow, setShowDataCenterArrow] = useState(false)
+  const [showFillBlankTask, setShowFillBlankTask] = useState(false)
+  const [fillBlankProgress, setFillBlankProgress] = useState(0) // 0-5
+  const [fillBlankAnswers, setFillBlankAnswers] = useState([null, null, null, null, null])
+  const [draggedOption, setDraggedOption] = useState(null)
+  const [showPrivacyTask, setShowPrivacyTask] = useState(false)
+  const [privacyTaskDocument, setPrivacyTaskDocument] = useState(1) // 1-3
+  const [privacyFoundItems, setPrivacyFoundItems] = useState([]) // Array of found item IDs
+  const [privacySelecting, setPrivacySelecting] = useState(false)
+  const [privacySelectionStart, setPrivacySelectionStart] = useState(null)
+  const [privacySelectionEnd, setPrivacySelectionEnd] = useState(null)
+  
   // Glitch dialogue states (for inside, court, rooftop scenes)
   const [showGlitchDialogue, setShowGlitchDialogue] = useState(false)
   const [glitchInput, setGlitchInput] = useState('')
@@ -1781,28 +1794,7 @@ const GlacierMap = ({ onExit }) => {
   
   const handleRooftopQuizClose = () => {
     setShowRooftopQuiz(false)
-    
-    // Show final message from Momo, then start reloading
-    setTimeout(() => {
-      // Trigger reloading scene
-      setCurrentScene('reloading')
-      setReloadingProgress(0)
-      
-      // Simulate loading progress
-      let progress = 0
-      const loadingInterval = setInterval(() => {
-        progress += 2
-        setReloadingProgress(progress)
-        
-        if (progress >= 100) {
-          clearInterval(loadingInterval)
-          // Move to complete scene after loading
-          setTimeout(() => {
-            setCurrentScene('complete')
-          }, 500)
-        }
-      }, 50) // Update every 50ms for smooth animation
-    }, 1000)
+    setShowDataCenterArrow(true) // Show arrow to Data Center
   }
   
   // Handle Glitch NPC click
@@ -2472,6 +2464,8 @@ const GlacierMap = ({ onExit }) => {
         return '/glacier/background/court.png'
       case 'rooftop':
         return '/glacier/background/rooftop.png'
+      case 'datacenter':
+        return '/glacier/background/data.png'
       case 'reloading':
         return null // Black background
       case 'complete':
@@ -5240,6 +5234,35 @@ const GlacierMap = ({ onExit }) => {
           />
         </div>
       )}
+      
+      {/* Data Center Arrow - show after rooftop quiz completion */}
+      {showDataCenterArrow && currentScene === 'rooftop' && (
+        <div 
+          style={{
+            position: 'absolute',
+            top: '150px',
+            right: '0px',
+            width: '400px',
+            height: 'auto',
+            cursor: 'pointer',
+            transition: 'transform 0.3s ease',
+            zIndex: 100,
+          }}
+          onClick={() => {
+            setCurrentScene('datacenter')
+            setShowDataCenterArrow(false)
+            setShowFillBlankTask(true)
+          }}
+          onMouseOver={(e) => e.target.style.transform = 'scale(1.1)'}
+          onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+        >
+          <img 
+            src="/glacier/icon/arrow3.png"
+            alt="Data Center Arrow"
+            style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
+          />
+        </div>
+      )}
 
       {/* Rooftop NPC 5 */}
       {currentScene === 'rooftop' && (
@@ -7058,6 +7081,18 @@ const GlacierMap = ({ onExit }) => {
                     <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
                   </div>
                   
+                  {/* New Privacy Task Message */}
+                  <div style={styles.modernNpcMessage}>
+                    <div style={styles.modernNpcSpeaker}>MOMO:</div>
+                    <p style={styles.modernNpcText}>
+                      But there's one last thing—the privacy issue in the Data Center.<br/><br/>
+                      Can you go help?<br/><br/>
+                      They need someone to fix how personal data is handled before we unlock full system access.<br/><br/>
+                      ⬆️ Look—an arrow just appeared! Head there now.
+                    </p>
+                    <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
+                  </div>
+                  
                   <button
                     onClick={handleRooftopQuizClose}
                     style={styles.modernActionButton}
@@ -7071,7 +7106,7 @@ const GlacierMap = ({ onExit }) => {
                     }}
                   >
                     <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
-                    Close
+                    Go Ahead
                   </button>
                 </>
               )}
