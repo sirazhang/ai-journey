@@ -203,6 +203,7 @@ function App() {
     } else if (region === 'island') {
       if (startOver) {
         // Clear Island progress
+        localStorage.removeItem('islandProgress') // Clear the actual progress key used by IslandMap
         const savedUser = localStorage.getItem('aiJourneyUser')
         if (savedUser) {
           const userData = JSON.parse(savedUser)
@@ -216,10 +217,12 @@ function App() {
     } else if (region === 'glacier') {
       if (startOver) {
         // Clear Glacier progress
+        localStorage.removeItem('glacierProgress') // Clear the actual progress key used by GlacierMap
         const savedUser = localStorage.getItem('aiJourneyUser')
         if (savedUser) {
           const userData = JSON.parse(savedUser)
           userData.glacierProgress = null
+          userData.glacierCompleted = false
           localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
         }
       }
