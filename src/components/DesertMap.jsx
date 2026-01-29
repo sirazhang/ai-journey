@@ -365,7 +365,7 @@ const DesertMap = ({ onExit }) => {
   const [showFinalQuiz, setShowFinalQuiz] = useState(false)
 
   // Sound effects
-  const { playClickSound, playCameraSound, playStampSound, playSafeSound, playAlertSound } = useSoundEffects()
+  const { playClickSound, playCameraSound, playStampSound, playSafeSound, playAlertSound, playCorrectSound, playWrongSound } = useSoundEffects()
   const { startTypingSound, stopTypingSound } = useTypingSound('/sound/desert_typing.wav')
 
   // Mission 3 states
@@ -1457,14 +1457,14 @@ const DesertMap = ({ onExit }) => {
   }
 
   const handleMission2QuizAnswer = (answer) => {
-    playClickSound()
     const isCorrect = answer === 'B'
     
     // Map answer letter to index for wrong answer highlighting
     const answerIndex = answer === 'A' ? 0 : answer === 'B' ? 1 : 2
     
     if (isCorrect) {
-      // Clear wrong answer state
+      // Play correct sound and clear wrong answer state
+      playCorrectSound()
       setWrongAnswerIndex(null)
       setCurrentDialogue({
         text: "Correct! It's called Data Labeling. AI is like a student, and we acted as teachers, telling it 'this is right, that is wrong.' This is known as Supervised Learning!",
@@ -1622,11 +1622,10 @@ const DesertMap = ({ onExit }) => {
 
   // Mission 3 Quiz handling
   const handleMission3QuizAnswer = (answerIndex, isCorrect) => {
-    playClickSound()
-    
     if (mission3Phase === 'quiz1') {
       if (isCorrect) {
-        // Clear wrong answer state and show correct feedback
+        // Play correct sound, clear wrong answer state and show correct feedback
+        playCorrectSound()
         setWrongAnswerIndex(null)
         setCurrentDialogue({
           text: "The action didn't change. Only the context did—the sandstorm, the setting, the intent.",
@@ -1647,7 +1646,8 @@ const DesertMap = ({ onExit }) => {
       }
     } else if (mission3Phase === 'quiz2') {
       if (isCorrect) {
-        // Clear wrong answer state and show final feedback
+        // Play correct sound, clear wrong answer state and show final feedback
+        playCorrectSound()
         setWrongAnswerIndex(null)
         setCurrentDialogue({
           text: "Exactly.\n\nI process data—but you bring the common sense and context I'll never have on my own.",

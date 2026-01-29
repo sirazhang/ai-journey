@@ -33,13 +33,23 @@ const useSoundEffects = () => {
     playSound('/sound/alert.mp3', 0.7)
   }, [playSound])
 
+  const playCorrectSound = useCallback(() => {
+    playSound('/sound/correct.wav', 0.7)
+  }, [playSound])
+
+  const playWrongSound = useCallback(() => {
+    playSound('/sound/wrong.mp3', 0.7)
+  }, [playSound])
+
   return {
     playSound,
     playClickSound,
     playCameraSound,
     playStampSound,
     playSafeSound,
-    playAlertSound
+    playAlertSound,
+    playCorrectSound,
+    playWrongSound
   }
 }
 
