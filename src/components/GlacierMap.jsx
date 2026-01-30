@@ -1030,6 +1030,7 @@ const GlacierMap = ({ onExit }) => {
   const [fillBlankAnswers, setFillBlankAnswers] = useState([null, null, null, null, null])
   const [draggedOption, setDraggedOption] = useState(null)
   const [showPrivacyTask, setShowPrivacyTask] = useState(false)
+  const [showPrivacyComplete, setShowPrivacyComplete] = useState(false) // Show completion dialogue
   const [privacyTaskDocument, setPrivacyTaskDocument] = useState(1) // 1-3
   const [privacyFoundItems, setPrivacyFoundItems] = useState([]) // Array of found item IDs
   const [privacySelecting, setPrivacySelecting] = useState(false)
@@ -2027,30 +2028,33 @@ const GlacierMap = ({ onExit }) => {
         // All documents complete
         setTimeout(() => {
           setShowPrivacyTask(false)
-          // Show final dialogue and enable color map
-          alert("You did it! You protected the privacy by removing name, address, phone, and photo.\nNow all data is safe to use — great work!")
-          // TODO: Replace with proper dialogue
-          // Trigger color map enable
-          setCurrentScene('reloading')
-          setReloadingProgress(0)
-          
-          let progress = 0
-          const loadingInterval = setInterval(() => {
-            progress += 2
-            setReloadingProgress(progress)
-            
-            if (progress >= 100) {
-              clearInterval(loadingInterval)
-              setTimeout(() => {
-                setCurrentScene('complete')
-              }, 500)
-            }
-          }, 50)
+          setShowPrivacyComplete(true)
         }, 1000)
       }
     } else {
       playWrongSound()
     }
+  }
+  
+  // Handle Privacy Task completion
+  const handlePrivacyCompleteClose = () => {
+    setShowPrivacyComplete(false)
+    // Trigger color map enable
+    setCurrentScene('reloading')
+    setReloadingProgress(0)
+    
+    let progress = 0
+    const loadingInterval = setInterval(() => {
+      progress += 2
+      setReloadingProgress(progress)
+      
+      if (progress >= 100) {
+        clearInterval(loadingInterval)
+        setTimeout(() => {
+          setCurrentScene('complete')
+        }, 500)
+      }
+    }, 50)
   }
   
   // Handle Glitch NPC click
@@ -4641,7 +4645,7 @@ const GlacierMap = ({ onExit }) => {
             style={styles.leftButtonImage}
           />
         </button>
-      ) : (
+      ) : currentScene !== 'datacenter' && (
         <button 
           style={styles.exitButton} 
           onClick={onExit}
@@ -6871,7 +6875,7 @@ const GlacierMap = ({ onExit }) => {
       {/* Rooftop Quiz Modal - Modern Design (Same as Summary Dialogue) */}
       {showRooftopQuiz && (() => {
         const theme = getNpcTheme('momo')
-        const totalSteps = 4
+        const totalSteps = 5
         const currentStep = 4 // Rooftop quiz is step 4
         const progressPercent = (currentStep / totalSteps) * 100
         
@@ -7707,11 +7711,14 @@ const GlacierMap = ({ onExit }) => {
                 {privacyDocuments[privacyTaskDocument - 1].content.split('\n').map((line, i) => {
                   // Check if this line contains any found items
                   const foundItem = privacyDocuments[privacyTaskDocument - 1].items.find(item => 
-                    !item.isImage && privacyFoundItems.includes(item.id) && line.includes(item.text)
+                    !item.isImage && privacyFoundItems.includes(item.id) && (
+                      line.includes(item.hint || item.text)
+                    )
                   )
                   
                   if (foundItem) {
-                    const parts = line.split(foundItem.text)
+                    const textToBlack = foundItem.hint || foundItem.text
+                    const parts = line.split(textToBlack)
                     return (
                       <div key={i} style={{marginBottom: '5px'}}>
                         {parts[0]}
@@ -7721,7 +7728,7 @@ const GlacierMap = ({ onExit }) => {
                           padding: '2px 4px',
                           borderRadius: '4px',
                         }}>
-                          {foundItem.text}
+                          {textToBlack}
                         </span>
                         {parts[1]}
                       </div>
@@ -7870,6 +7877,63 @@ const GlacierMap = ({ onExit }) => {
           </div>
         </div>
       )}
+      
+      {/* Privacy Task Completion Dialogue */}
+      {currentScene === 'datacenter' && showPrivacyComplete && (() => {
+        const theme = getNpcTheme('momo')
+        
+        return (
+          <div style={{
+            ...styles.modernDialogueContainer,
+            border: `3px solid ${theme.borderColor}`,
+            maxWidth: '700px',
+          }}>
+            {/* Header */}
+            <div style={styles.modernDialogueHeader}>
+              {/* NPC Info */}
+              <div style={styles.modernNpcInfo}>
+                <img 
+                  src={theme.avatar} 
+                  alt="Momo" 
+                  style={styles.modernNpcAvatar}
+                />
+                <div>
+                  <div style={styles.modernNpcName}>Momo</div>
+                  <div style={styles.modernNpcStatus}>Station Supervisor</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Dialogue Content */}
+            <div style={styles.modernDialogueContent}>
+              <div style={styles.modernNpcMessage}>
+                <div style={styles.modernNpcSpeaker}>MOMO:</div>
+                <p style={styles.modernNpcText}>
+                  You did it! You protected the privacy by removing name, address, phone, and photo.<br/><br/>
+                  Now all data is safe to use — great work!
+                </p>
+                <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
+              </div>
+              
+              <button
+                onClick={handlePrivacyCompleteClose}
+                style={styles.modernActionButton}
+                onMouseOver={(e) => {
+                  e.target.style.borderColor = theme.borderColor
+                  e.target.style.transform = 'translateX(5px)'
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.borderColor = '#E0E0E0'
+                  e.target.style.transform = 'translateX(0)'
+                }}
+              >
+                <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                Continue
+              </button>
+            </div>
+          </div>
+        )
+      })()}
       
     </div>
   )

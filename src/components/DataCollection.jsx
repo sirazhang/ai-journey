@@ -31,7 +31,7 @@ const mushroomPositions = {
   [POSITIONS.TOP_LEFT]: [
     { id: '02', size: 250, right: '35%', bottom: '25%' },
     { id: '04', size: 320, left: '0%', top: '50%' },
-    { id: '05', size: 240, right: '0%', top: '25%' },
+    { id: '05', size: 240, right: '0%', top: 'calc(25% + 200px)' }, // Moved down 200px
     { id: '10', size: 200, left: '40%', top: '5%' },
   ],
   [POSITIONS.BOTTOM_LEFT]: [
@@ -91,7 +91,7 @@ const mushroomData = {
   '04': { name: 'Polka Cluster', color: 'Green / Purple', colorTone: 'Mixed cool and warm', shape: 'Clustered / Round', texture: 'Smooth / Polka-dotted', spikes: false },
   '05': { name: 'Speckled Bell', color: 'Purple / Yellow', colorTone: 'Mixed cool and warm', shape: 'Bell-shaped / Drooping', texture: 'Matte / Speckled', spikes: false },
   '06': { name: 'Glowing Shroom', color: 'Blue / Purple / Pink', colorTone: 'Cool dominant', shape: 'Mushroom-like / Flowing', texture: 'Glowing / Translucent', spikes: false },
-  '07': { name: 'Striped Chime', color: 'Orange / White / Red', colorTone: 'Warm dominant', shape: 'Bell-shaped / Curved', texture: 'Smooth / Striped', spikes: false },
+  '07': { name: 'Floral Bouquet', color: 'Purple / Pink / Lavender', shape: 'Round / Radial Petals with Central Stamen', texture: 'Smooth, Soft Gradient, Delicate Shading', spikes: false },
   '08': { name: 'Drip Orb', color: 'Yellow / White', colorTone: 'Warm', shape: 'Round / Bulbous', texture: 'Glossy / Dripping', spikes: false },
   '09': { name: 'Frostfire Cap', color: 'Pink / Cyan / White', colorTone: 'Mixed warm and cool', shape: 'Mushroom-like / Flame-shaped', texture: 'Glossy / Glowing', spikes: false },
   '10': { name: 'Classic Toadstool', color: 'Red / White / Blue', colorTone: 'Warm dominant', shape: 'Round / Smooth', texture: 'Matte / Polka-dotted', spikes: false },
@@ -111,9 +111,43 @@ const DataCollection = ({ onComplete, onExit }) => {
   const [npcDialogueText, setNpcDialogueText] = useState('')
   const [allCollected, setAllCollected] = useState(false)
   const [hoveredNpc, setHoveredNpc] = useState(null) // Track which NPC is hovered ('npc_a', 'npc_b', 'npc_c', 'glitch')
+  const [showGlitchDialogue, setShowGlitchDialogue] = useState(false) // Modern Glitch dialogue
+  const [glitchInput, setGlitchInput] = useState('') // Glitch input field
+  
+  // Custom cursor position
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
+  const [showCursor, setShowCursor] = useState(false)
+  
+  // Track mouse movement for custom cursor
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      setCursorPosition({ x: e.clientX, y: e.clientY })
+      setShowCursor(true)
+    }
+    
+    const handleMouseLeave = () => {
+      setShowCursor(false)
+    }
+    
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseleave', handleMouseLeave)
+    
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseleave', handleMouseLeave)
+    }
+  }, [])
 
   // Sound effects
   const { playCameraSound } = useSoundEffects()
+  const [pencilSound] = useState(new Audio('/sound/pencil.wav'))
+  const [clickSound] = useState(new Audio('/sound/click.mp3'))
+
+  // Set pencil sound volume
+  useEffect(() => {
+    pencilSound.volume = 0.5
+    clickSound.volume = 0.5
+  }, [pencilSound, clickSound])
 
   // Load saved progress on mount
   useEffect(() => {
@@ -157,7 +191,10 @@ const DataCollection = ({ onComplete, onExit }) => {
 
   const handleMushroomClick = (id) => {
     if (!collectedIds.includes(id)) {
-      playCameraSound() // Add camera sound effect
+      // Play pencil sound
+      pencilSound.currentTime = 0
+      pencilSound.play().catch(err => console.log('Pencil sound error:', err))
+      
       setSelectedMushroom(id)
       setShowCard(true)
     }
@@ -165,6 +202,10 @@ const DataCollection = ({ onComplete, onExit }) => {
 
   const handleCollectData = () => {
     if (selectedMushroom && !collectedIds.includes(selectedMushroom)) {
+      // Play click sound
+      clickSound.currentTime = 0
+      clickSound.play().catch(err => console.log('Click sound error:', err))
+      
       const newCollected = [...collectedIds, selectedMushroom]
       setCollectedIds(newCollected)
       setShowCard(false)
@@ -200,24 +241,22 @@ const DataCollection = ({ onComplete, onExit }) => {
     }
   }
 
-  const handleGlitchHover = (isEntering) => {
-    if (isEntering) {
-      setHoveredNpc('glitch')
-      if (collectedIds.length < 12) {
-        setNpcDialogueText("Not finished yet! You're still missing some data!")
-        setShowNpcDialogue(true)
-      } else {
-        setNpcDialogueText("Give ALL these to Ranger Moss!")
-        setShowNpcDialogue(true)
-      }
-    } else {
-      setHoveredNpc(null)
-      setShowNpcDialogue(false)
+  const handleGlitchClick = () => {
+    setShowGlitchDialogue(true)
+  }
+  
+  const handleGlitchSend = () => {
+    if (glitchInput.trim()) {
+      // Handle Glitch input (can be extended later)
+      console.log('Glitch input:', glitchInput)
+      setGlitchInput('')
     }
   }
-
-  const handleGlitchClick = () => {
-    setShowTaskHint(true)
+  
+  const handleGlitchInputKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleGlitchSend()
+    }
   }
 
   const availableDirections = navigationMap[currentPosition] || {}
@@ -230,6 +269,7 @@ const DataCollection = ({ onComplete, onExit }) => {
       height: '100vh',
       position: 'relative',
       overflow: 'hidden',
+      cursor: 'none', // Hide default cursor
     },
     mapContainer: {
       width: '200%',
@@ -279,8 +319,8 @@ const DataCollection = ({ onComplete, onExit }) => {
     },
     navArrow: {
       position: 'absolute',
-      width: '50px',
-      height: '50px',
+      width: '80px',
+      height: '80px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -290,11 +330,11 @@ const DataCollection = ({ onComplete, onExit }) => {
       background: 'none',
       border: 'none',
     },
-    arrowIcon: {
-      fontSize: '45px',
-      color: '#fff',
-      textShadow: '0 2px 10px rgba(0,0,0,0.5)',
-      fontWeight: 'bold',
+    arrowImage: {
+      width: '80px',
+      height: '80px',
+      objectFit: 'contain',
+      filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.5))',
     },
     upArrow: { top: '15px', left: '50%', transform: 'translateX(-50%)' },
     downArrow: { bottom: '120px', left: '50%', transform: 'translateX(-50%)' },
@@ -331,44 +371,193 @@ const DataCollection = ({ onComplete, onExit }) => {
       maxWidth: '400px',
     },
     npcDialogueBoxInline: {
-      padding: '20px 25px',
-      borderRadius: '15px',
-      background: 'rgba(255, 255, 255, 0.98)',
-      border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(255,255,255,0.98), rgba(255,255,255,0.98)), linear-gradient(90deg, #5170FF, #FFBBC4)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
-      textAlign: 'center',
-      boxShadow: '0 5px 25px rgba(0,0,0,0.2)',
+      padding: '25px 30px',
+      borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%', // Irregular organic shape
+      background: 'rgba(255, 255, 255, 0.95)',
+      border: '3px solid #8B4513',
+      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.3), inset 0 2px 5px rgba(255, 255, 255, 0.5)',
+      position: 'relative',
+      minHeight: '100px',
     },
-    slotsContainer: {
+    npcSpeakerName: {
+      position: 'absolute',
+      top: '-15px',
+      right: '20px',
+      fontFamily: "'Patrick Hand', cursive",
+      fontSize: '20px',
+      fontWeight: 700,
+      color: '#8B4513',
+      background: 'rgba(255, 255, 255, 0.95)',
+      padding: '5px 15px',
+      borderRadius: '15px',
+      border: '2px solid #8B4513',
+      textShadow: '1px 1px 2px rgba(0, 0, 0, 0.2)',
+    },
+    dialogueText: {
+      fontFamily: "'Patrick Hand', cursive",
+      fontSize: '18px',
+      color: '#333',
+      lineHeight: 1.6,
+      textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)',
+    },
+    // Progress container and slots (desert-style)
+    progressContainer: {
       position: 'absolute',
       bottom: '30px',
       left: '50%',
       transform: 'translateX(-50%)',
       display: 'flex',
-      gap: '12px',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '15px',
       zIndex: 100,
     },
+    progressText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '18px',
+      fontWeight: 600,
+      color: '#fff',
+      backgroundColor: '#8FCCAE',
+      padding: '10px 25px',
+      borderRadius: '10px',
+      textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+      letterSpacing: '1px',
+      boxShadow: '0 4px 12px rgba(143, 204, 174, 0.4)',
+    },
+    slotsContainer: {
+      display: 'flex',
+      gap: '10px',
+      flexWrap: 'nowrap',
+      justifyContent: 'center',
+    },
     slot: {
-      width: '55px',
-      height: '55px',
+      width: '65px',
+      height: '65px',
+      border: '3px dashed #8FCCAE',
+      backgroundColor: 'rgba(255, 255, 255, 0.85)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '3px',
+      borderRadius: '8px',
+      transition: 'all 0.3s',
+    },
+    slotFilled: {
+      border: '3px solid #8FCCAE',
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      boxShadow: '0 4px 12px rgba(143, 204, 174, 0.4)',
+    },
+    slotImage: {
+      width: '40px',
+      height: '40px',
+      objectFit: 'contain',
+    },
+    slotLabel: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '10px',
+      fontWeight: 600,
+      color: '#8FCCAE',
+    },
+    // Glitch dialogue bubble (modern design with input)
+    glitchDialogue: {
+      position: 'absolute',
+      top: '20px',
+      right: '150px',
+      width: '350px',
+      background: 'rgba(255, 255, 255, 0.95)',
+      borderRadius: '15px',
+      padding: '20px',
+      boxShadow: '0 4px 20px rgba(143, 204, 174, 0.3)',
+      zIndex: 150,
+    },
+    glitchDialogueHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      marginBottom: '15px',
+    },
+    glitchDialogueAvatar: {
+      width: '40px',
+      height: '40px',
       borderRadius: '50%',
-      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-      border: '2px solid #ddd',
+      background: 'linear-gradient(135deg, #8FCCAE, #6FB896)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      fontFamily: "'Roboto', sans-serif",
-      fontSize: '18px',
-      color: '#999',
-      fontWeight: 500,
+      flexShrink: 0,
     },
-    slotFilled: {
-      background: 'linear-gradient(135deg, #E8D5E8, #F5E6F5)',
-      border: '3px solid #C9A0DC',
-      color: '#8B5A9B',
-      fontWeight: 700,
+    glitchDialogueAvatarIcon: {
+      fontSize: '24px',
+    },
+    glitchDialogueName: {
+      fontFamily: "'Montserrat', sans-serif",
+      fontSize: '16px',
+      fontWeight: 600,
+      color: '#333',
+      margin: 0,
+    },
+    glitchDialogueText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      color: '#666',
+      lineHeight: 1.6,
+      margin: '0 0 15px 0',
+    },
+    glitchDialogueInputContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      padding: '8px 12px',
+      border: '2px solid #e0e0e0',
+      borderRadius: '25px',
+      transition: 'border-color 0.2s',
+    },
+    glitchDialogueInput: {
+      flex: 1,
+      padding: '10px 15px',
+      border: 'none',
+      background: 'transparent',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      color: '#333',
+      outline: 'none',
+    },
+    glitchDialogueDivider: {
+      width: '2px',
+      height: '24px',
+      background: '#e0e0e0',
+      borderRadius: '1px',
+      flexShrink: 0,
+    },
+    glitchDialogueSendButton: {
+      background: 'none',
+      border: 'none',
+      padding: '0',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'transform 0.2s',
+      flexShrink: 0,
+    },
+    glitchDialogueSendIcon: {
+      width: '24px',
+      height: '24px',
+      objectFit: 'contain',
+    },
+    glitchDialogueCloseButton: {
+      position: 'absolute',
+      top: '15px',
+      right: '15px',
+      background: 'none',
+      border: 'none',
+      fontSize: '24px',
+      color: '#999',
+      cursor: 'pointer',
+      padding: '0',
+      lineHeight: 1,
+      transition: 'color 0.2s',
     },
     // Card Modal
     cardOverlay: {
@@ -496,10 +685,32 @@ const DataCollection = ({ onComplete, onExit }) => {
       cursor: 'pointer',
       transition: 'all 0.2s',
     },
+    // Custom pencil cursor
+    customCursor: {
+      position: 'fixed',
+      pointerEvents: 'none',
+      zIndex: 9999,
+      width: '32px',
+      height: '32px',
+      transform: 'translate(-8px, -24px)', // Offset to position tip at cursor point
+    },
   }
 
   return (
     <div style={styles.container}>
+      {/* Custom Pencil Cursor */}
+      {showCursor && (
+        <img 
+          src="/jungle/icon/pencil.png"
+          alt="Cursor"
+          style={{
+            ...styles.customCursor,
+            left: `${cursorPosition.x}px`,
+            top: `${cursorPosition.y}px`,
+          }}
+        />
+      )}
+      
       {/* Map Background */}
       <div style={styles.mapContainer}>
         <img 
@@ -529,11 +740,80 @@ const DataCollection = ({ onComplete, onExit }) => {
       <div 
         style={styles.glitchNpc}
         onClick={handleGlitchClick}
-        onMouseEnter={() => handleGlitchHover(true)}
-        onMouseLeave={() => handleGlitchHover(false)}
       >
         <img src="/npc/npc_jungle.png" alt="Glitch" style={styles.glitchImage} />
       </div>
+      
+      {/* Glitch Dialogue - Modern Design with Input (Top Right) */}
+      {showGlitchDialogue && (
+        <div style={styles.glitchDialogue}>
+          {/* Close button */}
+          <button
+            style={styles.glitchDialogueCloseButton}
+            onClick={() => setShowGlitchDialogue(false)}
+            onMouseOver={(e) => {
+              e.target.style.color = '#333'
+            }}
+            onMouseOut={(e) => {
+              e.target.style.color = '#999'
+            }}
+          >
+            ×
+          </button>
+          
+          {/* Header with avatar and name */}
+          <div style={styles.glitchDialogueHeader}>
+            <div style={styles.glitchDialogueAvatar}>
+              <span style={styles.glitchDialogueAvatarIcon}>👾</span>
+            </div>
+            <h4 style={styles.glitchDialogueName}>Glitch</h4>
+          </div>
+          
+          {/* Message content */}
+          <p style={styles.glitchDialogueText}>
+            {collectedIds.length < 12 
+              ? "Not finished yet! You're still missing some data!"
+              : "Give ALL these to Ranger Moss!"}
+          </p>
+          
+          {/* Input container */}
+          <div 
+            style={styles.glitchDialogueInputContainer}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = '#8FCCAE'
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = '#e0e0e0'
+            }}
+          >
+            <input 
+              type="text" 
+              placeholder="Ask Glitch anything..."
+              value={glitchInput}
+              onChange={(e) => setGlitchInput(e.target.value)}
+              onKeyPress={handleGlitchInputKeyPress}
+              style={styles.glitchDialogueInput}
+            />
+            <div style={styles.glitchDialogueDivider}></div>
+            <button
+              onClick={handleGlitchSend}
+              style={styles.glitchDialogueSendButton}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'scale(1.1)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'scale(1)'
+              }}
+            >
+              <img 
+                src="/icon/send.png" 
+                alt="Send" 
+                style={styles.glitchDialogueSendIcon}
+              />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Navigation Arrows */}
       {availableDirections.up !== undefined && (
@@ -543,7 +823,11 @@ const DataCollection = ({ onComplete, onExit }) => {
           onMouseOver={(e) => e.currentTarget.style.transform = 'translateX(-50%) scale(1.2)'}
           onMouseOut={(e) => e.currentTarget.style.transform = 'translateX(-50%) scale(1)'}
         >
-          <span style={styles.arrowIcon}>︿</span>
+          <img 
+            src="/jungle/icon/up.png" 
+            alt="Up" 
+            style={styles.arrowImage}
+          />
         </button>
       )}
       {availableDirections.down !== undefined && (
@@ -553,7 +837,11 @@ const DataCollection = ({ onComplete, onExit }) => {
           onMouseOver={(e) => e.currentTarget.style.transform = 'translateX(-50%) scale(1.2)'}
           onMouseOut={(e) => e.currentTarget.style.transform = 'translateX(-50%) scale(1)'}
         >
-          <span style={styles.arrowIcon}>﹀</span>
+          <img 
+            src="/jungle/icon/down.png" 
+            alt="Down" 
+            style={styles.arrowImage}
+          />
         </button>
       )}
       {availableDirections.left !== undefined && (
@@ -563,7 +851,11 @@ const DataCollection = ({ onComplete, onExit }) => {
           onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1.2)'}
           onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1)'}
         >
-          <span style={styles.arrowIcon}>〈</span>
+          <img 
+            src="/jungle/icon/left.png" 
+            alt="Left" 
+            style={styles.arrowImage}
+          />
         </button>
       )}
       {availableDirections.right !== undefined && (
@@ -573,7 +865,11 @@ const DataCollection = ({ onComplete, onExit }) => {
           onMouseOver={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1.2)'}
           onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(-50%) scale(1)'}
         >
-          <span style={styles.arrowIcon}>〉</span>
+          <img 
+            src="/jungle/icon/right.png" 
+            alt="Right" 
+            style={styles.arrowImage}
+          />
         </button>
       )}
 
@@ -633,56 +929,66 @@ const DataCollection = ({ onComplete, onExit }) => {
       )}
 
       {/* NPC Dialogue - Next to NPC or Glitch */}
-      {showNpcDialogue && (
+      {showNpcDialogue && hoveredNpc !== 'glitch' && (
         <div 
           style={{
             ...styles.npcDialogueContainer,
-            ...(hoveredNpc === 'glitch' ? {
-              top: '15px',
-              right: '100px',
-            } : currentNpc ? {
+            ...(currentNpc ? {
               top: currentNpc.dialogueTop,
               left: currentNpc.dialogueLeft,
               right: currentNpc.dialogueRight,
             } : {}),
           }}
         >
-          <div style={styles.npcDialogueBoxInline}>
+          <div 
+            style={{
+              ...styles.npcDialogueBoxInline,
+              cursor: 'pointer',
+            }}
+            onClick={() => setShowNpcDialogue(false)}
+          >
+            <div style={styles.npcSpeakerName}>
+              {hoveredNpc === 'npc_a' ? 'NPC 01' :
+               hoveredNpc === 'npc_b' ? 'NPC 02' :
+               hoveredNpc === 'npc_c' ? 'Ranger Moss' : ''}
+            </div>
             <p style={styles.dialogueText}>{npcDialogueText}</p>
-            <button
-              style={styles.okButton}
-              onClick={() => setShowNpcDialogue(false)}
-              onMouseOver={(e) => {
-                e.target.style.backgroundColor = '#5170FF'
-                e.target.style.color = '#fff'
-              }}
-              onMouseOut={(e) => {
-                e.target.style.backgroundColor = 'transparent'
-                e.target.style.color = '#5170FF'
-              }}
-            >
-              OK
-            </button>
           </div>
         </div>
       )}
 
-      {/* Collection Slots at Bottom */}
-      <div style={styles.slotsContainer}>
-        {Array.from({ length: 12 }, (_, i) => {
-          const collectedId = collectedIds[i]
-          return (
-            <div
-              key={i}
-              style={{
-                ...styles.slot,
-                ...(collectedId ? styles.slotFilled : {}),
-              }}
-            >
-              {collectedId ? collectedId : '?'}
-            </div>
-          )
-        })}
+      {/* Collection Progress and Slots at Bottom */}
+      <div style={styles.progressContainer}>
+        <div style={styles.progressText}>
+          Progress: {collectedIds.length}/12 found
+        </div>
+        <div style={styles.slotsContainer}>
+          {Array.from({ length: 12 }, (_, i) => {
+            const collectedId = collectedIds[i]
+            return (
+              <div
+                key={i}
+                style={{
+                  ...styles.slot,
+                  ...(collectedId ? styles.slotFilled : {}),
+                }}
+              >
+                {collectedId ? (
+                  <>
+                    <img 
+                      src={`/jungle/object/${collectedId}.png`}
+                      alt={`Object ${collectedId}`}
+                      style={styles.slotImage}
+                    />
+                    <div style={styles.slotLabel}>Object{collectedId}</div>
+                  </>
+                ) : (
+                  <div style={{ fontSize: '24px', color: '#ccc' }}>?</div>
+                )}
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       {/* Mushroom Card Modal */}

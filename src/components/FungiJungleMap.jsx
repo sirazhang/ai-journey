@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
+import useTypingSound from '../hooks/useTypingSound'
 
 // Map positions: bottom-left (0), bottom-right (1), top-left (2), top-right (3)
 const POSITIONS = {
@@ -65,6 +66,7 @@ const positionTransforms = {
 
 const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
   const { t } = useLanguage()
+  const { startTypingSound, stopTypingSound } = useTypingSound('/sound/typing_jungle.wav')
   const [currentPosition, setCurrentPosition] = useState(POSITIONS.BOTTOM_LEFT)
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0)
   const [displayedText, setDisplayedText] = useState('')
@@ -72,6 +74,13 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
   const [showDialogue, setShowDialogue] = useState(true)
   const [isTransitioning, setIsTransitioning] = useState(false)
   const [dialogueComplete, setDialogueComplete] = useState({})
+  const [showModernDialogue, setShowModernDialogue] = useState(false) // For Ranger Moss modern dialogue
+  const [rangerMossMessages, setRangerMossMessages] = useState([]) // Store Ranger Moss dialogue history
+  const [currentRangerMossStep, setCurrentRangerMossStep] = useState(0) // Track Ranger Moss dialogue step
+  const [waitingForRangerChoice, setWaitingForRangerChoice] = useState(false) // Waiting for user choice
+  const [rangerMossDisplayedText, setRangerMossDisplayedText] = useState('') // For typing effect
+  const [rangerMossIsTyping, setRangerMossIsTyping] = useState(false) // Typing state
+  const [currentTypingMessage, setCurrentTypingMessage] = useState(null) // Track which message is typing
 
   // Load saved progress on mount
   useEffect(() => {
@@ -82,8 +91,15 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
       if (fungiProgress) {
         setCurrentPosition(fungiProgress.currentPosition || POSITIONS.BOTTOM_LEFT)
         setDialogueComplete(fungiProgress.dialogueComplete || {})
-        console.log('Loaded Fungi Jungle progress:', fungiProgress)
+        // Load Ranger Moss mission progress (1-5)
+        const rangerMossPhase = userData.rangerMossPhase || 1
+        console.log('Loaded Fungi Jungle progress:', fungiProgress, 'Ranger Moss Phase:', rangerMossPhase)
       }
+    }
+    
+    // Cleanup typing sound on unmount
+    return () => {
+      stopTypingSound()
     }
   }, [])
 
@@ -105,13 +121,148 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
   const currentNpcData = npcDialogues[currentPosition]
   const currentDialogue = currentNpcData?.dialogues?.[currentDialogueIndex]
 
-  // Reset dialogue when position changes
+  // Reset dialogue when position changes and auto-show
   useEffect(() => {
     if (!dialogueComplete[currentPosition] && currentNpcData?.dialogues?.length > 0) {
       setCurrentDialogueIndex(0)
-      setShowDialogue(true)
+      // For Ranger Moss, show modern dialogue
+      if (currentPosition === POSITIONS.TOP_RIGHT) {
+        setShowModernDialogue(true)
+        setShowDialogue(false)
+        // Initialize first message
+        if (rangerMossMessages.length === 0) {
+          startRangerMossDialogue()
+        }
+      } else {
+        setShowDialogue(true) // Auto-show dialogue for NPC A and B
+        setShowModernDialogue(false)
+      }
     }
   }, [currentPosition])
+  
+  // Ranger Moss dialogue flow
+  const rangerMossDialogueFlow = [
+    { type: 'message', text: "Hey! Down here! No, wait—up here! Hello? Can you hear me? I am <strong>Ranger Moss</strong>. As you can see, I am currently... slightly indisposed." },
+    { type: 'message', text: "My battery died while I was climbing, and now my magnetic grip won't let go of this tree!" },
+    { type: 'choice', text: "Why is everyone down?" },
+    { type: 'message', text: "It's a disaster. Recently, strange mutated mushrooms just popped up everywhere. My workers couldn't tell the difference. They ate the toxic mushrooms thinking they were batteries... and now their systems have crashed!" },
+    { type: 'choice', text: "How can I help you?" },
+    { type: 'message', text: "We need to build an <strong>AI algorithm</strong> to automatically identify the toxic mushrooms. But since I can't move... could you help me? Please go into the jungle and collect <strong>data samples</strong> of the mushrooms." },
+    { type: 'message', text: "We need at least <strong>12 samples</strong> to train the model. Good luck, human!" },
+    { type: 'action', text: "START MISSION" }
+  ]
+  
+  // Start Ranger Moss dialogue
+  const startRangerMossDialogue = () => {
+    setRangerMossMessages([])
+    setCurrentRangerMossStep(0)
+    addRangerMossMessage(0)
+  }
+  
+  // Add Ranger Moss message with typing effect
+  const addRangerMossMessage = (stepIndex) => {
+    if (stepIndex >= rangerMossDialogueFlow.length) return
+    
+    const step = rangerMossDialogueFlow[stepIndex]
+    
+    if (step.type === 'message') {
+      const newMessage = { type: 'message', text: step.text }
+      setRangerMossMessages(prev => [...prev, newMessage])
+      setCurrentTypingMessage(newMessage)
+      
+      // Start typing effect
+      let charIndex = 0
+      setRangerMossDisplayedText('')
+      setRangerMossIsTyping(true)
+      startTypingSound() // Start typing sound
+      
+      const typingInterval = setInterval(() => {
+        if (charIndex < step.text.length) {
+          setRangerMossDisplayedText(step.text.substring(0, charIndex + 1))
+          charIndex++
+        } else {
+          setRangerMossIsTyping(false)
+          setCurrentTypingMessage(null)
+          stopTypingSound() // Stop typing sound
+          clearInterval(typingInterval)
+          
+          // Check if next step is a choice
+          if (stepIndex + 1 < rangerMossDialogueFlow.length && 
+              rangerMossDialogueFlow[stepIndex + 1].type === 'choice') {
+            setWaitingForRangerChoice(true)
+            setCurrentRangerMossStep(stepIndex + 1)
+          } else if (stepIndex + 1 < rangerMossDialogueFlow.length) {
+            // Auto-continue to next message
+            setTimeout(() => {
+              setCurrentRangerMossStep(stepIndex + 1)
+              addRangerMossMessage(stepIndex + 1)
+            }, 500)
+          } else {
+            // End of dialogue
+            setCurrentRangerMossStep(stepIndex + 1)
+          }
+        }
+      }, 25)
+    }
+  }
+  
+  // Handle Ranger Moss choice
+  const handleRangerMossChoice = (choiceText) => {
+    // Add user message
+    setRangerMossMessages(prev => [...prev, { type: 'user', text: choiceText }])
+    setWaitingForRangerChoice(false)
+    
+    // Move to next step
+    const nextStep = currentRangerMossStep + 1
+    setCurrentRangerMossStep(nextStep)
+    
+    // Add next message after delay
+    setTimeout(() => {
+      addRangerMossMessage(nextStep)
+    }, 500)
+  }
+  
+  // Handle start mission
+  const handleStartMission = () => {
+    stopTypingSound()
+    setDialogueComplete(prev => ({ ...prev, [POSITIONS.TOP_RIGHT]: true }))
+    setShowModernDialogue(false)
+    
+    // Save phase 1 as started
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (savedUser) {
+      const userData = JSON.parse(savedUser)
+      userData.rangerMossPhase = 1 // Phase 1: Collecting Data
+      localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+    }
+    
+    // Start data collection
+    setTimeout(() => {
+      if (onStartDataCollection) {
+        onStartDataCollection()
+      }
+    }, 500)
+  }
+  
+  // Format text with bold keywords
+  const formatTextWithBold = (text) => {
+    if (!text) return text
+    // Replace <strong> tags with styled spans
+    const parts = text.split(/(<strong>.*?<\/strong>)/g)
+    return parts.map((part, index) => {
+      if (part.startsWith('<strong>')) {
+        const content = part.replace(/<\/?strong>/g, '')
+        return <span key={index} style={{ fontWeight: 700, color: '#8B4513' }}>{content}</span>
+      }
+      return part
+    })
+  }
+  
+  // Get current timestamp
+  const getCurrentTimestamp = () => {
+    const now = new Date()
+    return now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+  }
 
   // Typing effect
   useEffect(() => {
@@ -173,6 +324,13 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
       }
     }
   }
+  
+  // Format text to make keywords bold and red
+  const formatDialogueText = (text) => {
+    if (!text) return text
+    // Replace <strong> tags with styled spans for keywords
+    return text.replace(/<strong>(.*?)<\/strong>/g, '<span style="font-weight: 700; color: #FF0000; font-size: 24px;">$1</span>')
+  }
 
   const handleOptionClick = () => {
     // Skip to the dialogue after the option (skip 2 indices: current + option)
@@ -188,6 +346,164 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
   }
 
   const availableDirections = navigationMap[currentPosition] || {}
+
+  // Render modern dialogue for Ranger Moss
+  const renderModernDialogue = () => {
+    if (!showModernDialogue) return null
+    
+    // Get current phase from localStorage
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    const userData = savedUser ? JSON.parse(savedUser) : {}
+    const currentPhase = userData.rangerMossPhase || 1
+    
+    const totalSteps = 5
+    const progressPercent = (currentPhase / totalSteps) * 100
+    
+    // Phase titles
+    const phaseTitles = {
+      1: 'PHASE 1: COLLECTING DATA',
+      2: 'PHASE 2: DATA CLEANING',
+      3: 'PHASE 3: CORRECT LABELS + FILL MISSING VALUES',
+      4: 'PHASE 4: TEST THE MODEL',
+      5: 'PHASE 5: REFINE THE MODEL'
+    }
+    
+    return (
+      <div style={styles.modernDialogueContainer}>
+        {/* Header with Progress */}
+        <div style={styles.modernDialogueHeader}>
+          <div style={styles.modernProgressContainer}>
+            <div style={styles.modernMissionTitle}>
+              {phaseTitles[currentPhase]}
+            </div>
+            <div style={styles.modernStepIndicator}>
+              Phase {currentPhase} of {totalSteps}
+            </div>
+          </div>
+          <div style={styles.modernProgressBar}>
+            <div style={{
+              ...styles.modernProgressFill,
+              width: `${progressPercent}%`,
+            }} />
+          </div>
+          
+          {/* NPC Info and Close Button Container */}
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+            {/* NPC Info */}
+            <div style={styles.modernNpcInfo}>
+              <img 
+                src="/jungle/npc_c.png" 
+                alt="Ranger Moss" 
+                style={styles.modernNpcAvatar}
+              />
+              <div>
+                <div style={styles.modernNpcName}>Ranger Moss</div>
+                <div style={styles.modernNpcStatus}>Jungle Ranger</div>
+              </div>
+            </div>
+            
+            {/* Close Button */}
+            <button 
+              style={styles.modernCloseButton}
+              onClick={() => {
+                stopTypingSound()
+                setShowModernDialogue(false)
+              }}
+              onMouseOver={(e) => e.target.style.color = '#333'}
+              onMouseOut={(e) => e.target.style.color = '#999'}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+        
+        {/* Messages Content */}
+        <div style={styles.modernDialogueContent}>
+          {rangerMossMessages.map((message, index) => {
+            const timestamp = getCurrentTimestamp()
+            
+            if (message.type === 'message') {
+              return (
+                <div key={index} style={styles.modernNpcMessage}>
+                  <div style={styles.modernNpcSpeaker}>RANGER MOSS:</div>
+                  <p style={styles.modernNpcText}>
+                    {currentTypingMessage && currentTypingMessage === message ? (
+                      <>
+                        {formatTextWithBold(rangerMossDisplayedText)}
+                        {rangerMossIsTyping && <span style={{ opacity: 0.5 }}>|</span>}
+                      </>
+                    ) : (
+                      formatTextWithBold(message.text)
+                    )}
+                  </p>
+                  <div style={styles.modernTimestamp}>{timestamp}</div>
+                </div>
+              )
+            }
+            
+            if (message.type === 'user') {
+              return (
+                <div key={index} style={styles.modernUserMessage}>
+                  <div style={styles.modernUserSpeaker}>YOU:</div>
+                  <div style={styles.modernUserBubble}>
+                    <p style={styles.modernUserText}>{message.text}</p>
+                  </div>
+                  <div style={{...styles.modernTimestamp, textAlign: 'right'}}>{timestamp}</div>
+                </div>
+              )
+            }
+            
+            return null
+          })}
+          
+          {/* Choice Button */}
+          {waitingForRangerChoice && currentRangerMossStep < rangerMossDialogueFlow.length && 
+           rangerMossDialogueFlow[currentRangerMossStep].type === 'choice' && (
+            <button 
+              style={styles.modernActionButton}
+              onClick={() => handleRangerMossChoice(rangerMossDialogueFlow[currentRangerMossStep].text)}
+              onMouseOver={(e) => {
+                e.target.style.borderColor = '#8B4513'
+                e.target.style.transform = 'translateX(5px)'
+              }}
+              onMouseOut={(e) => {
+                e.target.style.borderColor = '#E0E0E0'
+                e.target.style.transform = 'translateX(0)'
+              }}
+            >
+              <span style={{fontSize: '16px', color: '#8B4513'}}>→</span>
+              {rangerMossDialogueFlow[currentRangerMossStep].text}
+            </button>
+          )}
+          
+          {/* Start Mission Button */}
+          {!waitingForRangerChoice && currentRangerMossStep < rangerMossDialogueFlow.length && 
+           rangerMossDialogueFlow[currentRangerMossStep].type === 'action' && (
+            <button 
+              style={{
+                ...styles.modernActionButton,
+                background: '#8B4513',
+                color: '#fff',
+                fontWeight: 'bold',
+                fontSize: '16px',
+                padding: '15px 30px',
+                border: 'none',
+              }}
+              onClick={handleStartMission}
+              onMouseOver={(e) => {
+                e.target.style.transform = 'scale(1.05)'
+              }}
+              onMouseOut={(e) => {
+                e.target.style.transform = 'scale(1)'
+              }}
+            >
+              {rangerMossDialogueFlow[currentRangerMossStep].text}
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   const styles = {
     container: {
@@ -363,84 +679,258 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
       zIndex: 5,
       animation: 'fadeIn 0.3s ease-out',
     },
-    // NPC A specific dialogue container - left side, 1/3 from top
+    // NPC A specific dialogue container - right side, aligned with NPC top
     dialogueContainerNpcA: {
       position: 'absolute',
-      top: '33.33%',  // 1/3 from top
+      top: '33.33%',  // Align with NPC top
       left: '80px',
-      width: '50%',
+      width: '45%',
+      maxWidth: '500px',
       zIndex: 5,
       animation: 'fadeIn 0.3s ease-out',
     },
-    // NPC B specific dialogue container - right side, 1/3 from top
+    // NPC B specific dialogue container - right side, aligned with NPC top
     dialogueContainerNpcB: {
       position: 'absolute',
-      top: '33.33%',  // 1/3 from top
+      top: '50%',  // Align with NPC top (1/2 height)
       right: '80px',
-      width: '50%',
+      width: '45%',
+      maxWidth: '500px',
       zIndex: 5,
       animation: 'fadeIn 0.3s ease-out',
     },
-    // Ranger Moss specific dialogue container - left side, 1/4 from top
+    // Ranger Moss specific dialogue container - left side, aligned with NPC top
     dialogueContainerRangerMoss: {
       position: 'absolute',
-      top: '25%',  // 1/4 from top
+      top: '10%',  // Align with NPC top
       left: '80px',
-      width: '50%',
+      width: '45%',
+      maxWidth: '500px',
       zIndex: 5,
       animation: 'fadeIn 0.3s ease-out',
     },
     dialogueBox: {
-      padding: '30px 40px',
-      borderRadius: '20px',
-      background: 'rgba(255, 255, 255, 0.9)',
-      border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)), linear-gradient(90deg, #5170FF, #FFBBC4)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
+      padding: '25px 30px',
+      borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%', // Irregular organic shape
+      background: 'rgba(255, 255, 255, 0.95)',
+      border: '3px solid #8B4513',
+      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.3), inset 0 2px 5px rgba(255, 255, 255, 0.5)',
       position: 'relative',
-      minHeight: '120px',
+      minHeight: '100px',
     },
     speakerName: {
-      fontFamily: "'Roboto', sans-serif",
-      fontSize: '14px',
-      fontWeight: 600,
-      color: '#5170FF',
-      marginBottom: '10px',
+      position: 'absolute',
+      top: '-15px',
+      right: '20px',
+      fontFamily: "'Patrick Hand', cursive",
+      fontSize: '20px',
+      fontWeight: 700,
+      color: '#8B4513',
+      background: 'rgba(255, 255, 255, 0.95)',
+      padding: '5px 15px',
+      borderRadius: '15px',
+      border: '2px solid #8B4513',
+      textShadow: '1px 1px 2px rgba(0, 0, 0, 0.2)',
     },
     dialogueText: {
-      fontFamily: "'Roboto', sans-serif",
-      fontSize: '16px',
+      fontFamily: "'Patrick Hand', cursive",
+      fontSize: '20px',
       fontWeight: 400,
       color: '#333',
-      lineHeight: 1.7,
+      lineHeight: 1.6,
+      textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)',
+      marginTop: '10px',
     },
     continueButton: {
-      position: 'absolute',
-      bottom: '15px',
-      right: '20px',
-      fontFamily: "'Roboto', sans-serif",
-      fontSize: '14px',
-      fontWeight: 600,
-      color: '#333',
-      backgroundColor: 'transparent',
-      border: 'none',
-      cursor: 'pointer',
-      textTransform: 'uppercase',
-      letterSpacing: '1px',
+      display: 'none', // Hide continue button
     },
     optionButton: {
-      fontFamily: "'Roboto', sans-serif",
-      fontSize: '15px',
-      fontWeight: 500,
-      color: '#5170FF',
-      backgroundColor: 'rgba(81, 112, 255, 0.1)',
-      border: '2px solid #5170FF',
+      fontFamily: "'Patrick Hand', cursive",
+      fontSize: '18px',
+      fontWeight: 600,
+      color: '#8B4513',
+      backgroundColor: 'rgba(255, 235, 205, 0.9)',
+      border: '3px solid #8B4513',
       padding: '12px 25px',
-      borderRadius: '10px',
+      borderRadius: '20px',
       cursor: 'pointer',
       transition: 'all 0.2s',
       marginTop: '15px',
+      textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)',
+      boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)',
+    },
+    // Modern dialogue styles for Ranger Moss
+    modernDialogueContainer: {
+      position: 'absolute',
+      top: '12.5%',
+      left: '10%',
+      width: '40%',
+      height: '70%',
+      zIndex: 100,
+      background: 'rgba(245, 245, 245, 0.98)',
+      borderRadius: '15px',
+      display: 'flex',
+      flexDirection: 'column',
+      boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+      border: '3px solid #8B4513',
+    },
+    modernDialogueHeader: {
+      padding: '20px 25px 15px 25px',
+      borderBottom: 'none',
+    },
+    modernProgressContainer: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '15px',
+    },
+    modernMissionTitle: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      fontWeight: 700,
+      textTransform: 'uppercase',
+      letterSpacing: '1px',
+      color: '#8B4513',
+    },
+    modernStepIndicator: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '13px',
+      color: '#999',
+    },
+    modernProgressBar: {
+      width: '100%',
+      height: '4px',
+      backgroundColor: 'rgba(200,200,200,0.3)',
+      borderRadius: '2px',
+      overflow: 'hidden',
+      marginBottom: '20px',
+    },
+    modernProgressFill: {
+      height: '100%',
+      borderRadius: '2px',
+      transition: 'width 0.3s ease',
+      background: '#8B4513',
+    },
+    modernNpcInfo: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      marginBottom: '15px',
+      flex: 1,
+    },
+    modernNpcAvatar: {
+      width: '50px',
+      height: '50px',
+      borderRadius: '50%',
+      objectFit: 'cover',
+      border: '2px solid white',
+      boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+    },
+    modernNpcName: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '16px',
+      fontWeight: 700,
+      color: '#333',
+    },
+    modernNpcStatus: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '12px',
+      color: '#999',
+    },
+    modernCloseButton: {
+      position: 'relative',
+      background: 'none',
+      border: 'none',
+      fontSize: '20px',
+      color: '#999',
+      cursor: 'pointer',
+      padding: '5px',
+      width: '30px',
+      height: '30px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'all 0.2s',
+      flexShrink: 0,
+    },
+    modernDialogueContent: {
+      flex: 1,
+      padding: '0 25px 25px 25px',
+      overflowY: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px',
+    },
+    modernNpcMessage: {
+      alignSelf: 'flex-start',
+      maxWidth: '100%',
+    },
+    modernNpcSpeaker: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '12px',
+      fontWeight: 700,
+      color: '#666',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
+      marginBottom: '6px',
+    },
+    modernNpcText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      color: '#333',
+      lineHeight: 1.6,
+      margin: 0,
+    },
+    modernTimestamp: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '11px',
+      color: '#999',
+      marginTop: '4px',
+    },
+    modernUserMessage: {
+      alignSelf: 'flex-end',
+      maxWidth: '85%',
+    },
+    modernUserBubble: {
+      background: '#8B4513',
+      padding: '12px 18px',
+      borderRadius: '18px',
+      boxShadow: '0 2px 6px rgba(139, 69, 19, 0.3)',
+    },
+    modernUserText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      color: '#fff',
+      lineHeight: 1.5,
+      margin: 0,
+    },
+    modernUserSpeaker: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '12px',
+      fontWeight: 700,
+      color: '#666',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
+      marginBottom: '6px',
+      textAlign: 'right',
+    },
+    modernActionButton: {
+      alignSelf: 'stretch',
+      background: 'white',
+      border: '2px solid #E0E0E0',
+      borderRadius: '25px',
+      padding: '14px 20px',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      fontWeight: 500,
+      color: '#333',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+      marginTop: '8px',
     },
   }
 
@@ -461,19 +951,25 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
     const dialogues = currentNpcData?.dialogues || []
     const nextDialogue = dialogues[currentDialogueIndex + 1]
     const hasNextOption = nextDialogue?.isOption
+    
+    // Get NPC display name
+    const npcDisplayName = isNpcA ? 'NPC 01' : isNpcB ? 'NPC 02' : isRangerMoss ? 'Ranger Moss' : currentDialogue.speaker
 
     if (currentDialogue.isOption) {
       return (
         <div style={dialogContainerStyle}>
           <div style={styles.dialogueBox}>
+            <div style={styles.speakerName}>{npcDisplayName}</div>
             <button
               style={styles.optionButton}
               onClick={handleOptionClick}
               onMouseOver={(e) => {
-                e.target.style.backgroundColor = 'rgba(81, 112, 255, 0.2)'
+                e.target.style.backgroundColor = 'rgba(255, 235, 205, 1)'
+                e.target.style.transform = 'scale(1.05)'
               }}
               onMouseOut={(e) => {
-                e.target.style.backgroundColor = 'rgba(81, 112, 255, 0.1)'
+                e.target.style.backgroundColor = 'rgba(255, 235, 205, 0.9)'
+                e.target.style.transform = 'scale(1)'
               }}
             >
               {currentDialogue.optionText}
@@ -485,31 +981,35 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
 
     return (
       <div style={dialogContainerStyle}>
-        <div style={styles.dialogueBox}>
-          {!isNpcA && !isNpcB && <p style={styles.speakerName}>{currentDialogue.speaker}:</p>}
+        <div 
+          style={{
+            ...styles.dialogueBox,
+            cursor: isTyping ? 'pointer' : 'pointer',
+          }}
+          onClick={handleContinue}
+        >
+          <div style={styles.speakerName}>{npcDisplayName}</div>
           <p style={styles.dialogueText}>
-            <span dangerouslySetInnerHTML={{ __html: displayedText }} />
-            {isTyping && <span style={{ opacity: 0.5 }}>|</span>}
+            <span dangerouslySetInnerHTML={{ __html: formatDialogueText(displayedText) }} />
+            {isTyping && <span style={{ opacity: 0.5, animation: 'blink 1s infinite' }}>|</span>}
           </p>
-          {hasNextOption && !isTyping ? (
+          {hasNextOption && !isTyping && (
             <button
               style={styles.optionButton}
-              onClick={handleOptionClick}
+              onClick={(e) => {
+                e.stopPropagation()
+                handleOptionClick()
+              }}
               onMouseOver={(e) => {
-                e.target.style.backgroundColor = 'rgba(81, 112, 255, 0.2)'
+                e.target.style.backgroundColor = 'rgba(255, 235, 205, 1)'
+                e.target.style.transform = 'scale(1.05)'
               }}
               onMouseOut={(e) => {
-                e.target.style.backgroundColor = 'rgba(81, 112, 255, 0.1)'
+                e.target.style.backgroundColor = 'rgba(255, 235, 205, 0.9)'
+                e.target.style.transform = 'scale(1)'
               }}
             >
               {nextDialogue.optionText}
-            </button>
-          ) : (
-            <button
-              style={styles.continueButton}
-              onClick={handleContinue}
-            >
-              {isTyping ? 'Skip' : 'CONTINUE'}
             </button>
           )}
         </div>
@@ -676,6 +1176,9 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
 
       {/* Dialogue Box */}
       {renderDialogue()}
+      
+      {/* Modern Dialogue for Ranger Moss */}
+      {renderModernDialogue()}
     </div>
   )
 }

@@ -67,11 +67,47 @@ const BATCH_HINTS = {
 // Missing values data for Fill Missing phase
 const MISSING_DATA = [
   { id: '09', name: 'Frostfire Cap', color: 'Pink / Cyan / White', texture: 'Glossy / Glowing', spikes: null, toxic: 'YES', missingField: 'spikes', options: ['Yes', 'No'], correct: 'No' },
-  { id: '02', name: 'Flame Bloom', color: 'Red / Orange', texture: null, spikes: 'Yes', toxic: 'YES', missingField: 'texture', options: ['Wavy', 'Smooth', 'Glossy', 'Matte'], correct: 'Wavy' },
+  { id: '02', name: 'Flame Bloom', color: 'Red / Orange', texture: null, spikes: 'Yes', toxic: 'YES', missingField: 'texture', options: ['Textured', 'Smooth', 'Plain', 'Flat'], correct: 'Textured' },
   { id: '08', name: 'Drip Orb', color: null, texture: 'Glossy / Dripping', spikes: 'No', toxic: 'YES', missingField: 'color', options: ['Yellow', 'Blue', 'Red', 'Green'], correct: 'Yellow' },
 ]
 
 // Quiz data for Pre-Training Quiz
+// Quiz data for Pre-Training Quiz
+const PRE_TRAINING_QUIZ = [
+  {
+    id: 1,
+    question: "Hold on! Before we push the big button, I need to make sure you understand what we are doing.\n\nQuick check: How does an AI actually learn?",
+    options: [
+      { text: "By analyzing patterns in data", correct: true },
+      { text: "By just guessing randomly", correct: false },
+    ],
+    correctResponse: "Correct! AI isn't magic, and it doesn't verify answers by itself. It needs massive amounts of data to find the hidden rules.",
+    incorrectResponse: "Not quite! AI doesn't just guess randomly. It learns by analyzing patterns in data. It needs massive amounts of data to find the hidden rules and make accurate predictions."
+  },
+  {
+    id: 2,
+    question: "Now, think about the data you just collected.\n\nTo help the AI decide if a mushroom is toxic, which features are actually helpful?",
+    options: [
+      { text: "Color, Shape, and Texture", correct: true },
+      { text: "The name of the person who picked it", correct: false },
+    ],
+    correctResponse: "Precisely! To make accurate predictions, the AI needs data related to the object itself. Irrelevant info—like who picked it—is just Noise. It will only confuse the model!",
+    incorrectResponse: "Actually, the name of the person who picked it is irrelevant! To make accurate predictions, the AI needs data related to the object itself - like Color, Shape, and Texture. Irrelevant info is just Noise and will confuse the model!"
+  },
+]
+
+const TRAINING_READY_MESSAGE = "The dataset is clean. The patterns are clear. Are you ready? Let's initiate the Model Training process!"
+
+const TRAINING_COMPLETE_QUIZ = {
+  question: "Training complete! The AI has learned to identify the 'Toxic Traits'.\n\nBut wait... we need to verify if it really learned, or if it just memorized our list. How should we test the AI?",
+  options: [
+    { text: "Test with NEW mushrooms it hasn't seen", correct: true },
+    { text: "Test with the SAME mushrooms it already studied", correct: false },
+  ],
+  correctResponse: "Spot on! If we test with old data, the AI is just cheating—like memorizing the answers to a test. Only by using Unseen Data (New Mushrooms) can we prove it can truly judge and generalize!",
+  incorrectResponse: "Not quite! If we test with old data, the AI is just cheating—like memorizing the answers to a test. Only by using Unseen Data (New Mushrooms) can we prove it can truly judge and generalize!"
+}
+
 const QUIZ_DATA = [
   {
     question: "Hold on! Before we push the big button, I need to make sure you understand what we are doing. Quick check: How does an AI actually learn?",
@@ -272,6 +308,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }, [phase, noiseBatch, removedItems])
   const [labelBatch, setLabelBatch] = useState(1)
   const [selectedCells, setSelectedCells] = useState([]) // Cells user clicked as errors
+  const [wrongCells, setWrongCells] = useState([]) // Cells user clicked incorrectly
   const [showGlitchHint, setShowGlitchHint] = useState(false)
   const [glitchHintText, setGlitchHintText] = useState('')
   const [showRangerDialogue, setShowRangerDialogue] = useState(false)
@@ -292,6 +329,12 @@ const DataCleaning = ({ onComplete, onExit }) => {
   const [selectedAnswers, setSelectedAnswers] = useState({})
   const [trainingProgress, setTrainingProgress] = useState(0)
   const [showTrainingVoiceover, setShowTrainingVoiceover] = useState(false)
+  
+  // Pre-Training Quiz state (modern dialogue)
+  const [preTrainingQuizStep, setPreTrainingQuizStep] = useState(0)
+  const [preTrainingAnswered, setPreTrainingAnswered] = useState(false)
+  const [showTrainingReadyButton, setShowTrainingReadyButton] = useState(false)
+  const [trainingCompleteQuizAnswered, setTrainingCompleteQuizAnswered] = useState(false)
   
   // Validation state
   const [validationStep, setValidationStep] = useState(0) // 0: question, 1: answered correctly, 2: data selection
@@ -411,6 +454,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
   // Reset selected cells when batch changes
   useEffect(() => {
     setSelectedCells([])
+    setWrongCells([])
   }, [labelBatch])
 
   // Typing effect for ranger dialogue
@@ -462,11 +506,13 @@ const DataCleaning = ({ onComplete, onExit }) => {
   // Sound effects
   const [trashSound] = useState(new Audio('/sound/trash.wav'))
   const [wrongSound] = useState(new Audio('/sound/wrong.mp3'))
+  const [correctSound] = useState(new Audio('/sound/correct.wav'))
   
   useEffect(() => {
     trashSound.volume = 0.5
     wrongSound.volume = 0.5
-  }, [trashSound, wrongSound])
+    correctSound.volume = 0.5
+  }, [trashSound, wrongSound, correctSound])
   
   // Format text with bold keywords
   const formatTextWithBold = (text) => {
@@ -720,12 +766,30 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }
 
   const handleCellClick = (rowId, field) => {
-    // Toggle cell selection (user identifying errors)
     const cellKey = `${rowId}-${field}`
+    
+    // Check if this cell is actually an error
+    const errors = ERROR_CELLS[labelBatch]
+    const isActualError = errors.some(e => e.id === rowId && e.field === field)
+    
     if (selectedCells.includes(cellKey)) {
+      // Deselect if already selected
       setSelectedCells(prev => prev.filter(c => c !== cellKey))
+      setWrongCells(prev => prev.filter(c => c !== cellKey))
     } else {
+      // Select the cell
       setSelectedCells(prev => [...prev, cellKey])
+      
+      if (isActualError) {
+        // Correct selection - play correct sound
+        correctSound.currentTime = 0
+        correctSound.play().catch(err => console.log('Correct sound error:', err))
+      } else {
+        // Wrong selection - mark as wrong and play wrong sound
+        setWrongCells(prev => [...prev, cellKey])
+        wrongSound.currentTime = 0
+        wrongSound.play().catch(err => console.log('Wrong sound error:', err))
+      }
     }
   }
 
@@ -772,6 +836,10 @@ const DataCleaning = ({ onComplete, onExit }) => {
     
     const item = MISSING_DATA.find(d => d.id === selectedMissingCell.itemId)
     if (item && value === item.correct) {
+      // Correct selection - play correct sound and fill the value
+      correctSound.currentTime = 0
+      correctSound.play().catch(err => console.log('Correct sound error:', err))
+      
       setFilledValues(prev => ({
         ...prev,
         [selectedMissingCell.itemId]: value
@@ -779,8 +847,13 @@ const DataCleaning = ({ onComplete, onExit }) => {
       setSelectedMissingCell(null)
       setShowOptions(false)
     } else {
+      // Wrong selection - play wrong sound and allow reselection
+      wrongSound.currentTime = 0
+      wrongSound.play().catch(err => console.log('Wrong sound error:', err))
+      
       setGlitchHintText("Look carefully at the mushroom photo! What do you see?")
       setShowGlitchHint(true)
+      // Don't close the selection, allow user to try again
     }
   }
 
@@ -792,11 +865,235 @@ const DataCleaning = ({ onComplete, onExit }) => {
       setShowGlitchHint(true)
       return
     }
-    // Move to Quiz phase
-    setPhase('QUIZ')
-    // Initialize quiz with first question
-    setChatMessages([{ type: 'ranger', text: QUIZ_DATA[0].question }])
-    setQuizStep(0)
+    // Move to Pre-Training Quiz phase with modern dialogue
+    setPhase('PRE_TRAINING_QUIZ')
+    setPreTrainingQuizStep(0)
+    setPreTrainingAnswered(false)
+    setShowTrainingReadyButton(false)
+    
+    // Initialize modern dialogue
+    setTimeout(() => {
+      setShowModernRangerDialogue(true)
+      startPreTrainingQuizDialogue()
+    }, 500)
+  }
+  
+  // Start Pre-Training Quiz dialogue
+  const startPreTrainingQuizDialogue = () => {
+    const firstQuiz = PRE_TRAINING_QUIZ[0]
+    const newMessage = { type: 'message', text: firstQuiz.question }
+    setRangerMessages([newMessage])
+    setCurrentRangerStep(0)
+    setCurrentTypingMessage(newMessage)
+    
+    // Start typing effect and sound
+    let charIndex = 0
+    setRangerDisplayedText('')
+    setRangerIsTyping(true)
+    typingSound.play().catch(err => console.log('Typing sound error:', err))
+    
+    const typingInterval = setInterval(() => {
+      if (charIndex < firstQuiz.question.length) {
+        setRangerDisplayedText(firstQuiz.question.substring(0, charIndex + 1))
+        charIndex++
+      } else {
+        setRangerIsTyping(false)
+        setCurrentTypingMessage(null)
+        typingSound.pause()
+        typingSound.currentTime = 0
+        clearInterval(typingInterval)
+        setWaitingForRangerAction(false)
+      }
+    }, 25)
+  }
+  
+  // Handle Pre-Training Quiz answer
+  const handlePreTrainingQuizAnswer = (optionIndex, isCorrect) => {
+    const currentQuiz = PRE_TRAINING_QUIZ[preTrainingQuizStep]
+    const response = isCorrect ? currentQuiz.correctResponse : currentQuiz.incorrectResponse
+    
+    setPreTrainingAnswered(true)
+    
+    // Add response message
+    const responseMessage = { type: 'message', text: response }
+    setRangerMessages(prev => [...prev, responseMessage])
+    setCurrentTypingMessage(responseMessage)
+    
+    // Start typing effect for response
+    let charIndex = 0
+    setRangerDisplayedText('')
+    setRangerIsTyping(true)
+    typingSound.play().catch(err => console.log('Typing sound error:', err))
+    
+    const typingInterval = setInterval(() => {
+      if (charIndex < response.length) {
+        setRangerDisplayedText(response.substring(0, charIndex + 1))
+        charIndex++
+      } else {
+        setRangerIsTyping(false)
+        setCurrentTypingMessage(null)
+        typingSound.pause()
+        typingSound.currentTime = 0
+        clearInterval(typingInterval)
+        
+        // Check if there are more quiz questions
+        if (preTrainingQuizStep < PRE_TRAINING_QUIZ.length - 1) {
+          // Move to next quiz question after delay
+          setTimeout(() => {
+            const nextQuiz = PRE_TRAINING_QUIZ[preTrainingQuizStep + 1]
+            const nextMessage = { type: 'message', text: nextQuiz.question }
+            setRangerMessages(prev => [...prev, nextMessage])
+            setCurrentTypingMessage(nextMessage)
+            setPreTrainingQuizStep(prev => prev + 1)
+            setPreTrainingAnswered(false)
+            
+            // Type next question
+            let nextCharIndex = 0
+            setRangerDisplayedText('')
+            setRangerIsTyping(true)
+            typingSound.play().catch(err => console.log('Typing sound error:', err))
+            
+            const nextTypingInterval = setInterval(() => {
+              if (nextCharIndex < nextQuiz.question.length) {
+                setRangerDisplayedText(nextQuiz.question.substring(0, nextCharIndex + 1))
+                nextCharIndex++
+              } else {
+                setRangerIsTyping(false)
+                setCurrentTypingMessage(null)
+                typingSound.pause()
+                typingSound.currentTime = 0
+                clearInterval(nextTypingInterval)
+              }
+            }, 25)
+          }, 800)
+        } else {
+          // All quizzes complete, show training ready message after delay
+          setTimeout(() => {
+            const readyMessage = { type: 'message', text: TRAINING_READY_MESSAGE }
+            setRangerMessages(prev => [...prev, readyMessage])
+            setCurrentTypingMessage(readyMessage)
+            
+            // Type ready message
+            let readyCharIndex = 0
+            setRangerDisplayedText('')
+            setRangerIsTyping(true)
+            typingSound.play().catch(err => console.log('Typing sound error:', err))
+            
+            const readyTypingInterval = setInterval(() => {
+              if (readyCharIndex < TRAINING_READY_MESSAGE.length) {
+                setRangerDisplayedText(TRAINING_READY_MESSAGE.substring(0, readyCharIndex + 1))
+                readyCharIndex++
+              } else {
+                setRangerIsTyping(false)
+                setCurrentTypingMessage(null)
+                typingSound.pause()
+                typingSound.currentTime = 0
+                clearInterval(readyTypingInterval)
+                setShowTrainingReadyButton(true)
+              }
+            }, 25)
+          }, 800)
+        }
+      }
+    }, 25)
+  }
+  
+  // Handle Ready Let's GO button
+  const handleReadyLetsGo = () => {
+    setShowModernRangerDialogue(false)
+    setPhase('TRAINING')
+    setTrainingProgress(0)
+    
+    // Simulate training progress
+    const interval = setInterval(() => {
+      setTrainingProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval)
+          // After training completes, show training complete quiz
+          setTimeout(() => {
+            setPhase('TRAINING_COMPLETE_QUIZ')
+            setTrainingCompleteQuizAnswered(false)
+            setTimeout(() => {
+              setShowModernRangerDialogue(true)
+              startTrainingCompleteQuizDialogue()
+            }, 500)
+          }, 1000)
+          return 100
+        }
+        return prev + 2
+      })
+    }, 100)
+  }
+  
+  // Start Training Complete Quiz dialogue
+  const startTrainingCompleteQuizDialogue = () => {
+    const newMessage = { type: 'message', text: TRAINING_COMPLETE_QUIZ.question }
+    setRangerMessages([newMessage])
+    setCurrentRangerStep(0)
+    setCurrentTypingMessage(newMessage)
+    
+    // Start typing effect and sound
+    let charIndex = 0
+    setRangerDisplayedText('')
+    setRangerIsTyping(true)
+    typingSound.play().catch(err => console.log('Typing sound error:', err))
+    
+    const typingInterval = setInterval(() => {
+      if (charIndex < TRAINING_COMPLETE_QUIZ.question.length) {
+        setRangerDisplayedText(TRAINING_COMPLETE_QUIZ.question.substring(0, charIndex + 1))
+        charIndex++
+      } else {
+        setRangerIsTyping(false)
+        setCurrentTypingMessage(null)
+        typingSound.pause()
+        typingSound.currentTime = 0
+        clearInterval(typingInterval)
+        setWaitingForRangerAction(false)
+      }
+    }, 25)
+  }
+  
+  // Handle Training Complete Quiz answer
+  const handleTrainingCompleteQuizAnswer = (optionIndex, isCorrect) => {
+    const response = isCorrect ? TRAINING_COMPLETE_QUIZ.correctResponse : TRAINING_COMPLETE_QUIZ.incorrectResponse
+    
+    setTrainingCompleteQuizAnswered(true)
+    
+    // Add response message
+    const responseMessage = { type: 'message', text: response }
+    setRangerMessages(prev => [...prev, responseMessage])
+    setCurrentTypingMessage(responseMessage)
+    
+    // Start typing effect for response
+    let charIndex = 0
+    setRangerDisplayedText('')
+    setRangerIsTyping(true)
+    typingSound.play().catch(err => console.log('Typing sound error:', err))
+    
+    const typingInterval = setInterval(() => {
+      if (charIndex < response.length) {
+        setRangerDisplayedText(response.substring(0, charIndex + 1))
+        charIndex++
+      } else {
+        setRangerIsTyping(false)
+        setCurrentTypingMessage(null)
+        typingSound.pause()
+        typingSound.currentTime = 0
+        clearInterval(typingInterval)
+        
+        // After response is typed, show continue button
+        setTimeout(() => {
+          setWaitingForRangerAction(true)
+        }, 500)
+      }
+    }, 25)
+  }
+  
+  // Handle continue to test phase
+  const handleContinueToTest = () => {
+    setShowModernRangerDialogue(false)
+    setPhase('VALIDATION_DATA')
+    setSelectedTestMushrooms([])
   }
 
   const handleQuizAnswer = (optionIndex, isCorrect) => {
@@ -1224,6 +1521,10 @@ const DataCleaning = ({ onComplete, onExit }) => {
 
   const isCellSelected = (rowId, field) => {
     return selectedCells.includes(`${rowId}-${field}`)
+  }
+  
+  const isCellWrong = (rowId, field) => {
+    return wrongCells.includes(`${rowId}-${field}`)
   }
 
   const styles = {
@@ -2562,17 +2863,23 @@ const DataCleaning = ({ onComplete, onExit }) => {
     const userData = savedUser ? JSON.parse(savedUser) : {}
     const currentPhase = userData.rangerMossPhase || 2
     
-    const totalSteps = 5
-    const progressPercent = (currentPhase / totalSteps) * 100
-    
     // Phase titles
     const phaseTitles = {
       1: 'PHASE 1: COLLECTING DATA',
       2: 'PHASE 2: DATA CLEANING',
-      3: 'PHASE 3: CORRECT LABELS + FILL MISSING VALUES',
+      3: 'PHASE 3: CORRECT LABELS',
       4: 'PHASE 4: TEST THE MODEL',
       5: 'PHASE 5: REFINE THE MODEL'
     }
+    
+    // Determine current phase based on the actual phase state
+    let displayPhase = currentPhase
+    if (phase === 'PRE_TRAINING_QUIZ' || phase === 'TRAINING' || phase === 'TRAINING_COMPLETE_QUIZ') {
+      displayPhase = 3
+    }
+    
+    const totalSteps = 5
+    const progressPercent = (displayPhase / totalSteps) * 100
     
     return (
       <div style={styles.modernDialogueContainer}>
@@ -2580,10 +2887,10 @@ const DataCleaning = ({ onComplete, onExit }) => {
         <div style={styles.modernDialogueHeader}>
           <div style={styles.modernProgressContainer}>
             <div style={styles.modernMissionTitle}>
-              {phaseTitles[currentPhase]}
+              {phaseTitles[displayPhase]}
             </div>
             <div style={styles.modernStepIndicator}>
-              Phase {currentPhase} of {totalSteps}
+              Phase {displayPhase} of {totalSteps}
             </div>
           </div>
           <div style={styles.modernProgressBar}>
@@ -2687,8 +2994,112 @@ const DataCleaning = ({ onComplete, onExit }) => {
             </div>
           )}
           
+          {/* Quiz Options for PRE_TRAINING_QUIZ */}
+          {phase === 'PRE_TRAINING_QUIZ' && !preTrainingAnswered && !showTrainingReadyButton && (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              marginTop: '15px',
+            }}>
+              {PRE_TRAINING_QUIZ[preTrainingQuizStep].options.map((option, index) => (
+                <button
+                  key={index}
+                  style={{
+                    ...styles.modernActionButton,
+                    background: 'rgba(139, 69, 19, 0.1)',
+                    color: '#8B4513',
+                    border: '2px solid #8B4513',
+                    fontWeight: 500,
+                  }}
+                  onClick={() => handlePreTrainingQuizAnswer(index, option.correct)}
+                  onMouseOver={(e) => {
+                    e.target.style.background = '#8B4513'
+                    e.target.style.color = '#fff'
+                    e.target.style.transform = 'scale(1.02)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.background = 'rgba(139, 69, 19, 0.1)'
+                    e.target.style.color = '#8B4513'
+                    e.target.style.transform = 'scale(1)'
+                  }}
+                >
+                  {option.text}
+                </button>
+              ))}
+            </div>
+          )}
+          
+          {/* Ready Let's GO Button */}
+          {phase === 'PRE_TRAINING_QUIZ' && showTrainingReadyButton && (
+            <button 
+              style={styles.modernActionButton}
+              onClick={handleReadyLetsGo}
+              onMouseOver={(e) => {
+                e.target.style.transform = 'scale(1.05)'
+              }}
+              onMouseOut={(e) => {
+                e.target.style.transform = 'scale(1)'
+              }}
+            >
+              Ready, Let's GO!
+            </button>
+          )}
+          
+          {/* Quiz Options for TRAINING_COMPLETE_QUIZ */}
+          {phase === 'TRAINING_COMPLETE_QUIZ' && !trainingCompleteQuizAnswered && (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              marginTop: '15px',
+            }}>
+              {TRAINING_COMPLETE_QUIZ.options.map((option, index) => (
+                <button
+                  key={index}
+                  style={{
+                    ...styles.modernActionButton,
+                    background: 'rgba(139, 69, 19, 0.1)',
+                    color: '#8B4513',
+                    border: '2px solid #8B4513',
+                    fontWeight: 500,
+                  }}
+                  onClick={() => handleTrainingCompleteQuizAnswer(index, option.correct)}
+                  onMouseOver={(e) => {
+                    e.target.style.background = '#8B4513'
+                    e.target.style.color = '#fff'
+                    e.target.style.transform = 'scale(1.02)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.background = 'rgba(139, 69, 19, 0.1)'
+                    e.target.style.color = '#8B4513'
+                    e.target.style.transform = 'scale(1)'
+                  }}
+                >
+                  {option.text}
+                </button>
+              ))}
+            </div>
+          )}
+          
+          {/* Continue to Test Button */}
+          {phase === 'TRAINING_COMPLETE_QUIZ' && trainingCompleteQuizAnswered && waitingForRangerAction && (
+            <button 
+              style={styles.modernActionButton}
+              onClick={handleContinueToTest}
+              onMouseOver={(e) => {
+                e.target.style.transform = 'scale(1.05)'
+              }}
+              onMouseOut={(e) => {
+                e.target.style.transform = 'scale(1)'
+              }}
+            >
+              CONTINUE TO TEST
+            </button>
+          )}
+          
           {/* Mission Accepted Button */}
-          {waitingForRangerAction && (
+          {(phase === 'INTRO' || phase === 'LABEL_INTRO' || phase === 'FILL_MISSING_INTRO') && waitingForRangerAction && (
             <button 
               style={styles.modernActionButton}
               onClick={handleMissionAccepted}
@@ -2958,10 +3369,10 @@ const DataCleaning = ({ onComplete, onExit }) => {
           left: '50%',
           transform: 'translate(-50%, -50%)',
           width: '85%',
-          height: '70%',
+          height: '80%',
           background: 'rgba(0, 0, 0, 0.8)',
           borderRadius: '20px',
-          padding: '40px',
+          padding: '30px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -2972,12 +3383,12 @@ const DataCleaning = ({ onComplete, onExit }) => {
             background: '#fff',
             border: '3px solid #00bf63',
             borderRadius: '15px',
-            padding: '15px 40px',
-            marginBottom: '20px',
+            padding: '12px 35px',
+            marginBottom: '15px',
           }}>
             <h2 style={{
               fontFamily: "'Coming Soon', cursive",
-              fontSize: '32px',
+              fontSize: '28px',
               color: '#333',
               margin: 0,
               letterSpacing: '2px',
@@ -2989,9 +3400,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
           {/* Subtitle */}
           <p style={{
             fontFamily: "'Roboto', sans-serif",
-            fontSize: '18px',
+            fontSize: '16px',
             color: '#fff',
-            marginBottom: '30px',
+            marginBottom: '20px',
           }}>
             Please click on the <span style={{ fontWeight: 'bold', color: '#00bf63' }}>irrelevant items</span>. Keep ONLY the mushrooms!
           </p>
@@ -2999,8 +3410,8 @@ const DataCleaning = ({ onComplete, onExit }) => {
           {/* Items Grid */}
           <div style={{
             display: 'flex',
-            gap: '25px',
-            marginBottom: '30px',
+            gap: '20px',
+            marginBottom: '20px',
             alignItems: 'center',
             flexWrap: 'wrap',
             justifyContent: 'center',
@@ -3013,8 +3424,8 @@ const DataCleaning = ({ onComplete, onExit }) => {
                 <div
                   key={id}
                   style={{
-                    width: '160px',
-                    height: '160px',
+                    width: '140px',
+                    height: '140px',
                     background: isRemoved ? 'transparent' : '#fff',
                     borderRadius: '15px',
                     display: 'flex',
@@ -3041,8 +3452,8 @@ const DataCleaning = ({ onComplete, onExit }) => {
                       src={`/jungle/object/${id}.png`}
                       alt={`Object ${id}`}
                       style={{
-                        width: '130px',
-                        height: '130px',
+                        width: '110px',
+                        height: '110px',
                         objectFit: 'contain',
                       }}
                     />
@@ -3063,9 +3474,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
                   gap: '10px',
                   color: '#fff',
                   fontFamily: "'Roboto', sans-serif",
-                  fontSize: '18px',
+                  fontSize: '16px',
                   fontWeight: 600,
-                  padding: '10px 20px',
+                  padding: '8px 15px',
                   transition: 'transform 0.2s',
                 }}
                 onClick={handleNoiseNext}
@@ -3076,7 +3487,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
                 <img 
                   src="/jungle/icon/right.png"
                   alt="Next"
-                  style={{ width: '30px', height: '30px' }}
+                  style={{ width: '25px', height: '25px' }}
                 />
               </button>
             )}
@@ -3096,8 +3507,8 @@ const DataCleaning = ({ onComplete, onExit }) => {
                 <div
                   key={i}
                   style={{
-                    width: '160px',
-                    height: '160px',
+                    width: '140px',
+                    height: '140px',
                     background: '#00bf63',
                     borderRadius: '15px',
                     display: 'flex',
@@ -3111,8 +3522,8 @@ const DataCleaning = ({ onComplete, onExit }) => {
                     src="/jungle/icon/trash.svg"
                     alt="Trash"
                     style={{
-                      width: '80px',
-                      height: '80px',
+                      width: '70px',
+                      height: '70px',
                       filter: 'brightness(0) invert(1)',
                       opacity: removedItem ? 0.3 : 1,
                       position: 'absolute',
@@ -3125,8 +3536,8 @@ const DataCleaning = ({ onComplete, onExit }) => {
                       src={`/jungle/object/${removedItem}.png`}
                       alt={`Removed ${removedItem}`}
                       style={{
-                        width: '120px',
-                        height: '120px',
+                        width: '110px',
+                        height: '110px',
                         objectFit: 'contain',
                         position: 'relative',
                         zIndex: 1,
@@ -3166,204 +3577,711 @@ const DataCleaning = ({ onComplete, onExit }) => {
 
       {/* Label Correction Phase */}
       {phase === 'LABEL_CORRECTION' && (
-        <div style={styles.cardContainer}>
-          <div style={styles.tableCard}>
-            <h2 style={styles.cardTitle}>CORRECT LABELS</h2>
-            <p style={styles.cardSubtitle}>
-              Click on the cells that contain ERRORS to select them. Find all the incorrect data!
-            </p>
-            
-            <table style={styles.table}>
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '85%',
+          height: '85%',
+          background: 'rgba(0, 0, 0, 0.8)',
+          borderRadius: '20px',
+          padding: '40px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          zIndex: 50,
+        }}>
+          {/* Title */}
+          <div style={{
+            background: '#fff',
+            border: '3px solid #00bf63',
+            borderRadius: '15px',
+            padding: '15px 40px',
+            marginBottom: '15px',
+          }}>
+            <h2 style={{
+              fontFamily: "'Coming Soon', cursive",
+              fontSize: '32px',
+              color: '#333',
+              margin: 0,
+              letterSpacing: '2px',
+            }}>
+              CORRECT LABELS
+            </h2>
+          </div>
+          
+          {/* Subtitle */}
+          <p style={{
+            fontFamily: "'Roboto', sans-serif",
+            fontSize: '14px',
+            color: '#fff',
+            marginBottom: '25px',
+            textAlign: 'center',
+          }}>
+            Click on the cells that contain <span style={{ fontWeight: 'bold', color: '#00bf63' }}>ERRORS</span> to select them. Find all the incorrect data!
+          </p>
+          
+          {/* Table Container */}
+          <div style={{
+            width: '100%',
+            flex: 1,
+            overflowY: 'auto',
+            background: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: '15px',
+            padding: '25px',
+            border: '3px solid #8FCCAE',
+            boxShadow: '0 8px 20px rgba(0, 0, 0, 0.3), inset 0 2px 5px rgba(143, 204, 174, 0.2)',
+          }}>
+            <table style={{
+              width: '100%',
+              borderCollapse: 'separate',
+              borderSpacing: 0,
+            }}>
               <thead>
                 <tr>
-                  <th style={styles.th}>ID</th>
-                  <th style={styles.th}>Name</th>
-                  <th style={styles.th}>Color</th>
-                  <th style={styles.th}>Texture</th>
-                  <th style={styles.th}>Spikes</th>
-                  <th style={styles.th}>Toxic</th>
+                  <th style={{
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '16px',
+                    fontWeight: 700,
+                    color: '#1a1a1a',
+                    textTransform: 'uppercase',
+                    padding: '18px 15px',
+                    borderBottom: '3px solid #8FCCAE',
+                    textAlign: 'left',
+                    background: 'rgba(143, 204, 174, 0.1)',
+                  }}>ID</th>
+                  <th style={{
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '16px',
+                    fontWeight: 700,
+                    color: '#1a1a1a',
+                    textTransform: 'uppercase',
+                    padding: '18px 15px',
+                    borderBottom: '3px solid #8FCCAE',
+                    textAlign: 'left',
+                    background: 'rgba(143, 204, 174, 0.1)',
+                  }}>Name</th>
+                  <th style={{
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '16px',
+                    fontWeight: 700,
+                    color: '#1a1a1a',
+                    textTransform: 'uppercase',
+                    padding: '18px 15px',
+                    borderBottom: '3px solid #8FCCAE',
+                    textAlign: 'left',
+                    background: 'rgba(143, 204, 174, 0.1)',
+                  }}>Color</th>
+                  <th style={{
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '16px',
+                    fontWeight: 700,
+                    color: '#1a1a1a',
+                    textTransform: 'uppercase',
+                    padding: '18px 15px',
+                    borderBottom: '3px solid #8FCCAE',
+                    textAlign: 'left',
+                    background: 'rgba(143, 204, 174, 0.1)',
+                  }}>Texture</th>
+                  <th style={{
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '16px',
+                    fontWeight: 700,
+                    color: '#1a1a1a',
+                    textTransform: 'uppercase',
+                    padding: '18px 15px',
+                    borderBottom: '3px solid #8FCCAE',
+                    textAlign: 'left',
+                    background: 'rgba(143, 204, 174, 0.1)',
+                  }}>Spikes</th>
+                  <th style={{
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '16px',
+                    fontWeight: 700,
+                    color: '#1a1a1a',
+                    textTransform: 'uppercase',
+                    padding: '18px 15px',
+                    borderBottom: '3px solid #8FCCAE',
+                    textAlign: 'left',
+                    background: 'rgba(143, 204, 174, 0.1)',
+                  }}>Toxic</th>
                 </tr>
               </thead>
               <tbody>
-                {currentTableData.map(row => (
+                {currentTableData.map((row, rowIndex) => (
                   <tr key={row.id}>
-                    <td style={styles.td}>#{row.id}</td>
+                    <td style={{
+                      fontFamily: "'Roboto', sans-serif",
+                      fontSize: '15px',
+                      color: '#1a1a1a',
+                      padding: '18px 15px',
+                      borderBottom: '1px solid #e0e0e0',
+                      background: rowIndex % 2 === 0 ? '#fff' : 'rgba(143, 204, 174, 0.05)',
+                    }}>{row.id}</td>
                     <td 
                       style={{
-                        ...styles.td,
-                        ...styles.clickableCell,
-                        ...(isCellSelected(row.id, 'name') ? styles.selectedCell : {}),
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: '15px',
+                        color: rowIndex % 2 === 0 ? '#1a1a1a' : '#2d5f3f',
+                        padding: '18px 15px',
+                        borderBottom: '1px solid #e0e0e0',
+                        background: rowIndex % 2 === 0 ? '#fff' : 'rgba(143, 204, 174, 0.05)',
+                        cursor: 'pointer',
+                        ...(isCellWrong(row.id, 'name') && {
+                          background: 'rgba(255, 0, 0, 0.3)',
+                          border: '2px solid #ff0000',
+                          borderRadius: '6px',
+                        }),
+                        ...(isCellSelected(row.id, 'name') && !isCellWrong(row.id, 'name') && {
+                          background: 'rgba(143, 204, 174, 0.4)',
+                          border: '2px solid #00bf63',
+                          borderRadius: '6px',
+                        }),
                       }}
                       onClick={() => handleCellClick(row.id, 'name')}
-                    >
-                      {row.name}
-                    </td>
+                    >{row.name}</td>
                     <td 
                       style={{
-                        ...styles.td,
-                        ...styles.clickableCell,
-                        ...(isCellSelected(row.id, 'color') ? styles.selectedCell : {}),
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: '15px',
+                        color: rowIndex % 2 === 0 ? '#2d5f3f' : '#1a1a1a',
+                        padding: '18px 15px',
+                        borderBottom: '1px solid #e0e0e0',
+                        background: rowIndex % 2 === 0 ? '#fff' : 'rgba(143, 204, 174, 0.05)',
+                        cursor: 'pointer',
+                        ...(isCellWrong(row.id, 'color') && {
+                          background: 'rgba(255, 0, 0, 0.3)',
+                          border: '2px solid #ff0000',
+                          borderRadius: '6px',
+                        }),
+                        ...(isCellSelected(row.id, 'color') && !isCellWrong(row.id, 'color') && {
+                          background: 'rgba(143, 204, 174, 0.4)',
+                          border: '2px solid #00bf63',
+                          borderRadius: '6px',
+                        }),
                       }}
                       onClick={() => handleCellClick(row.id, 'color')}
-                    >
-                      {row.color}
-                    </td>
+                    >{row.color}</td>
                     <td 
                       style={{
-                        ...styles.td,
-                        ...styles.clickableCell,
-                        ...(isCellSelected(row.id, 'texture') ? styles.selectedCell : {}),
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: '15px',
+                        color: rowIndex % 2 === 0 ? '#1a1a1a' : '#2d5f3f',
+                        padding: '18px 15px',
+                        borderBottom: '1px solid #e0e0e0',
+                        background: rowIndex % 2 === 0 ? '#fff' : 'rgba(143, 204, 174, 0.05)',
+                        cursor: 'pointer',
+                        ...(isCellWrong(row.id, 'texture') && {
+                          background: 'rgba(255, 0, 0, 0.3)',
+                          border: '2px solid #ff0000',
+                          borderRadius: '6px',
+                        }),
+                        ...(isCellSelected(row.id, 'texture') && !isCellWrong(row.id, 'texture') && {
+                          background: 'rgba(143, 204, 174, 0.4)',
+                          border: '2px solid #00bf63',
+                          borderRadius: '6px',
+                        }),
                       }}
                       onClick={() => handleCellClick(row.id, 'texture')}
-                    >
-                      {row.texture}
-                    </td>
+                    >{row.texture}</td>
                     <td 
                       style={{
-                        ...styles.td,
-                        ...styles.clickableCell,
-                        ...(isCellSelected(row.id, 'spikes') ? styles.selectedCell : {}),
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: '15px',
+                        color: rowIndex % 2 === 0 ? '#2d5f3f' : '#1a1a1a',
+                        padding: '18px 15px',
+                        borderBottom: '1px solid #e0e0e0',
+                        background: rowIndex % 2 === 0 ? '#fff' : 'rgba(143, 204, 174, 0.05)',
+                        cursor: 'pointer',
+                        ...(isCellWrong(row.id, 'spikes') && {
+                          background: 'rgba(255, 0, 0, 0.3)',
+                          border: '2px solid #ff0000',
+                          borderRadius: '6px',
+                        }),
+                        ...(isCellSelected(row.id, 'spikes') && !isCellWrong(row.id, 'spikes') && {
+                          background: 'rgba(143, 204, 174, 0.4)',
+                          border: '2px solid #00bf63',
+                          borderRadius: '6px',
+                        }),
                       }}
                       onClick={() => handleCellClick(row.id, 'spikes')}
-                    >
-                      {row.spikes}
-                    </td>
+                    >{row.spikes}</td>
                     <td 
                       style={{
-                        ...styles.td,
-                        ...styles.clickableCell,
-                        ...(isCellSelected(row.id, 'toxic') ? styles.selectedCell : {}),
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: '15px',
+                        color: rowIndex % 2 === 0 ? '#1a1a1a' : '#2d5f3f',
+                        padding: '18px 15px',
+                        borderBottom: '1px solid #e0e0e0',
+                        background: rowIndex % 2 === 0 ? '#fff' : 'rgba(143, 204, 174, 0.05)',
+                        cursor: 'pointer',
+                        ...(isCellWrong(row.id, 'toxic') && {
+                          background: 'rgba(255, 0, 0, 0.3)',
+                          border: '2px solid #ff0000',
+                          borderRadius: '6px',
+                        }),
+                        ...(isCellSelected(row.id, 'toxic') && !isCellWrong(row.id, 'toxic') && {
+                          background: 'rgba(143, 204, 174, 0.4)',
+                          border: '2px solid #00bf63',
+                          borderRadius: '6px',
+                        }),
                       }}
                       onClick={() => handleCellClick(row.id, 'toxic')}
-                    >
-                      {row.toxic}
-                    </td>
+                    >{row.toxic}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-
-            <button style={styles.nextButton} onClick={handleLabelNext}>
-              NEXT
-            </button>
           </div>
-        </div>
-      )}
-
-      {/* Fill Missing Intro Phase */}
-      {phase === 'FILL_MISSING_INTRO' && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.dialogueBox}>
-            <p style={styles.speakerName}>Ranger Moss:</p>
-            <p style={styles.dialogueText}>{fillMissingIntroDialogue}</p>
-            <button style={styles.continueButton} onClick={handleFillMissingIntroNext}>
-              Continue →
-            </button>
-          </div>
+          
+          {/* Next Button */}
+          <button
+            style={{
+              marginTop: '20px',
+              background: '#00bf63',
+              border: 'none',
+              borderRadius: '10px',
+              padding: '15px 40px',
+              color: '#fff',
+              fontFamily: "'Roboto', sans-serif",
+              fontSize: '18px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'transform 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}
+            onClick={handleLabelNext}
+            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            NEXT
+            <img 
+              src="/jungle/icon/right.png"
+              alt="Next"
+              style={{ width: '24px', height: '24px' }}
+            />
+          </button>
         </div>
       )}
 
       {/* Fill Missing Values Phase */}
       {phase === 'FILL_MISSING' && (
-        <div style={styles.fillMissingContainer}>
-          {/* Table Card */}
-          <div style={styles.fillTableCard}>
-            <h2 style={styles.cardTitle}>FILL MISSING VALUES</h2>
-            <p style={styles.cardSubtitle}>
-              Click on the ❓ cells to fill in the missing data based on the mushroom photo.
-            </p>
-            
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th}>ID</th>
-                  <th style={styles.th}>Name</th>
-                  <th style={styles.th}>Color</th>
-                  <th style={styles.th}>Texture</th>
-                  <th style={styles.th}>Spikes</th>
-                  <th style={styles.th}>Toxic</th>
-                </tr>
-              </thead>
-              <tbody>
-                {MISSING_DATA.map(row => (
-                  <tr key={row.id}>
-                    <td style={styles.td}>#{row.id}</td>
-                    <td style={styles.td}>{row.name}</td>
-                    <td 
-                      style={{
-                        ...styles.td,
-                        ...(row.missingField === 'color' && !filledValues[row.id] ? styles.missingCell : {}),
-                        ...(row.missingField === 'color' && selectedMissingCell?.itemId === row.id ? styles.missingCellActive : {}),
-                        ...(row.missingField === 'color' && filledValues[row.id] ? styles.filledCell : {}),
-                      }}
-                      onClick={() => row.missingField === 'color' && !filledValues[row.id] && handleMissingCellClick(row.id, 'color')}
-                    >
-                      {row.missingField === 'color' ? (filledValues[row.id] || '[ ❓ ]') : row.color}
-                    </td>
-                    <td 
-                      style={{
-                        ...styles.td,
-                        ...(row.missingField === 'texture' && !filledValues[row.id] ? styles.missingCell : {}),
-                        ...(row.missingField === 'texture' && selectedMissingCell?.itemId === row.id ? styles.missingCellActive : {}),
-                        ...(row.missingField === 'texture' && filledValues[row.id] ? styles.filledCell : {}),
-                      }}
-                      onClick={() => row.missingField === 'texture' && !filledValues[row.id] && handleMissingCellClick(row.id, 'texture')}
-                    >
-                      {row.missingField === 'texture' ? (filledValues[row.id] || '[ ❓ ]') : row.texture}
-                    </td>
-                    <td 
-                      style={{
-                        ...styles.td,
-                        ...(row.missingField === 'spikes' && !filledValues[row.id] ? styles.missingCell : {}),
-                        ...(row.missingField === 'spikes' && selectedMissingCell?.itemId === row.id ? styles.missingCellActive : {}),
-                        ...(row.missingField === 'spikes' && filledValues[row.id] ? styles.filledCell : {}),
-                      }}
-                      onClick={() => row.missingField === 'spikes' && !filledValues[row.id] && handleMissingCellClick(row.id, 'spikes')}
-                    >
-                      {row.missingField === 'spikes' ? (filledValues[row.id] || '[ ❓ ]') : row.spikes}
-                    </td>
-                    <td style={styles.td}>{row.toxic}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            <button style={styles.nextButton} onClick={handleFillMissingNext}>
-              NEXT
-            </button>
-          </div>
-
-          {/* Image Panel */}
-          <div style={styles.imagePanel}>
-            {selectedMissingCell ? (
-              <>
-                <h3 style={styles.imagePanelTitle}>#{selectedMissingCell.itemId}</h3>
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '95%',
+          height: '70%',
+          display: 'flex',
+          gap: '20px',
+          zIndex: 50,
+        }}>
+          {/* Left side: Title + Table combined */}
+          <div style={{
+            width: '65%',
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '20px',
+          }}>
+            {/* Card 1: Title - 22% of parent height */}
+            <div style={{
+              height: '22%',
+              background: 'rgba(255, 255, 255, 0.95)',
+              border: '3px solid #00bf63',
+              borderRadius: '15px',
+              padding: '20px 30px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+            }}>
+              <h2 style={{
+                fontFamily: "'Coming Soon', cursive",
+                fontSize: '32px',
+                color: '#333',
+                margin: '0 0 10px 0',
+                letterSpacing: '2px',
+              }}>
+                FILL MISSING VALUES
+              </h2>
+              <p style={{
+                fontFamily: "'Roboto', sans-serif",
+                fontSize: '14px',
+                color: '#666',
+                margin: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+              }}>
+                Click on the 
                 <img 
-                  src={`/jungle/object/${selectedMissingCell.itemId}.png`}
-                  alt={`Mushroom ${selectedMissingCell.itemId}`}
-                  style={styles.mushroomImage}
+                  src="/jungle/icon/question.svg" 
+                  alt="?" 
+                  style={{ width: '20px', height: '20px' }}
                 />
-                <div style={styles.optionsContainer}>
-                  {MISSING_DATA.find(d => d.id === selectedMissingCell.itemId)?.options.map(opt => (
-                    <button
-                      key={opt}
-                      style={styles.optionButton}
-                      onClick={() => handleOptionSelect(opt)}
-                      onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-                      onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
-                    >
-                      {opt}
-                    </button>
+                cells to fill in the missing data based on the mushroom photo.
+              </p>
+            </div>
+
+            {/* Card 2: Table - 65% of parent height */}
+            <div style={{
+              height: '65%',
+              background: 'rgba(255, 255, 255, 0.95)',
+              border: '3px solid #8FCCAE',
+              borderRadius: '15px',
+              padding: '25px',
+              overflowY: 'auto',
+              boxShadow: '0 8px 20px rgba(0, 0, 0, 0.3)',
+            }}>
+              <table style={{
+                width: '100%',
+                borderCollapse: 'separate',
+                borderSpacing: 0,
+              }}>
+                <thead>
+                  <tr>
+                    <th style={{
+                      fontFamily: "'Roboto', sans-serif",
+                      fontSize: '18px',
+                      fontWeight: 700,
+                      color: '#1a1a1a',
+                      textTransform: 'uppercase',
+                      padding: '18px 15px',
+                      borderBottom: '3px solid #8FCCAE',
+                      textAlign: 'left',
+                      background: 'rgba(143, 204, 174, 0.1)',
+                    }}>ID</th>
+                    <th style={{
+                      fontFamily: "'Roboto', sans-serif",
+                      fontSize: '18px',
+                      fontWeight: 700,
+                      color: '#1a1a1a',
+                      textTransform: 'uppercase',
+                      padding: '18px 15px',
+                      borderBottom: '3px solid #8FCCAE',
+                      textAlign: 'left',
+                      background: 'rgba(143, 204, 174, 0.1)',
+                    }}>Mushroom</th>
+                    <th style={{
+                      fontFamily: "'Roboto', sans-serif",
+                      fontSize: '18px',
+                      fontWeight: 700,
+                      color: '#1a1a1a',
+                      textTransform: 'uppercase',
+                      padding: '18px 15px',
+                      borderBottom: '3px solid #8FCCAE',
+                      textAlign: 'left',
+                      background: 'rgba(143, 204, 174, 0.1)',
+                    }}>Color</th>
+                    <th style={{
+                      fontFamily: "'Roboto', sans-serif",
+                      fontSize: '18px',
+                      fontWeight: 700,
+                      color: '#1a1a1a',
+                      textTransform: 'uppercase',
+                      padding: '18px 15px',
+                      borderBottom: '3px solid #8FCCAE',
+                      textAlign: 'left',
+                      background: 'rgba(143, 204, 174, 0.1)',
+                    }}>Texture</th>
+                    <th style={{
+                      fontFamily: "'Roboto', sans-serif",
+                      fontSize: '18px',
+                      fontWeight: 700,
+                      color: '#1a1a1a',
+                      textTransform: 'uppercase',
+                      padding: '18px 15px',
+                      borderBottom: '3px solid #8FCCAE',
+                      textAlign: 'left',
+                      background: 'rgba(143, 204, 174, 0.1)',
+                    }}>Spikes</th>
+                    <th style={{
+                      fontFamily: "'Roboto', sans-serif",
+                      fontSize: '18px',
+                      fontWeight: 700,
+                      color: '#1a1a1a',
+                      textTransform: 'uppercase',
+                      padding: '18px 15px',
+                      borderBottom: '3px solid #8FCCAE',
+                      textAlign: 'left',
+                      background: 'rgba(143, 204, 174, 0.1)',
+                    }}>Toxic</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {MISSING_DATA.map((row, rowIndex) => (
+                    <tr key={row.id}>
+                      <td style={{
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: '17px',
+                        color: '#1a1a1a',
+                        padding: '18px 15px',
+                        borderBottom: '1px solid #e0e0e0',
+                        background: rowIndex % 2 === 0 ? '#fff' : 'rgba(143, 204, 174, 0.05)',
+                      }}>#{row.id}</td>
+                      <td style={{
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: '17px',
+                        color: rowIndex % 2 === 0 ? '#1a1a1a' : '#2d5f3f',
+                        padding: '18px 15px',
+                        borderBottom: '1px solid #e0e0e0',
+                        background: rowIndex % 2 === 0 ? '#fff' : 'rgba(143, 204, 174, 0.05)',
+                      }}>{row.name}</td>
+                      <td 
+                        style={{
+                          fontFamily: "'Roboto', sans-serif",
+                          fontSize: '17px',
+                          color: rowIndex % 2 === 0 ? '#2d5f3f' : '#1a1a1a',
+                          padding: '18px 15px',
+                          borderBottom: '1px solid #e0e0e0',
+                          background: rowIndex % 2 === 0 ? '#fff' : 'rgba(143, 204, 174, 0.05)',
+                          cursor: row.missingField === 'color' && !filledValues[row.id] ? 'pointer' : 'default',
+                          ...(row.missingField === 'color' && !filledValues[row.id] && {
+                            background: 'rgba(255, 200, 100, 0.3)',
+                            borderRadius: '6px',
+                          }),
+                          ...(row.missingField === 'color' && selectedMissingCell?.itemId === row.id && {
+                            background: 'rgba(143, 204, 174, 0.4)',
+                            border: '2px solid #00bf63',
+                            borderRadius: '6px',
+                          }),
+                          ...(row.missingField === 'color' && filledValues[row.id] && {
+                            background: 'rgba(100, 200, 100, 0.3)',
+                            borderRadius: '6px',
+                          }),
+                        }}
+                        onClick={() => row.missingField === 'color' && !filledValues[row.id] && handleMissingCellClick(row.id, 'color')}
+                      >
+                        {row.missingField === 'color' ? (
+                          filledValues[row.id] || (
+                            <img 
+                              src="/jungle/icon/question.svg" 
+                              alt="?" 
+                              style={{ width: '28px', height: '28px' }}
+                            />
+                          )
+                        ) : row.color}
+                      </td>
+                      <td 
+                        style={{
+                          fontFamily: "'Roboto', sans-serif",
+                          fontSize: '17px',
+                          color: rowIndex % 2 === 0 ? '#1a1a1a' : '#2d5f3f',
+                          padding: '18px 15px',
+                          borderBottom: '1px solid #e0e0e0',
+                          background: rowIndex % 2 === 0 ? '#fff' : 'rgba(143, 204, 174, 0.05)',
+                          cursor: row.missingField === 'texture' && !filledValues[row.id] ? 'pointer' : 'default',
+                          ...(row.missingField === 'texture' && !filledValues[row.id] && {
+                            background: 'rgba(255, 200, 100, 0.3)',
+                            borderRadius: '6px',
+                          }),
+                          ...(row.missingField === 'texture' && selectedMissingCell?.itemId === row.id && {
+                            background: 'rgba(143, 204, 174, 0.4)',
+                            border: '2px solid #00bf63',
+                            borderRadius: '6px',
+                          }),
+                          ...(row.missingField === 'texture' && filledValues[row.id] && {
+                            background: 'rgba(100, 200, 100, 0.3)',
+                            borderRadius: '6px',
+                          }),
+                        }}
+                        onClick={() => row.missingField === 'texture' && !filledValues[row.id] && handleMissingCellClick(row.id, 'texture')}
+                      >
+                        {row.missingField === 'texture' ? (
+                          filledValues[row.id] || (
+                            <img 
+                              src="/jungle/icon/question.svg" 
+                              alt="?" 
+                              style={{ width: '28px', height: '28px' }}
+                            />
+                          )
+                        ) : row.texture}
+                      </td>
+                      <td 
+                        style={{
+                          fontFamily: "'Roboto', sans-serif",
+                          fontSize: '17px',
+                          color: rowIndex % 2 === 0 ? '#2d5f3f' : '#1a1a1a',
+                          padding: '18px 15px',
+                          borderBottom: '1px solid #e0e0e0',
+                          background: rowIndex % 2 === 0 ? '#fff' : 'rgba(143, 204, 174, 0.05)',
+                          cursor: row.missingField === 'spikes' && !filledValues[row.id] ? 'pointer' : 'default',
+                          ...(row.missingField === 'spikes' && !filledValues[row.id] && {
+                            background: 'rgba(255, 200, 100, 0.3)',
+                            borderRadius: '6px',
+                          }),
+                          ...(row.missingField === 'spikes' && selectedMissingCell?.itemId === row.id && {
+                            background: 'rgba(143, 204, 174, 0.4)',
+                            border: '2px solid #00bf63',
+                            borderRadius: '6px',
+                          }),
+                          ...(row.missingField === 'spikes' && filledValues[row.id] && {
+                            background: 'rgba(100, 200, 100, 0.3)',
+                            borderRadius: '6px',
+                          }),
+                        }}
+                        onClick={() => row.missingField === 'spikes' && !filledValues[row.id] && handleMissingCellClick(row.id, 'spikes')}
+                      >
+                        {row.missingField === 'spikes' ? (
+                          filledValues[row.id] || (
+                            <img 
+                              src="/jungle/icon/question.svg" 
+                              alt="?" 
+                              style={{ width: '28px', height: '28px' }}
+                            />
+                          )
+                        ) : row.spikes}
+                      </td>
+                      <td style={{
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: '17px',
+                        color: rowIndex % 2 === 0 ? '#1a1a1a' : '#2d5f3f',
+                        padding: '18px 15px',
+                        borderBottom: '1px solid #e0e0e0',
+                        background: rowIndex % 2 === 0 ? '#fff' : 'rgba(143, 204, 174, 0.05)',
+                      }}>{row.toxic}</td>
+                    </tr>
                   ))}
-                </div>
-              </>
-            ) : (
-              <>
-                <h3 style={styles.imagePanelTitle}>Select a cell</h3>
-                <p style={{ color: '#aaa', textAlign: 'center' }}>Click on a ❓ cell to see the mushroom photo</p>
-              </>
-            )}
+                </tbody>
+              </table>
+            </div>
           </div>
+
+          {/* Right side: Card 3 - Image Panel - 90% height */}
+          <div style={{
+            width: '30%',
+            height: '90%',
+            background: 'rgba(45, 95, 63, 0.3)',
+            backdropFilter: 'blur(10px)',
+            border: '2px dashed #8FCCAE',
+            borderRadius: '15px',
+            padding: '30px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '20px',
+          }}>
+              {!selectedMissingCell ? (
+                <>
+                  <img 
+                    src="/jungle/icon/mushroom.svg"
+                    alt="Mushroom"
+                    style={{
+                      width: '120px',
+                      height: '120px',
+                      opacity: 0.5,
+                    }}
+                  />
+                  <p style={{
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '16px',
+                    color: '#fff',
+                    textAlign: 'center',
+                    margin: 0,
+                  }}>
+                    Waiting for Input
+                  </p>
+                  <p style={{
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '13px',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    textAlign: 'center',
+                    margin: 0,
+                  }}>
+                    Select a ? cell on the data table to activate the Magic Scanner.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <img 
+                    src={`/jungle/object/${selectedMissingCell.itemId}.png`}
+                    alt={`Mushroom ${selectedMissingCell.itemId}`}
+                    style={{
+                      width: '240px',
+                      height: '240px',
+                      objectFit: 'contain',
+                      marginBottom: '5px',
+                    }}
+                  />
+                  <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                    width: '100%',
+                  }}>
+                    {MISSING_DATA.find(d => d.id === selectedMissingCell.itemId)?.options.map((option, index) => (
+                      <button
+                        key={index}
+                        style={{
+                          padding: '12px 20px',
+                          fontFamily: "'Roboto Mono', monospace",
+                          fontSize: '14px',
+                          fontWeight: 500,
+                          color: '#fff',
+                          background: 'rgba(143, 204, 174, 0.3)',
+                          backdropFilter: 'blur(10px)',
+                          border: '2px solid rgba(143, 204, 174, 0.5)',
+                          borderRadius: '10px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                        }}
+                        onClick={() => handleOptionSelect(option)}
+                        onMouseOver={(e) => {
+                          e.target.style.background = 'rgba(143, 204, 174, 0.5)'
+                          e.target.style.borderColor = '#8FCCAE'
+                          e.target.style.transform = 'scale(1.02)'
+                        }}
+                        onMouseOut={(e) => {
+                          e.target.style.background = 'rgba(143, 204, 174, 0.3)'
+                          e.target.style.borderColor = 'rgba(143, 204, 174, 0.5)'
+                          e.target.style.transform = 'scale(1)'
+                        }}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+          </div>
+
+          {/* Complete Button - Positioned below and centered */}
+          <button
+            style={{
+              position: 'absolute',
+              bottom: '-60px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: '#00bf63',
+              border: 'none',
+              borderRadius: '10px',
+              padding: '15px 50px',
+              color: '#fff',
+              fontFamily: "'Roboto', sans-serif",
+              fontSize: '18px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'transform 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}
+            onClick={handleFillMissingNext}
+            onMouseOver={(e) => e.currentTarget.style.transform = 'translateX(-50%) scale(1.05)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'translateX(-50%) scale(1)'}
+          >
+            COMPLETE
+            <img 
+              src="/jungle/icon/right.png"
+              alt="Next"
+              style={{ width: '24px', height: '24px' }}
+            />
+          </button>
         </div>
       )}
 
@@ -3440,34 +4358,55 @@ const DataCleaning = ({ onComplete, onExit }) => {
 
       {/* Training Phase */}
       {phase === 'TRAINING' && (
-        <div style={styles.trainingContainer}>
-          <div style={styles.trainingCard}>
-            <h2 style={styles.trainingTitle}>MODEL TRAINING</h2>
-            <img 
-              src="/jungle/model.GIF"
-              alt="Model Training"
-              style={styles.trainingGif}
-            />
-            <div style={styles.progressBarContainer}>
-              <div style={{ ...styles.progressBar, width: `${trainingProgress}%` }}></div>
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '60%',
+          height: '80%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 50,
+        }}>
+          <img 
+            src="/jungle/model.GIF"
+            alt="Model Training"
+            style={{
+              width: 'auto',
+              height: '80%',
+              objectFit: 'contain',
+              marginBottom: '30px',
+            }}
+          />
+          <div style={{
+            width: '80%',
+            height: '30px',
+            background: 'rgba(255, 255, 255, 0.3)',
+            borderRadius: '15px',
+            overflow: 'hidden',
+            border: '2px solid #8FCCAE',
+          }}>
+            <div style={{
+              height: '100%',
+              width: `${trainingProgress}%`,
+              background: 'linear-gradient(90deg, #00bf63, #8FCCAE)',
+              transition: 'width 0.1s linear',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <span style={{
+                fontFamily: "'Roboto', sans-serif",
+                fontSize: '14px',
+                fontWeight: 'bold',
+                color: '#fff',
+              }}>
+                {trainingProgress}%
+              </span>
             </div>
-            <p style={styles.progressText}>Training Progress: {trainingProgress}%</p>
-            
-            {showTrainingVoiceover && (
-              <>
-                <p style={styles.voiceoverText}>
-                  <strong>Ranger Moss:</strong> "{TRAINING_VOICEOVER}"
-                </p>
-                <button 
-                  style={{ ...styles.goButton, marginTop: '20px' }}
-                  onClick={handleTrainingComplete}
-                  onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-                  onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
-                >
-                  Continue →
-                </button>
-              </>
-            )}
           </div>
         </div>
       )}
@@ -3859,8 +4798,6 @@ const DataCleaning = ({ onComplete, onExit }) => {
         </div>
       )}
 
-      {/* Navigation Arrow */}
-      <div style={styles.navArrow}>﹀</div>
     </div>
   )
 }
