@@ -225,15 +225,15 @@ const colorMapMushrooms = {
     { id: '24', size: 200, left: '800px', top: '400px', status: 'EDIBLE', toxicity: '90% Safe' },
   ],
   [MAP_POSITIONS.BOTTOM_RIGHT]: [
-    { id: '21', size: 400, right: '600px', bottom: '0px', status: 'DANGER', toxicity: '99% Toxic' },
-    { id: '22', size: 200, right: '0px', bottom: '200px', status: 'EDIBLE', toxicity: '92% Safe' },
-    { id: '15', size: 250, left: '100px', top: '200px', status: 'DANGER', toxicity: '90% Toxic' },
+    { id: '21', size: 400, right: '300px', bottom: '0px', status: 'DANGER', toxicity: '99% Toxic' },
+    { id: '22', size: 200, right: '0px', bottom: '250px', status: 'EDIBLE', toxicity: '92% Safe' },
+    { id: '15', size: 250, left: '100px', top: '100px', status: 'DANGER', toxicity: '90% Toxic' },
   ],
   [MAP_POSITIONS.TOP_LEFT]: [
     { id: '25', size: 400, left: '50px', bottom: '200px', status: 'DANGER', toxicity: '99% Toxic' },
-    { id: '18', size: 250, left: '800px', top: '0px', status: 'DANGER', toxicity: '95% Toxic' },
+    { id: '18', size: 250, left: '500px', top: '0px', status: 'DANGER', toxicity: '95% Toxic' },
     { id: '23', size: 200, left: '500px', bottom: '0px', status: 'EDIBLE', toxicity: '95% Safe' },
-    { id: '19', size: 200, right: '800px', top: '500px', status: 'DANGER', toxicity: '91% Toxic' },
+    { id: '19', size: 200, right: '550px', top: '350px', status: 'DANGER', toxicity: '91% Toxic' },
   ],
 }
 
@@ -534,12 +534,16 @@ const DataCleaning = ({ onComplete, onExit }) => {
   const [trashSound] = useState(new Audio('/sound/trash.wav'))
   const [wrongSound] = useState(new Audio('/sound/wrong.mp3'))
   const [correctSound] = useState(new Audio('/sound/correct.wav'))
+  const [selectSound] = useState(new Audio('/sound/select.mp3'))
+  const [testSound] = useState(new Audio('/sound/test.wav'))
   
   useEffect(() => {
     trashSound.volume = 0.5
     wrongSound.volume = 0.5
     correctSound.volume = 0.5
-  }, [trashSound, wrongSound, correctSound])
+    selectSound.volume = 0.6
+    testSound.volume = 0.5
+  }, [trashSound, wrongSound, correctSound, selectSound, testSound])
   
   // Format text with bold keywords (deep green color)
   const formatTextWithBold = (text) => {
@@ -704,6 +708,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
   
   // Handle Mission Accepted button
   const handleMissionAccepted = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
     setShowModernRangerDialogue(false)
     
     if (phase === 'INTRO') {
@@ -723,6 +730,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }
 
   const handleRangerContinue = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
     if (isTyping) {
       setDisplayedText(rangerDialogues[rangerDialogueIndex])
       setIsTyping(false)
@@ -766,6 +776,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }
 
   const handleNoiseNext = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
     // Check if correct items removed in current batch
     const currentBatchItems = NOISE_BATCHES[noiseBatch]
     const noiseInBatch = currentBatchItems.filter(id => NOISE_ITEMS.includes(id))
@@ -789,6 +802,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }
 
   const handleLabelIntroNext = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
     setPhase('LABEL_CORRECTION')
   }
 
@@ -821,6 +837,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }
 
   const handleLabelNext = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
     // Check if user selected exactly the correct error cells
     const errors = ERROR_CELLS[labelBatch]
     const correctCellKeys = errors.map(e => `${e.id}-${e.field}`)
@@ -847,6 +866,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }
 
   const handleFillMissingIntroNext = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
     setPhase('FILL_MISSING')
   }
 
@@ -885,6 +907,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }
 
   const handleFillMissingNext = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
     // Check if all values are filled
     const allFilled = MISSING_DATA.every(item => filledValues[item.id])
     if (!allFilled) {
@@ -892,6 +917,15 @@ const DataCleaning = ({ onComplete, onExit }) => {
       setShowGlitchHint(true)
       return
     }
+    
+    // Update rangerMossPhase to 3 (Phase 3: Model Training)
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (savedUser) {
+      const userData = JSON.parse(savedUser)
+      userData.rangerMossPhase = 3 // Phase 3: Correct Labels + Model Training
+      localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+    }
+    
     // Move to Pre-Training Quiz phase with modern dialogue
     setPhase('PRE_TRAINING_QUIZ')
     setPreTrainingQuizStep(0)
@@ -936,6 +970,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
   
   // Handle Pre-Training Quiz answer
   const handlePreTrainingQuizAnswer = (optionIndex, isCorrect) => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
     const currentQuiz = PRE_TRAINING_QUIZ[preTrainingQuizStep]
     
     if (isCorrect) {
@@ -1053,6 +1090,8 @@ const DataCleaning = ({ onComplete, onExit }) => {
   
   // Handle Ready Let's GO button
   const handleReadyLetsGo = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
     setShowModernRangerDialogue(false)
     setPhase('TRAINING')
     setTrainingProgress(0)
@@ -1108,6 +1147,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
   
   // Handle Training Complete Quiz answer
   const handleTrainingCompleteQuizAnswer = (optionIndex, isCorrect) => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
     const response = isCorrect ? TRAINING_COMPLETE_QUIZ.correctResponse : TRAINING_COMPLETE_QUIZ.incorrectResponse
     
     setTrainingCompleteQuizAnswered(true)
@@ -1144,12 +1186,25 @@ const DataCleaning = ({ onComplete, onExit }) => {
   
   // Handle continue to test phase
   const handleContinueToTest = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    // Update rangerMossPhase to 4 (Phase 4: Test the Model)
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (savedUser) {
+      const userData = JSON.parse(savedUser)
+      userData.rangerMossPhase = 4 // Phase 4: Test the Model
+      localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+    }
+    
     setShowModernRangerDialogue(false)
     setPhase('VALIDATION_DATA')
     setSelectedTestMushrooms([])
   }
 
   const handleQuizAnswer = (optionIndex, isCorrect) => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
     const currentQuestion = QUIZ_DATA[quizStep]
     const selectedOption = currentQuestion.options[optionIndex]
     
@@ -1184,6 +1239,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }
 
   const handleStartTraining = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
     setPhase('TRAINING')
     setTrainingProgress(0)
     
@@ -1206,12 +1264,18 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }
 
   const handleValidationAnswer = (isCorrect) => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
     if (isCorrect) {
       setValidationStep(1) // Show correct response
     }
   }
 
   const handleValidationContinue = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
     setPhase('VALIDATION_DATA')
     setSelectedTestMushrooms([])
   }
@@ -1221,6 +1285,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
     
     // If clicking on a wrong mushroom (already collected)
     if (!mushroom.isNew) {
+      wrongSound.currentTime = 0
       wrongSound.play().catch(err => console.log('Wrong sound error:', err))
       setGlitchHintText("We should test with New Mushrooms! These have already been collected.")
       setShowGlitchHint(true)
@@ -1229,8 +1294,11 @@ const DataCleaning = ({ onComplete, onExit }) => {
     
     // Toggle selection for correct mushrooms
     if (selectedTestMushrooms.includes(id)) {
+      // Deselecting - no sound
       setSelectedTestMushrooms(prev => prev.filter(m => m !== id))
     } else {
+      // Selecting - play correct sound
+      correctSound.currentTime = 0
       correctSound.play().catch(err => console.log('Correct sound error:', err))
       setSelectedTestMushrooms(prev => [...prev, id])
     }
@@ -1244,6 +1312,10 @@ const DataCleaning = ({ onComplete, onExit }) => {
       setSliderPosition(0) // Reset slider
       return
     }
+    
+    // Play test sound
+    testSound.currentTime = 0
+    testSound.play().catch(err => console.log('Test sound error:', err))
     
     // Start scanning animation
     setIsScanning(true)
@@ -1504,6 +1576,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
   
   // Handle Adjust Model Quiz answer
   const handleAdjustModelQuizAnswer = (optionIndex, isCorrect) => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
     const response = isCorrect ? ADJUST_MODEL_QUIZ.correctResponse : ADJUST_MODEL_QUIZ.incorrectResponse
     
     setAdjustQuizAnswered(true)
@@ -1542,6 +1617,8 @@ const DataCleaning = ({ onComplete, onExit }) => {
   
   // Handle select training data button
   const handleSelectTrainingData = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
     setShowModernRangerDialogue(false)
     setPhase('ADJUST_MODEL_DATA')
   }
@@ -1572,6 +1649,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
 
   // Model Adjustment handlers
   const handleAdjustDialogueContinue = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
     // If typing, skip to full text
     if (isAdjustTyping) {
       setAdjustDisplayedText(ADJUST_MODEL_DIALOGUES[adjustDialogueIndex])
@@ -1590,6 +1670,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }
 
   const handleAdjustOptionSelect = (option, index) => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
     if (option.correct) {
       setAdjustStep(2) // Move to data selection
     } else {
@@ -1604,6 +1687,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
     if (photo.isGood) {
       // Add to selected if not already selected
       if (!selectedTrainingPhotos.includes(photo.id)) {
+        correctSound.currentTime = 0
         correctSound.play().catch(err => console.log('Correct sound error:', err))
         setSelectedTrainingPhotos(prev => [...prev, photo.id])
         setFeedbackPhoto(null)
@@ -1613,6 +1697,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
       }
     } else {
       // Show feedback panel with duplicate mushroom
+      wrongSound.currentTime = 0
       wrongSound.play().catch(err => console.log('Wrong sound error:', err))
       setFeedbackPhoto(photo)
       setShowFeedbackPanel(true) // Only show feedback panel when wrong
@@ -1627,6 +1712,10 @@ const DataCleaning = ({ onComplete, onExit }) => {
     const allCorrectSelected = correctPhotos.every(id => selectedTrainingPhotos.includes(id))
     
     if (allCorrectSelected) {
+      // Play test sound
+      testSound.currentTime = 0
+      testSound.play().catch(err => console.log('Test sound error:', err))
+      
       setPhase('ADJUST_MODEL_TRAINING') // Move to retraining phase
       // Animate progress bar
       let progress = 0
@@ -1641,6 +1730,16 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }
 
   const handleAdjustComplete = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    // Update rangerMossPhase to 5 (completed all phases)
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (savedUser) {
+      const userData = JSON.parse(savedUser)
+      userData.rangerMossPhase = 5 // Phase 5: Refine the Model - Complete
+      localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+    }
+    
     setPhase('LOADING')
   }
 
@@ -1786,6 +1885,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }
 
   const handleDialogueContinue = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
     // Skip typing if still typing
     if (colorMapNpcIsTyping) {
       setColorMapNpcDisplayedText(npcDialogueText)
@@ -2924,28 +3026,28 @@ const DataCleaning = ({ onComplete, onExit }) => {
     },
     colorMapNavArrow: {
       position: 'absolute',
-      width: '60px',
-      height: '60px',
+      width: '80px',
+      height: '80px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       cursor: 'pointer',
       zIndex: 50,
       transition: 'transform 0.2s',
-      background: 'rgba(255, 255, 255, 0.2)',
-      borderRadius: '50%',
-      backdropFilter: 'blur(10px)',
+      background: 'none',
+      border: 'none',
+      padding: 0,
     },
     colorMapArrowImage: {
-      width: '30px',
-      height: '30px',
+      width: '80px',
+      height: '80px',
       objectFit: 'contain',
-      filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.3))',
+      filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.5))',
     },
-    colorMapUpArrow: { top: '20px', left: '50%', transform: 'translateX(-50%)' },
-    colorMapDownArrow: { bottom: '20px', left: '50%', transform: 'translateX(-50%)' },
-    colorMapLeftArrow: { left: '20px', top: '50%', transform: 'translateY(-50%)' },
-    colorMapRightArrow: { right: '20px', top: '50%', transform: 'translateY(-50%)' },
+    colorMapUpArrow: { top: '30px', left: '50%', transform: 'translateX(-50%)' },
+    colorMapDownArrow: { bottom: '30px', left: '50%', transform: 'translateX(-50%)' },
+    colorMapLeftArrow: { left: '30px', top: '50%', transform: 'translateY(-50%)' },
+    colorMapRightArrow: { right: '30px', top: '50%', transform: 'translateY(-50%)' },
     colorMapMushroom: {
       position: 'absolute',
       cursor: 'pointer',
@@ -3011,10 +3113,10 @@ const DataCleaning = ({ onComplete, onExit }) => {
       maxWidth: '500px',
     },
     dialogueContainerRangerMoss: {
-      top: '10%',
-      left: '80px',
-      width: '45%',
-      maxWidth: '500px',
+      bottom: '10%',
+      left: '5%',
+      width: '35%',
+      maxWidth: '450px',
     },
     colorMapDialogueBox: {
       padding: '25px 30px',
@@ -3625,12 +3727,47 @@ const DataCleaning = ({ onComplete, onExit }) => {
           height: '100%',
           background: '#000',
           zIndex: 200,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '60px',
         }}>
+          {/* Loading Text - Moved up */}
           <div style={styles.loadingContainer}>
             <h2 style={styles.loadingTitle}>Loading...</h2>
             <div style={styles.loadingBar}>
               <div style={{...styles.loadingFill, width: `${loadingProgress}%`}} />
             </div>
+          </div>
+          
+          {/* Bouncing Mushrooms Animation - Below loading text */}
+          <div style={{
+            width: '60%',
+            height: '80px',
+            background: 'rgba(0, 0, 0, 0.9)',
+            borderRadius: '15px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden',
+            position: 'relative',
+          }}>
+            {[...Array(10)].map((_, index) => (
+              <img
+                key={index}
+                src={index % 2 === 0 ? '/jungle/icon/red.svg' : '/jungle/icon/green.svg'}
+                alt="mushroom"
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  position: 'absolute',
+                  animation: `bounceMove 3s ease-in-out infinite`,
+                  animationDelay: `${index * 0.2}s`,
+                  left: `${100 - (index * 8)}%`,
+                }}
+              />
+            ))}
           </div>
         </div>
       )}
@@ -5593,7 +5730,8 @@ const DataCleaning = ({ onComplete, onExit }) => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'flex-start',
+          paddingTop: '5%',
           zIndex: 50,
         }}>
           <img 
@@ -5601,72 +5739,41 @@ const DataCleaning = ({ onComplete, onExit }) => {
             alt="Model Training"
             style={{
               width: 'auto',
-              height: '80%',
+              height: adjustProgress >= 100 ? '40%' : '70%',
               objectFit: 'contain',
-              marginBottom: '30px',
+              marginBottom: adjustProgress >= 100 ? '20px' : '30px',
+              transition: 'height 0.3s ease',
             }}
           />
           
           {adjustProgress < 100 && (
-            <>
-              {/* Bouncing Mushrooms Animation */}
+            <div style={{
+              width: '80%',
+              height: '30px',
+              background: 'rgba(255, 255, 255, 0.3)',
+              borderRadius: '15px',
+              overflow: 'hidden',
+              border: '2px solid #8FCCAE',
+            }}>
               <div style={{
-                width: '80%',
-                height: '60px',
-                background: 'rgba(0, 0, 0, 0.9)',
-                borderRadius: '10px',
-                marginBottom: '15px',
+                height: '100%',
+                width: `${adjustProgress}%`,
+                background: 'linear-gradient(90deg, #00bf63, #8FCCAE)',
+                transition: 'width 0.1s linear',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                overflow: 'hidden',
-                position: 'relative',
               }}>
-                {[...Array(10)].map((_, index) => (
-                  <img
-                    key={index}
-                    src={index % 2 === 0 ? '/jungle/icon/red.svg' : '/jungle/icon/green.svg'}
-                    alt="mushroom"
-                    style={{
-                      width: '35px',
-                      height: '35px',
-                      position: 'absolute',
-                      animation: `bounceMove 3s ease-in-out infinite`,
-                      animationDelay: `${index * 0.2}s`,
-                      left: `${100 - (index * 8)}%`,
-                    }}
-                  />
-                ))}
-              </div>
-              
-              <div style={{
-                width: '80%',
-                height: '30px',
-                background: 'rgba(255, 255, 255, 0.3)',
-                borderRadius: '15px',
-                overflow: 'hidden',
-                border: '2px solid #8FCCAE',
-              }}>
-                <div style={{
-                  height: '100%',
-                  width: `${adjustProgress}%`,
-                  background: 'linear-gradient(90deg, #00bf63, #8FCCAE)',
-                  transition: 'width 0.1s linear',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                <span style={{
+                  fontFamily: "'Roboto', sans-serif",
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  color: '#fff',
                 }}>
-                  <span style={{
-                    fontFamily: "'Roboto', sans-serif",
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    color: '#fff',
-                  }}>
-                    {adjustProgress}%
-                  </span>
-                </div>
+                  {adjustProgress}%
+                </span>
               </div>
-            </>
+            </div>
           )}
           
           {adjustProgress >= 100 && (
@@ -5681,7 +5788,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
                 fontFamily: "'Coming Soon', cursive",
                 fontSize: '28px',
                 color: '#fff',
-                margin: '0 0 30px 0',
+                margin: '0 0 20px 0',
                 letterSpacing: '2px',
               }}>
                 YOUR AI PREDICTION
@@ -5690,29 +5797,29 @@ const DataCleaning = ({ onComplete, onExit }) => {
               {/* Circular Progress */}
               <div style={{
                 position: 'relative',
-                width: '200px',
-                height: '200px',
-                marginBottom: '20px',
+                width: '180px',
+                height: '180px',
+                marginBottom: '15px',
               }}>
-                <svg width="200" height="200" style={{ transform: 'rotate(-90deg)' }}>
+                <svg width="180" height="180" style={{ transform: 'rotate(-90deg)' }}>
                   {/* Background circle */}
                   <circle
-                    cx="100"
-                    cy="100"
-                    r="85"
+                    cx="90"
+                    cy="90"
+                    r="75"
                     fill="none"
                     stroke="rgba(255, 255, 255, 0.1)"
                     strokeWidth="15"
                   />
                   {/* Progress circle - animated */}
                   <circle
-                    cx="100"
-                    cy="100"
-                    r="85"
+                    cx="90"
+                    cy="90"
+                    r="75"
                     fill="none"
                     stroke="#00bf63"
                     strokeWidth="15"
-                    strokeDasharray={`${2 * Math.PI * 85 * (finalAccuracyProgress / 100)} ${2 * Math.PI * 85}`}
+                    strokeDasharray={`${2 * Math.PI * 75 * (finalAccuracyProgress / 100)} ${2 * Math.PI * 75}`}
                     strokeLinecap="round"
                     style={{
                       filter: 'drop-shadow(0 0 10px #00bf63)',
@@ -5729,7 +5836,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
                 }}>
                   <div style={{
                     fontFamily: "'Coming Soon', cursive",
-                    fontSize: '48px',
+                    fontSize: '44px',
                     fontWeight: 'bold',
                     color: '#00bf63',
                     lineHeight: 1,
@@ -5741,9 +5848,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
               
               <p style={{
                 fontFamily: "'Roboto', sans-serif",
-                fontSize: '18px',
+                fontSize: '16px',
                 color: '#ccc',
-                marginBottom: '40px',
+                marginBottom: '25px',
                 letterSpacing: '2px',
               }}>
                 ACCURACY
@@ -5755,10 +5862,10 @@ const DataCleaning = ({ onComplete, onExit }) => {
                   background: '#00bf63',
                   border: 'none',
                   borderRadius: '10px',
-                  padding: '15px 50px',
+                  padding: '12px 45px',
                   color: '#fff',
                   fontFamily: "'Roboto', sans-serif",
-                  fontSize: '18px',
+                  fontSize: '16px',
                   fontWeight: 600,
                   cursor: 'pointer',
                   transition: 'all 0.2s',

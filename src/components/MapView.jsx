@@ -173,10 +173,19 @@ const MapView = ({ onRegionClick }) => {
       }
       
       // Load Fungi progress (if exists)
-      const fungiProgress = localStorage.getItem('fungiProgress')
-      if (fungiProgress) {
-        const data = JSON.parse(fungiProgress)
-        progress.fungi = data.isComplete ? 100 : 0
+      const savedUser = localStorage.getItem('aiJourneyUser')
+      if (savedUser) {
+        const userData = JSON.parse(savedUser)
+        const rangerMossPhase = userData.rangerMossPhase || 1
+        
+        // Calculate fungi progress based on rangerMossPhase (1-5)
+        // Phase 1: Collecting Data - 20%
+        // Phase 2: Data Cleaning - 40%
+        // Phase 3: Correct Labels - 60%
+        // Phase 4: Test the Model - 80%
+        // Phase 5: Refine the Model - 100%
+        const fungiPercent = rangerMossPhase * 20
+        progress.fungi = Math.min(fungiPercent, 100)
       } else {
         progress.fungi = 0
       }
