@@ -143,19 +143,33 @@ const VALIDATION_OPTIONS = [
 
 const VALIDATION_CORRECT_RESPONSE = "Spot on! If we test with old data, the AI is just cheating—like memorizing the answers to a test. Only by using Unseen Data (New Mushrooms) can we prove it can truly judge and generalize!"
 
-// Test mushrooms for validation - 13, 14, 15 are new (correct), 08 is already collected (wrong)
+// Test mushrooms for validation - 13, 14, 15 are new (correct), 04, 06, 08 are already collected (wrong)
 const TEST_MUSHROOMS = [
   { id: '13', isNew: true },
   { id: '14', isNew: true },
   { id: '15', isNew: true },
+  { id: '04', isNew: false },
+  { id: '06', isNew: false },
   { id: '08', isNew: false },
 ]
 
 // Model Adjustment phase data
 const ADJUST_MODEL_DIALOGUES = [
-  "Uh oh... 😱 This is bad news! The AI only got 45% correct on the new mushrooms. It's confusing 😵‍💫 the 'Death Cap' with the 'Edible Paddy Straw' mushroom! If we use this AI now, the Elf might get a tummy ache... or worse! We can't give up, but we need to fix this.",
-  "Think like a Data Scientist. Why is the AI failing? It probably hasn't seen enough examples of the tricky mushrooms yet. What should we do to improve the AI's accuracy?"
+  "Uh oh... 😱 This is bad news! The AI only got 45% correct on the new mushrooms.",
+  "It's confusing 😵‍💫 the 'Death Cap' with the 'Edible Paddy Straw' mushroom! If we use this AI now, the Elf might get a tummy ache... or worse!",
+  "We can't give up, but we need to fix this."
 ]
+
+const ADJUST_MODEL_QUIZ = {
+  question: "Think like a Data Scientist. Why is the AI failing? It probably hasn't seen enough examples of the tricky mushrooms yet.\n\nWhat should we do to improve the AI's accuracy?",
+  options: [
+    { text: "Feed it MORE varied photos & Retrain", correct: true },
+    { text: "Only test it on mushrooms it knows", correct: false },
+    { text: "Change the code to say 'Safe' for everything", correct: false },
+  ],
+  correctResponse: "Brilliant! 🌟 Option B is cheating (and dangerous!), and Option C is just lazy code.",
+  incorrectResponse: "That won't help the AI learn better! Think about what data scientists do."
+}
 
 const ADJUST_MODEL_OPTIONS = [
   { text: "Feed it MORE varied photos & Retrain", correct: true },
@@ -170,6 +184,8 @@ const TRAINING_PHOTOS = [
   { id: '17', isGood: true },
   { id: '18', isGood: true },
   { id: '19', isGood: true },
+  { id: '26', isGood: true },
+  { id: '27', isGood: false, duplicateOf: '12' },
   { id: '20', isGood: false, duplicateOf: '12' },
   { id: '21', isGood: false, duplicateOf: '11' },
 ]
@@ -201,23 +217,23 @@ const mapPositionTransforms = {
 // Mushroom positions in color map
 const colorMapMushrooms = {
   [MAP_POSITIONS.TOP_RIGHT]: [
-    { id: '17', size: 500, left: '2%', bottom: '0%', status: 'DANGER', toxicity: '99% Toxic' },
+    { id: '17', size: 500, left: '0px', bottom: '0px', status: 'DANGER', toxicity: '99% Toxic' },
   ],
   [MAP_POSITIONS.BOTTOM_LEFT]: [
-    { id: '26', size: 700, right: '0%', bottom: '0%', status: 'DANGER', toxicity: '98% Toxic' },
-    { id: '14', size: 450, left: '0%', top: '0%', status: 'DANGER', toxicity: '94% Toxic' },
-    { id: '24', size: 350, left: '50%', top: '0%', status: 'EDIBLE', toxicity: '90% Safe' },
+    { id: '26', size: 400, right: '50px', bottom: '50px', status: 'DANGER', toxicity: '98% Toxic' },
+    { id: '14', size: 300, left: '50px', bottom: '100px', status: 'DANGER', toxicity: '94% Toxic' },
+    { id: '24', size: 200, left: '800px', top: '400px', status: 'EDIBLE', toxicity: '90% Safe' },
   ],
   [MAP_POSITIONS.BOTTOM_RIGHT]: [
-    { id: '21', size: 360, right: '30%', bottom: '0%', status: 'DANGER', toxicity: '99% Toxic' },
-    { id: '22', size: 250, right: '45%', bottom: '5%', status: 'EDIBLE', toxicity: '92% Safe' },
-    { id: '15', size: 250, left: '0%', top: '35%', status: 'DANGER', toxicity: '90% Toxic' },
+    { id: '21', size: 400, right: '600px', bottom: '0px', status: 'DANGER', toxicity: '99% Toxic' },
+    { id: '22', size: 200, right: '0px', bottom: '200px', status: 'EDIBLE', toxicity: '92% Safe' },
+    { id: '15', size: 250, left: '100px', top: '200px', status: 'DANGER', toxicity: '90% Toxic' },
   ],
   [MAP_POSITIONS.TOP_LEFT]: [
-    { id: '25', size: 600, left: '0%', bottom: '10%', status: 'DANGER', toxicity: '99% Toxic' },
-    { id: '18', size: 380, right: '30%', top: '30%', status: 'DANGER', toxicity: '95% Toxic' },
-    { id: '23', size: 260, right: '50%', bottom: '0%', status: 'EDIBLE', toxicity: '95% Safe' },
-    { id: '19', size: 350, left: '30%', top: '5%', status: 'DANGER', toxicity: '91% Toxic' },
+    { id: '25', size: 400, left: '50px', bottom: '200px', status: 'DANGER', toxicity: '99% Toxic' },
+    { id: '18', size: 250, left: '800px', top: '0px', status: 'DANGER', toxicity: '95% Toxic' },
+    { id: '23', size: 200, left: '500px', bottom: '0px', status: 'EDIBLE', toxicity: '95% Safe' },
+    { id: '19', size: 200, right: '800px', top: '500px', status: 'DANGER', toxicity: '91% Toxic' },
   ],
 }
 
@@ -335,12 +351,15 @@ const DataCleaning = ({ onComplete, onExit }) => {
   const [preTrainingAnswered, setPreTrainingAnswered] = useState(false)
   const [showTrainingReadyButton, setShowTrainingReadyButton] = useState(false)
   const [trainingCompleteQuizAnswered, setTrainingCompleteQuizAnswered] = useState(false)
+  const [selectedQuizOption, setSelectedQuizOption] = useState(null) // Track selected option
+  const [wrongQuizOption, setWrongQuizOption] = useState(null) // Track wrong option for red border
   
   // Validation state
   const [validationStep, setValidationStep] = useState(0) // 0: question, 1: answered correctly, 2: data selection
   const [selectedTestMushrooms, setSelectedTestMushrooms] = useState([]) // Selected mushroom IDs for testing
   const [isScanning, setIsScanning] = useState(false)
   const [showPrediction, setShowPrediction] = useState(false)
+  const [accuracyProgress, setAccuracyProgress] = useState(0) // Animated progress from 0 to 45
   const [sliderPosition, setSliderPosition] = useState(0) // Position of slider (0 to maxSlide)
   const [isDragging, setIsDragging] = useState(false)
   const sliderContainerRef = React.useRef(null)
@@ -351,7 +370,10 @@ const DataCleaning = ({ onComplete, onExit }) => {
   const [selectedTrainingPhotos, setSelectedTrainingPhotos] = useState([])
   const [feedbackPhoto, setFeedbackPhoto] = useState(null) // Which photo to show in feedback panel
   const [adjustProgress, setAdjustProgress] = useState(0)
+  const [adjustQuizAnswered, setAdjustQuizAnswered] = useState(false)
+  const [showSelectDataButton, setShowSelectDataButton] = useState(false)
   const [showRangerPraise, setShowRangerPraise] = useState(false)
+  const [finalAccuracyProgress, setFinalAccuracyProgress] = useState(0) // Animated progress from 0 to 95
   const adjustSliderRef = React.useRef(null)
   const [adjustSliderPos, setAdjustSliderPos] = useState(0)
   const [isAdjustDragging, setIsAdjustDragging] = useState(false)
@@ -372,16 +394,21 @@ const DataCleaning = ({ onComplete, onExit }) => {
   const [clickedMushroom, setClickedMushroom] = useState(null) // Track which mushroom is clicked
   const [currentDialogueSet, setCurrentDialogueSet] = useState(0) // Track which dialogue set (first click, second click, etc.)
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0) // Track current sentence in dialogue set
+  
+  // Color Map NPC typing effect states
+  const [colorMapNpcDisplayedText, setColorMapNpcDisplayedText] = useState('')
+  const [colorMapNpcIsTyping, setColorMapNpcIsTyping] = useState(false)
+  const [colorMapNpcAutoShown, setColorMapNpcAutoShown] = useState({}) // Track which NPCs have auto-shown dialogue
 
   const rangerDialogues = [
-    "Outstanding work, Human! You've gathered enough raw data. But... we can't feed this directly to the AI. Not yet.",
-    "In the world of AI, there is a golden rule: 'Garbage In, Garbage Out'. If we train the model with messy data, it will learn the wrong lessons.",
-    "We must enter the Data Cleaning Phase.",
+    "Outstanding work, Human! You've gathered enough raw data. But... we can't feed this directly to the <strong>AI</strong>. Not yet.",
+    "In the world of AI, there is a golden rule: <strong>'Garbage In, Garbage Out'</strong>. If we train the model with messy data, it will learn the wrong lessons.",
+    "We must enter the <strong>Data Cleaning Phase</strong>.",
   ]
 
   const labelIntroDialogues = [
-    "Great job removing the noise. Now, look at this Data Table.",
-    "The auto-tagging system was glitching, so some Labels are wrong. Click on the cells you think contain errors!",
+    "Great job removing the noise. Now, look at this <strong>Data Table</strong>.",
+    "The auto-tagging system was glitching, so some <strong>Labels</strong> are wrong. Click on the cells you think contain errors!",
     "Here's what to watch for:",
     "<strong>Color</strong> should be plain color names like Purple, Red / White, or Lavender—not codes like #2323332, RGB values like rgb(255,0,0), or random strings like 7F3A9C.",
     "<strong>Texture</strong> needs descriptive words—Smooth, Rough, Striped—not yes/no answers, booleans like True, or numbers like 1.",
@@ -390,9 +417,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
   ]
   
   const fillMissingIntroDialogues = [
-    "Some data fields are completely Empty (Null).",
-    "The AI cannot learn from nothing! Click on the empty cells.",
-    "I will project the hologram (photo) of the mushroom. Look at the photo, and fill in the blank."
+    "Some data fields are completely <strong>Empty (Null)</strong>.",
+    "The AI cannot learn from nothing! Click on the <strong>empty cells</strong>.",
+    "I will project the hologram (photo) of the mushroom. Look at the photo, and <strong>fill in the blank</strong>."
   ]
   
   const preTrainingQuizDialogues = [
@@ -514,14 +541,14 @@ const DataCleaning = ({ onComplete, onExit }) => {
     correctSound.volume = 0.5
   }, [trashSound, wrongSound, correctSound])
   
-  // Format text with bold keywords
+  // Format text with bold keywords (deep green color)
   const formatTextWithBold = (text) => {
     if (!text) return text
     const parts = text.split(/(<strong>.*?<\/strong>)/g)
     return parts.map((part, index) => {
       if (part.startsWith('<strong>')) {
         const content = part.replace(/<\/?strong>/g, '')
-        return <span key={index} style={{ fontWeight: 700, color: '#8B4513' }}>{content}</span>
+        return <span key={index} style={{ fontWeight: 700, color: '#00bf63' }}>{content}</span>
       }
       return part
     })
@@ -910,92 +937,118 @@ const DataCleaning = ({ onComplete, onExit }) => {
   // Handle Pre-Training Quiz answer
   const handlePreTrainingQuizAnswer = (optionIndex, isCorrect) => {
     const currentQuiz = PRE_TRAINING_QUIZ[preTrainingQuizStep]
-    const response = isCorrect ? currentQuiz.correctResponse : currentQuiz.incorrectResponse
     
-    setPreTrainingAnswered(true)
-    
-    // Add response message
-    const responseMessage = { type: 'message', text: response }
-    setRangerMessages(prev => [...prev, responseMessage])
-    setCurrentTypingMessage(responseMessage)
-    
-    // Start typing effect for response
-    let charIndex = 0
-    setRangerDisplayedText('')
-    setRangerIsTyping(true)
-    typingSound.play().catch(err => console.log('Typing sound error:', err))
-    
-    const typingInterval = setInterval(() => {
-      if (charIndex < response.length) {
-        setRangerDisplayedText(response.substring(0, charIndex + 1))
-        charIndex++
-      } else {
-        setRangerIsTyping(false)
-        setCurrentTypingMessage(null)
-        typingSound.pause()
-        typingSound.currentTime = 0
-        clearInterval(typingInterval)
+    if (isCorrect) {
+      // Play correct sound
+      correctSound.currentTime = 0
+      correctSound.play()
+      
+      // Mark as selected
+      setSelectedQuizOption(optionIndex)
+      setWrongQuizOption(null)
+      
+      const response = currentQuiz.correctResponse
+      setPreTrainingAnswered(true)
+      
+      // Add user's choice message
+      const userChoice = { type: 'user', text: currentQuiz.options[optionIndex].text }
+      setRangerMessages(prev => [...prev, userChoice])
+      
+      // Add response message after delay
+      setTimeout(() => {
+        const responseMessage = { type: 'message', text: response }
+        setRangerMessages(prev => [...prev, responseMessage])
+        setCurrentTypingMessage(responseMessage)
         
-        // Check if there are more quiz questions
-        if (preTrainingQuizStep < PRE_TRAINING_QUIZ.length - 1) {
-          // Move to next quiz question after delay
-          setTimeout(() => {
-            const nextQuiz = PRE_TRAINING_QUIZ[preTrainingQuizStep + 1]
-            const nextMessage = { type: 'message', text: nextQuiz.question }
-            setRangerMessages(prev => [...prev, nextMessage])
-            setCurrentTypingMessage(nextMessage)
-            setPreTrainingQuizStep(prev => prev + 1)
-            setPreTrainingAnswered(false)
+        // Start typing effect for response
+        let charIndex = 0
+        setRangerDisplayedText('')
+        setRangerIsTyping(true)
+        typingSound.play().catch(err => console.log('Typing sound error:', err))
+        
+        const typingInterval = setInterval(() => {
+          if (charIndex < response.length) {
+            setRangerDisplayedText(response.substring(0, charIndex + 1))
+            charIndex++
+          } else {
+            setRangerIsTyping(false)
+            setCurrentTypingMessage(null)
+            typingSound.pause()
+            typingSound.currentTime = 0
+            clearInterval(typingInterval)
             
-            // Type next question
-            let nextCharIndex = 0
-            setRangerDisplayedText('')
-            setRangerIsTyping(true)
-            typingSound.play().catch(err => console.log('Typing sound error:', err))
-            
-            const nextTypingInterval = setInterval(() => {
-              if (nextCharIndex < nextQuiz.question.length) {
-                setRangerDisplayedText(nextQuiz.question.substring(0, nextCharIndex + 1))
-                nextCharIndex++
-              } else {
-                setRangerIsTyping(false)
-                setCurrentTypingMessage(null)
-                typingSound.pause()
-                typingSound.currentTime = 0
-                clearInterval(nextTypingInterval)
-              }
-            }, 25)
-          }, 800)
-        } else {
-          // All quizzes complete, show training ready message after delay
-          setTimeout(() => {
-            const readyMessage = { type: 'message', text: TRAINING_READY_MESSAGE }
-            setRangerMessages(prev => [...prev, readyMessage])
-            setCurrentTypingMessage(readyMessage)
-            
-            // Type ready message
-            let readyCharIndex = 0
-            setRangerDisplayedText('')
-            setRangerIsTyping(true)
-            typingSound.play().catch(err => console.log('Typing sound error:', err))
-            
-            const readyTypingInterval = setInterval(() => {
-              if (readyCharIndex < TRAINING_READY_MESSAGE.length) {
-                setRangerDisplayedText(TRAINING_READY_MESSAGE.substring(0, readyCharIndex + 1))
-                readyCharIndex++
-              } else {
-                setRangerIsTyping(false)
-                setCurrentTypingMessage(null)
-                typingSound.pause()
-                typingSound.currentTime = 0
-                clearInterval(readyTypingInterval)
-                setShowTrainingReadyButton(true)
-              }
-            }, 25)
-          }, 800)
-        }
-      }
-    }, 25)
+            // Check if there are more quiz questions
+            if (preTrainingQuizStep < PRE_TRAINING_QUIZ.length - 1) {
+              // Move to next quiz question after delay
+              setTimeout(() => {
+                const nextQuiz = PRE_TRAINING_QUIZ[preTrainingQuizStep + 1]
+                const nextMessage = { type: 'message', text: nextQuiz.question }
+                setRangerMessages(prev => [...prev, nextMessage])
+                setCurrentTypingMessage(nextMessage)
+                setPreTrainingQuizStep(prev => prev + 1)
+                setPreTrainingAnswered(false)
+                setSelectedQuizOption(null)
+                setWrongQuizOption(null)
+                
+                // Type next question
+                let nextCharIndex = 0
+                setRangerDisplayedText('')
+                setRangerIsTyping(true)
+                typingSound.play().catch(err => console.log('Typing sound error:', err))
+                
+                const nextTypingInterval = setInterval(() => {
+                  if (nextCharIndex < nextQuiz.question.length) {
+                    setRangerDisplayedText(nextQuiz.question.substring(0, nextCharIndex + 1))
+                    nextCharIndex++
+                  } else {
+                    setRangerIsTyping(false)
+                    setCurrentTypingMessage(null)
+                    typingSound.pause()
+                    typingSound.currentTime = 0
+                    clearInterval(nextTypingInterval)
+                  }
+                }, 25)
+              }, 800)
+            } else {
+              // All quizzes complete, show training ready message after delay
+              setTimeout(() => {
+                const readyMessage = { type: 'message', text: TRAINING_READY_MESSAGE }
+                setRangerMessages(prev => [...prev, readyMessage])
+                setCurrentTypingMessage(readyMessage)
+                
+                // Type ready message
+                let readyCharIndex = 0
+                setRangerDisplayedText('')
+                setRangerIsTyping(true)
+                typingSound.play().catch(err => console.log('Typing sound error:', err))
+                
+                const readyTypingInterval = setInterval(() => {
+                  if (readyCharIndex < TRAINING_READY_MESSAGE.length) {
+                    setRangerDisplayedText(TRAINING_READY_MESSAGE.substring(0, readyCharIndex + 1))
+                    readyCharIndex++
+                  } else {
+                    setRangerIsTyping(false)
+                    setCurrentTypingMessage(null)
+                    typingSound.pause()
+                    typingSound.currentTime = 0
+                    clearInterval(readyTypingInterval)
+                    setShowTrainingReadyButton(true)
+                  }
+                }, 25)
+              }, 800)
+            }
+          }
+        }, 25)
+      }, 300)
+    } else {
+      // Play wrong sound
+      wrongSound.currentTime = 0
+      wrongSound.play()
+      
+      // Mark as wrong (red border) but allow reselection
+      setWrongQuizOption(optionIndex)
+      setSelectedQuizOption(null)
+    }
   }
   
   // Handle Ready Let's GO button
@@ -1166,9 +1219,10 @@ const DataCleaning = ({ onComplete, onExit }) => {
   const handleTestMushroomClick = (id) => {
     const mushroom = TEST_MUSHROOMS.find(m => m.id === id)
     
-    // If clicking on a wrong mushroom (08 - already collected)
+    // If clicking on a wrong mushroom (already collected)
     if (!mushroom.isNew) {
-      setGlitchHintText("We should test with New Mushrooms, the yellow one is already collected")
+      wrongSound.play().catch(err => console.log('Wrong sound error:', err))
+      setGlitchHintText("We should test with New Mushrooms! These have already been collected.")
       setShowGlitchHint(true)
       return
     }
@@ -1177,27 +1231,31 @@ const DataCleaning = ({ onComplete, onExit }) => {
     if (selectedTestMushrooms.includes(id)) {
       setSelectedTestMushrooms(prev => prev.filter(m => m !== id))
     } else {
+      correctSound.play().catch(err => console.log('Correct sound error:', err))
       setSelectedTestMushrooms(prev => [...prev, id])
     }
   }
 
   const handleSlideTest = () => {
-    // Check if all correct mushrooms are selected
-    const correctMushrooms = TEST_MUSHROOMS.filter(m => m.isNew).map(m => m.id)
-    const allCorrectSelected = correctMushrooms.every(id => selectedTestMushrooms.includes(id))
-    
-    if (allCorrectSelected && selectedTestMushrooms.length === 3) {
-      setIsScanning(true)
-      // Simulate scanning animation
-      setTimeout(() => {
-        setIsScanning(false)
-        setShowPrediction(true)
-      }, 2000)
+    // Check if exactly 3 mushrooms are selected
+    if (selectedTestMushrooms.length !== 3) {
+      setGlitchHintText("Please select exactly 3 mushrooms to test!")
+      setShowGlitchHint(true)
+      setSliderPosition(0) // Reset slider
+      return
     }
+    
+    // Start scanning animation
+    setIsScanning(true)
+    // Simulate scanning animation
+    setTimeout(() => {
+      setIsScanning(false)
+      setShowPrediction(true)
+    }, 2000)
   }
 
   // Drag handlers for slide button
-  const maxSlideDistance = 225 // Container width (280) - button width (45) - padding (10)
+  const maxSlideDistance = 290 // Container width (350) - button width (50) - padding (10)
   
   const handleSliderMouseDown = (e) => {
     e.preventDefault()
@@ -1279,13 +1337,213 @@ const DataCleaning = ({ onComplete, onExit }) => {
     }
   }, [isDragging, sliderPosition])
 
+  // Animate accuracy progress when prediction is shown
+  useEffect(() => {
+    if (showPrediction) {
+      setAccuracyProgress(0)
+      const targetAccuracy = 45
+      const duration = 2000 // 2 seconds
+      const steps = 60 // 60 frames
+      const increment = targetAccuracy / steps
+      const stepDuration = duration / steps
+      
+      let currentStep = 0
+      const interval = setInterval(() => {
+        currentStep++
+        if (currentStep >= steps) {
+          setAccuracyProgress(targetAccuracy)
+          clearInterval(interval)
+        } else {
+          setAccuracyProgress(Math.round(currentStep * increment))
+        }
+      }, stepDuration)
+      
+      return () => clearInterval(interval)
+    }
+  }, [showPrediction])
+
+  // Animate final accuracy progress when training completes
+  useEffect(() => {
+    if (adjustProgress >= 100) {
+      setFinalAccuracyProgress(0)
+      const targetAccuracy = 95
+      const duration = 2000 // 2 seconds
+      const steps = 60 // 60 frames
+      const increment = targetAccuracy / steps
+      const stepDuration = duration / steps
+      
+      let currentStep = 0
+      const interval = setInterval(() => {
+        currentStep++
+        if (currentStep >= steps) {
+          setFinalAccuracyProgress(targetAccuracy)
+          clearInterval(interval)
+        } else {
+          setFinalAccuracyProgress(Math.round(currentStep * increment))
+        }
+      }, stepDuration)
+      
+      return () => clearInterval(interval)
+    }
+  }, [adjustProgress])
+
   const handleValidationComplete = () => {
-    // Transition to model adjustment phase instead of complete
+    // Transition to model adjustment phase with modern dialogue
     setPhase('ADJUST_MODEL_INTRO')
     setAdjustDialogueIndex(0)
     setAdjustStep(0)
-    setAdjustDialogueHistory([])
-    setAdjustDisplayedText('')
+    setAdjustQuizAnswered(false)
+    setShowSelectDataButton(false)
+    
+    // Initialize modern dialogue
+    setTimeout(() => {
+      setShowModernRangerDialogue(true)
+      startAdjustModelDialogue()
+    }, 500)
+  }
+  
+  // Start Adjust Model dialogue
+  const startAdjustModelDialogue = () => {
+    const firstMessage = ADJUST_MODEL_DIALOGUES[0]
+    const newMessage = { type: 'message', text: firstMessage }
+    setRangerMessages([newMessage])
+    setCurrentRangerStep(0)
+    setCurrentTypingMessage(newMessage)
+    
+    // Start typing effect and sound
+    let charIndex = 0
+    setRangerDisplayedText('')
+    setRangerIsTyping(true)
+    typingSound.play().catch(err => console.log('Typing sound error:', err))
+    
+    const typingInterval = setInterval(() => {
+      if (charIndex < firstMessage.length) {
+        setRangerDisplayedText(firstMessage.substring(0, charIndex + 1))
+        charIndex++
+      } else {
+        setRangerIsTyping(false)
+        setCurrentTypingMessage(null)
+        typingSound.pause()
+        typingSound.currentTime = 0
+        clearInterval(typingInterval)
+        
+        // Auto-continue to next message
+        setTimeout(() => {
+          addAdjustModelMessage(1)
+        }, 500)
+      }
+    }, 25)
+  }
+  
+  // Add Adjust Model message with typing effect
+  const addAdjustModelMessage = (stepIndex) => {
+    if (stepIndex >= ADJUST_MODEL_DIALOGUES.length) {
+      // All dialogues done, show quiz
+      setTimeout(() => {
+        const quizMessage = { type: 'message', text: ADJUST_MODEL_QUIZ.question }
+        setRangerMessages(prev => [...prev, quizMessage])
+        setCurrentTypingMessage(quizMessage)
+        
+        // Type quiz question
+        let charIndex = 0
+        setRangerDisplayedText('')
+        setRangerIsTyping(true)
+        typingSound.play().catch(err => console.log('Typing sound error:', err))
+        
+        const typingInterval = setInterval(() => {
+          if (charIndex < ADJUST_MODEL_QUIZ.question.length) {
+            setRangerDisplayedText(ADJUST_MODEL_QUIZ.question.substring(0, charIndex + 1))
+            charIndex++
+          } else {
+            setRangerIsTyping(false)
+            setCurrentTypingMessage(null)
+            typingSound.pause()
+            typingSound.currentTime = 0
+            clearInterval(typingInterval)
+          }
+        }, 25)
+      }, 500)
+      return
+    }
+    
+    const text = ADJUST_MODEL_DIALOGUES[stepIndex]
+    const newMessage = { type: 'message', text }
+    setRangerMessages(prev => [...prev, newMessage])
+    setCurrentTypingMessage(newMessage)
+    
+    // Start typing effect and sound
+    let charIndex = 0
+    setRangerDisplayedText('')
+    setRangerIsTyping(true)
+    typingSound.play().catch(err => console.log('Typing sound error:', err))
+    
+    const typingInterval = setInterval(() => {
+      if (charIndex < text.length) {
+        setRangerDisplayedText(text.substring(0, charIndex + 1))
+        charIndex++
+      } else {
+        setRangerIsTyping(false)
+        setCurrentTypingMessage(null)
+        typingSound.pause()
+        typingSound.currentTime = 0
+        clearInterval(typingInterval)
+        
+        // Check if this is the last message
+        if (stepIndex === ADJUST_MODEL_DIALOGUES.length - 1) {
+          // Show quiz after last dialogue
+          addAdjustModelMessage(stepIndex + 1)
+        } else {
+          // Auto-continue to next message
+          setTimeout(() => {
+            addAdjustModelMessage(stepIndex + 1)
+          }, 500)
+        }
+      }
+    }, 25)
+  }
+  
+  // Handle Adjust Model Quiz answer
+  const handleAdjustModelQuizAnswer = (optionIndex, isCorrect) => {
+    const response = isCorrect ? ADJUST_MODEL_QUIZ.correctResponse : ADJUST_MODEL_QUIZ.incorrectResponse
+    
+    setAdjustQuizAnswered(true)
+    
+    // Add response message
+    const responseMessage = { type: 'message', text: response }
+    setRangerMessages(prev => [...prev, responseMessage])
+    setCurrentTypingMessage(responseMessage)
+    
+    // Start typing effect for response
+    let charIndex = 0
+    setRangerDisplayedText('')
+    setRangerIsTyping(true)
+    typingSound.play().catch(err => console.log('Typing sound error:', err))
+    
+    const typingInterval = setInterval(() => {
+      if (charIndex < response.length) {
+        setRangerDisplayedText(response.substring(0, charIndex + 1))
+        charIndex++
+      } else {
+        setRangerIsTyping(false)
+        setCurrentTypingMessage(null)
+        typingSound.pause()
+        typingSound.currentTime = 0
+        clearInterval(typingInterval)
+        
+        // Show select data button if correct
+        if (isCorrect) {
+          setTimeout(() => {
+            setShowSelectDataButton(true)
+          }, 500)
+        }
+      }
+    }, 25)
+  }
+  
+  // Handle select training data button
+  const handleSelectTrainingData = () => {
+    setShowModernRangerDialogue(false)
+    setPhase('ADJUST_MODEL_DATA')
   }
 
   // Typing effect for model adjustment dialogues
@@ -1346,6 +1604,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
     if (photo.isGood) {
       // Add to selected if not already selected
       if (!selectedTrainingPhotos.includes(photo.id)) {
+        correctSound.play().catch(err => console.log('Correct sound error:', err))
         setSelectedTrainingPhotos(prev => [...prev, photo.id])
         setFeedbackPhoto(null)
         setShowFeedbackPanel(false) // Hide feedback panel on correct selection
@@ -1354,6 +1613,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
       }
     } else {
       // Show feedback panel with duplicate mushroom
+      wrongSound.play().catch(err => console.log('Wrong sound error:', err))
       setFeedbackPhoto(photo)
       setShowFeedbackPanel(true) // Only show feedback panel when wrong
       setGlitchHintText("Even though they aren't exactly the same, they don't teach the AI anything new. Try a different one!")
@@ -1441,6 +1701,56 @@ const DataCleaning = ({ onComplete, onExit }) => {
       return () => clearInterval(interval)
     }
   }, [phase])
+  
+  // Auto-show NPC dialogue when entering color map area with NPC
+  useEffect(() => {
+    if (phase === 'COLOR_MAP_EXPLORATION' && !isMapTransitioning) {
+      const npc = colorMapNpcs[mapPosition]
+      if (npc && npc.npc && !colorMapNpcAutoShown[`${mapPosition}-${npc.npc}`]) {
+        // Mark this NPC as auto-shown
+        setColorMapNpcAutoShown(prev => ({ ...prev, [`${mapPosition}-${npc.npc}`]: true }))
+        
+        // Auto-show dialogue after a short delay
+        setTimeout(() => {
+          if (npc.npc === 'npc_c' && npc.dialogues && npc.dialogues.length > 0) {
+            // For npc_c, show first dialogue set
+            startColorMapNpcDialogue(npc.npc, npc.dialogues[0][0])
+          } else if (npc.hoverText) {
+            // For other NPCs, show hover text
+            startColorMapNpcDialogue(npc.npc, npc.hoverText)
+          }
+        }, 800)
+      }
+    }
+  }, [phase, mapPosition, isMapTransitioning])
+  
+  // Start color map NPC dialogue with typing effect
+  const startColorMapNpcDialogue = (npcType, text) => {
+    setCurrentNpc(npcType)
+    setNpcDialogueText(text)
+    setShowNpcDialogue(true)
+    setColorMapNpcDisplayedText('')
+    setColorMapNpcIsTyping(true)
+    
+    // Start typing sound
+    typingSound.volume = 0.5
+    typingSound.currentTime = 0
+    typingSound.play()
+    
+    // Typing effect
+    let charIndex = 0
+    const typingInterval = setInterval(() => {
+      if (charIndex < text.length) {
+        setColorMapNpcDisplayedText(text.substring(0, charIndex + 1))
+        charIndex++
+      } else {
+        setColorMapNpcIsTyping(false)
+        typingSound.pause()
+        typingSound.currentTime = 0
+        clearInterval(typingInterval)
+      }
+    }, 30)
+  }
 
   // Color map navigation handlers
   const handleMapNavigate = (direction) => {
@@ -1463,35 +1773,49 @@ const DataCleaning = ({ onComplete, onExit }) => {
       if (npcType === 'npc_c') {
         const clickCount = npcClickCount.npc_c
         if (clickCount < npc.dialogues.length) {
-          // Start new dialogue set
+          // Start new dialogue set with typing effect
           setCurrentDialogueSet(clickCount)
           setCurrentDialogueIndex(0)
-          setNpcDialogueText(npc.dialogues[clickCount][0])
-          setShowNpcDialogue(true)
-          setCurrentNpc(npcType)
+          startColorMapNpcDialogue(npcType, npc.dialogues[clickCount][0])
         }
+      } else if (npc.hoverText) {
+        // For other NPCs, show hover text with typing effect
+        startColorMapNpcDialogue(npcType, npc.hoverText)
       }
     }
   }
 
   const handleDialogueContinue = () => {
+    // Skip typing if still typing
+    if (colorMapNpcIsTyping) {
+      setColorMapNpcDisplayedText(npcDialogueText)
+      setColorMapNpcIsTyping(false)
+      typingSound.pause()
+      typingSound.currentTime = 0
+      return
+    }
+    
     const npc = colorMapNpcs[mapPosition]
     if (npc && currentNpc === 'npc_c') {
       const currentDialogueArray = npc.dialogues[currentDialogueSet]
       if (currentDialogueIndex < currentDialogueArray.length - 1) {
-        // Show next sentence in current dialogue set
+        // Show next sentence in current dialogue set with typing effect
         setCurrentDialogueIndex(prev => prev + 1)
-        setNpcDialogueText(currentDialogueArray[currentDialogueIndex + 1])
+        startColorMapNpcDialogue(currentNpc, currentDialogueArray[currentDialogueIndex + 1])
       } else {
         // End of current dialogue set
         setShowNpcDialogue(false)
         setNpcClickCount(prev => ({ ...prev, npc_c: prev.npc_c + 1 }))
         setCurrentNpc(null)
+        typingSound.pause()
+        typingSound.currentTime = 0
       }
     } else {
       // For other NPCs or simple dialogues
       setShowNpcDialogue(false)
       setCurrentNpc(null)
+      typingSound.pause()
+      typingSound.currentTime = 0
     }
   }
 
@@ -2668,40 +2992,77 @@ const DataCleaning = ({ onComplete, onExit }) => {
       background: 'linear-gradient(135deg, #44FF44, #00CC00)',
       color: '#fff',
     },
-    colorMapDialogue: {
+    // Color Map Dialogue - Irregular bubble design (like FungiJungleMap)
+    colorMapDialogueContainer: {
       position: 'absolute',
-      top: '10%',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      maxWidth: '600px',
-      padding: '25px 30px',
-      borderRadius: '20px',
-      background: 'rgba(255, 255, 255, 0.98)',
-      border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(rgba(255,255,255,0.98), rgba(255,255,255,0.98)), linear-gradient(90deg, #5170FF, #FFBBC4)',
-      backgroundOrigin: 'border-box',
-      backgroundClip: 'padding-box, border-box',
-      textAlign: 'center',
       zIndex: 100,
+      animation: 'fadeIn 0.3s ease-out',
+    },
+    dialogueContainerNpcA: {
+      top: '33.33%',
+      left: '80px',
+      width: '45%',
+      maxWidth: '500px',
+    },
+    dialogueContainerNpcB: {
+      top: '50%',
+      right: '80px',
+      width: '45%',
+      maxWidth: '500px',
+    },
+    dialogueContainerRangerMoss: {
+      top: '10%',
+      left: '80px',
+      width: '45%',
+      maxWidth: '500px',
+    },
+    colorMapDialogueBox: {
+      padding: '25px 30px',
+      borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%', // Irregular organic shape
+      background: 'rgba(255, 255, 255, 0.95)',
+      border: '3px solid #8B4513',
+      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.3), inset 0 2px 5px rgba(255, 255, 255, 0.5)',
+      position: 'relative',
+      minHeight: '100px',
+    },
+    colorMapSpeakerName: {
+      position: 'absolute',
+      top: '-15px',
+      right: '20px',
+      fontFamily: "'Patrick Hand', cursive",
+      fontSize: '20px',
+      fontWeight: 700,
+      color: '#8B4513',
+      background: 'rgba(255, 255, 255, 0.95)',
+      padding: '5px 15px',
+      borderRadius: '15px',
+      border: '2px solid #8B4513',
+      textShadow: '1px 1px 2px rgba(0, 0, 0, 0.2)',
     },
     colorMapDialogueText: {
-      fontFamily: "'Roboto', sans-serif",
-      fontSize: '16px',
+      fontFamily: "'Patrick Hand', cursive",
+      fontSize: '20px',
+      fontWeight: 400,
       color: '#333',
       lineHeight: 1.6,
-      marginBottom: '20px',
+      textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)',
+      marginTop: '10px',
+      marginBottom: '15px',
     },
-    colorMapOkButton: {
-      padding: '12px 30px',
-      fontFamily: "'Roboto', sans-serif",
-      fontSize: '14px',
+    colorMapContinueButton: {
+      fontFamily: "'Patrick Hand', cursive",
+      fontSize: '18px',
       fontWeight: 600,
-      color: '#5170FF',
-      background: 'transparent',
-      border: '2px solid #5170FF',
-      borderRadius: '10px',
+      color: '#8B4513',
+      backgroundColor: 'rgba(255, 235, 205, 0.9)',
+      border: '3px solid #8B4513',
+      padding: '12px 25px',
+      borderRadius: '20px',
       cursor: 'pointer',
       transition: 'all 0.2s',
+      marginTop: '15px',
+      textShadow: '1px 1px 2px rgba(0, 0, 0, 0.1)',
+      boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)',
     },
     // Modern Ranger Moss dialogue styles
     modernDialogueContainer: {
@@ -2955,6 +3316,49 @@ const DataCleaning = ({ onComplete, onExit }) => {
               )
             }
             
+            if (message.type === 'user') {
+              return (
+                <div key={index} style={{
+                  alignSelf: 'flex-end',
+                  maxWidth: '85%',
+                }}>
+                  <div style={{
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: '#666',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    marginBottom: '6px',
+                    textAlign: 'right',
+                  }}>YOU:</div>
+                  <div style={{
+                    background: '#00bf63',
+                    padding: '12px 18px',
+                    borderRadius: '18px',
+                    boxShadow: '0 2px 6px rgba(0, 191, 99, 0.3)',
+                  }}>
+                    <p style={{
+                      fontFamily: "'Roboto', sans-serif",
+                      fontSize: '14px',
+                      color: '#fff',
+                      lineHeight: 1.5,
+                      margin: 0,
+                    }}>
+                      {message.text}
+                    </p>
+                  </div>
+                  <div style={{
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '11px',
+                    color: '#999',
+                    marginTop: '4px',
+                    textAlign: 'right',
+                  }}>{timestamp}</div>
+                </div>
+              )
+            }
+            
             return null
           })}
           
@@ -3002,31 +3406,41 @@ const DataCleaning = ({ onComplete, onExit }) => {
               gap: '12px',
               marginTop: '15px',
             }}>
-              {PRE_TRAINING_QUIZ[preTrainingQuizStep].options.map((option, index) => (
-                <button
-                  key={index}
-                  style={{
-                    ...styles.modernActionButton,
-                    background: 'rgba(139, 69, 19, 0.1)',
-                    color: '#8B4513',
-                    border: '2px solid #8B4513',
-                    fontWeight: 500,
-                  }}
-                  onClick={() => handlePreTrainingQuizAnswer(index, option.correct)}
-                  onMouseOver={(e) => {
-                    e.target.style.background = '#8B4513'
-                    e.target.style.color = '#fff'
-                    e.target.style.transform = 'scale(1.02)'
-                  }}
-                  onMouseOut={(e) => {
-                    e.target.style.background = 'rgba(139, 69, 19, 0.1)'
-                    e.target.style.color = '#8B4513'
-                    e.target.style.transform = 'scale(1)'
-                  }}
-                >
-                  {option.text}
-                </button>
-              ))}
+              {PRE_TRAINING_QUIZ[preTrainingQuizStep].options.map((option, index) => {
+                const isWrong = wrongQuizOption === index
+                const isSelected = selectedQuizOption === index
+                
+                return (
+                  <button
+                    key={index}
+                    style={{
+                      ...styles.modernActionButton,
+                      background: isSelected ? '#00bf63' : 'rgba(139, 69, 19, 0.1)',
+                      color: isSelected ? '#fff' : '#8B4513',
+                      border: isWrong ? '2px solid #ff0000' : '2px solid #8B4513',
+                      fontWeight: 500,
+                      pointerEvents: isSelected ? 'none' : 'auto',
+                    }}
+                    onClick={() => handlePreTrainingQuizAnswer(index, option.correct)}
+                    onMouseOver={(e) => {
+                      if (!isSelected) {
+                        e.target.style.background = '#8B4513'
+                        e.target.style.color = '#fff'
+                        e.target.style.transform = 'scale(1.02)'
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if (!isSelected) {
+                        e.target.style.background = 'rgba(139, 69, 19, 0.1)'
+                        e.target.style.color = '#8B4513'
+                        e.target.style.transform = 'scale(1)'
+                      }
+                    }}
+                  >
+                    {option.text}
+                  </button>
+                )
+              })}
             </div>
           )}
           
@@ -3098,6 +3512,58 @@ const DataCleaning = ({ onComplete, onExit }) => {
             </button>
           )}
           
+          {/* Quiz Options for ADJUST_MODEL_INTRO */}
+          {phase === 'ADJUST_MODEL_INTRO' && !adjustQuizAnswered && !showSelectDataButton && (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              marginTop: '15px',
+            }}>
+              {ADJUST_MODEL_QUIZ.options.map((option, index) => (
+                <button
+                  key={index}
+                  style={{
+                    ...styles.modernActionButton,
+                    background: 'rgba(139, 69, 19, 0.1)',
+                    color: '#8B4513',
+                    border: '2px solid #8B4513',
+                    fontWeight: 500,
+                  }}
+                  onClick={() => handleAdjustModelQuizAnswer(index, option.correct)}
+                  onMouseOver={(e) => {
+                    e.target.style.background = '#8B4513'
+                    e.target.style.color = '#fff'
+                    e.target.style.transform = 'scale(1.02)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.background = 'rgba(139, 69, 19, 0.1)'
+                    e.target.style.color = '#8B4513'
+                    e.target.style.transform = 'scale(1)'
+                  }}
+                >
+                  {option.text}
+                </button>
+              ))}
+            </div>
+          )}
+          
+          {/* Select Training Data Button */}
+          {phase === 'ADJUST_MODEL_INTRO' && showSelectDataButton && (
+            <button 
+              style={styles.modernActionButton}
+              onClick={handleSelectTrainingData}
+              onMouseOver={(e) => {
+                e.target.style.transform = 'scale(1.05)'
+              }}
+              onMouseOut={(e) => {
+                e.target.style.transform = 'scale(1)'
+              }}
+            >
+              SELECT TRAINING DATA
+            </button>
+          )}
+          
           {/* Mission Accepted Button */}
           {(phase === 'INTRO' || phase === 'LABEL_INTRO' || phase === 'FILL_MISSING_INTRO') && waitingForRangerAction && (
             <button 
@@ -3119,11 +3585,35 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }
 
   return (
-    <div style={styles.container}>
-      {/* Only show overlay for non-color-map phases */}
-      {phase !== 'COLOR_MAP_EXPLORATION' && phase !== 'LOADING' && (
-        <div style={styles.overlay}></div>
-      )}
+    <>
+      {/* CSS Animation for bouncing mushrooms */}
+      <style>
+        {`
+          @keyframes bounceMove {
+            0% {
+              transform: translateX(0) translateY(0);
+            }
+            25% {
+              transform: translateX(-20vw) translateY(-15px);
+            }
+            50% {
+              transform: translateX(-40vw) translateY(0);
+            }
+            75% {
+              transform: translateX(-60vw) translateY(-15px);
+            }
+            100% {
+              transform: translateX(-80vw) translateY(0);
+            }
+          }
+        `}
+      </style>
+      
+      <div style={styles.container}>
+        {/* Only show overlay for non-color-map phases */}
+        {phase !== 'COLOR_MAP_EXPLORATION' && phase !== 'LOADING' && (
+          <div style={styles.overlay}></div>
+        )}
 
       {/* Loading Phase - Full black background */}
       {phase === 'LOADING' && (
@@ -3306,26 +3796,54 @@ const DataCleaning = ({ onComplete, onExit }) => {
               </div>
             )}
 
-            {/* NPC Dialogue */}
+            {/* NPC Dialogue - Irregular bubble design */}
             {showNpcDialogue && (
-              <div style={styles.colorMapDialogue}>
-                <p style={styles.colorMapDialogueText}>{npcDialogueText}</p>
-                <button
-                  style={styles.colorMapOkButton}
-                  onClick={currentNpc === 'npc_c' ? handleDialogueContinue : () => setShowNpcDialogue(false)}
-                  onMouseOver={(e) => {
-                    e.target.style.backgroundColor = '#5170FF'
-                    e.target.style.color = '#fff'
-                  }}
-                  onMouseOut={(e) => {
-                    e.target.style.backgroundColor = 'transparent'
-                    e.target.style.color = '#5170FF'
-                  }}
-                >
-                  {currentNpc === 'npc_c' && colorMapNpcs[mapPosition]?.dialogues[currentDialogueSet] && 
-                   currentDialogueIndex < colorMapNpcs[mapPosition].dialogues[currentDialogueSet].length - 1 
-                   ? 'Continue' : 'OK'}
-                </button>
+              <div style={{
+                ...styles.colorMapDialogueContainer,
+                ...(currentNpc === 'npc_a' ? styles.dialogueContainerNpcA :
+                    currentNpc === 'npc_b' ? styles.dialogueContainerNpcB :
+                    currentNpc === 'npc_c' ? styles.dialogueContainerRangerMoss : {})
+              }}>
+                <div style={styles.colorMapDialogueBox}>
+                  <div style={styles.colorMapSpeakerName}>
+                    {currentNpc === 'npc_a' ? 'NPC A' : 
+                     currentNpc === 'npc_b' ? 'NPC B' : 
+                     currentNpc === 'npc_c' ? 'Ranger Moss' : 'NPC'}
+                  </div>
+                  <p style={styles.colorMapDialogueText}>
+                    {colorMapNpcIsTyping ? (
+                      <>
+                        {colorMapNpcDisplayedText}
+                        <span style={{ opacity: 0.5 }}>|</span>
+                      </>
+                    ) : (
+                      npcDialogueText
+                    )}
+                  </p>
+                  <button
+                    style={styles.colorMapContinueButton}
+                    onClick={currentNpc === 'npc_c' ? handleDialogueContinue : () => {
+                      setShowNpcDialogue(false)
+                      setCurrentNpc(null)
+                      typingSound.pause()
+                      typingSound.currentTime = 0
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.backgroundColor = '#8B4513'
+                      e.target.style.color = '#fff'
+                      e.target.style.transform = 'scale(1.05)'
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.backgroundColor = 'rgba(255, 235, 205, 0.9)'
+                      e.target.style.color = '#8B4513'
+                      e.target.style.transform = 'scale(1)'
+                    }}
+                  >
+                    {currentNpc === 'npc_c' && colorMapNpcs[mapPosition]?.dialogues[currentDialogueSet] && 
+                     currentDialogueIndex < colorMapNpcs[mapPosition].dialogues[currentDialogueSet].length - 1 
+                     ? 'Continue →' : 'OK'}
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -4455,269 +4973,808 @@ const DataCleaning = ({ onComplete, onExit }) => {
 
       {/* Validation Data Selection Phase */}
       {phase === 'VALIDATION_DATA' && (
-        <div style={styles.validationContainer}>
-          <div style={styles.validationCard}>
-            <p style={styles.validationText}>
-              Select the mushrooms you want to test the AI with. Choose the NEW mushrooms that the AI hasn't seen before!
+        <>
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '75%',
+            height: '65%',
+            background: 'rgba(0, 0, 0, 0.8)',
+            borderRadius: '20px',
+            padding: '40px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            zIndex: 50,
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+          }}>
+            {/* Title */}
+            <h2 style={{
+              fontFamily: "'Coming Soon', cursive",
+              fontSize: '32px',
+              color: '#fff',
+              margin: '0 0 10px 0',
+              letterSpacing: '2px',
+            }}>
+              Select Testing Samples
+            </h2>
+            
+            {/* Subtitle */}
+            <p style={{
+              fontFamily: "'Roboto', sans-serif",
+              fontSize: '14px',
+              color: '#ccc',
+              marginBottom: '30px',
+              textAlign: 'center',
+            }}>
+              Select <strong>three</strong> mushrooms you want to test the AI with. Choose the <strong>NEW</strong> mushrooms that the AI hasn't seen before!
             </p>
             
-            <div style={styles.testMushroomGrid}>
-              {TEST_MUSHROOMS.map((mushroom) => (
-                <div
-                  key={mushroom.id}
-                  style={{
-                    ...styles.testMushroomCard,
-                    ...(selectedTestMushrooms.includes(mushroom.id) ? styles.testMushroomCardSelected : {}),
-                  }}
-                  onClick={() => handleTestMushroomClick(mushroom.id)}
-                >
-                  <img 
-                    src={`/jungle/object/${mushroom.id}.png`}
-                    alt={`Mushroom ${mushroom.id}`}
-                    style={styles.testMushroomImage}
-                  />
-                  {selectedTestMushrooms.includes(mushroom.id) && mushroom.isNew && (
-                    <img 
-                      src="/jungle/icon/correct.png"
-                      alt="Correct"
-                      style={styles.correctIcon}
-                    />
-                  )}
-                  {isScanning && selectedTestMushrooms.includes(mushroom.id) && (
-                    <div style={styles.scanningOverlay}>
-                      <span style={{ color: '#fff', fontWeight: 'bold' }}>Scanning...</span>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            
-            {!showPrediction && (
-              <div 
-                ref={sliderContainerRef}
-                style={styles.slideButtonContainer}
-              >
-                <div 
-                  style={{
-                    ...styles.slideButtonTrack,
-                    left: `${5 + sliderPosition}px`,
-                    cursor: 'grab',
-                    ...(isDragging ? { cursor: 'grabbing' } : {}),
-                  }}
-                  onMouseDown={handleSliderMouseDown}
-                  onTouchStart={handleSliderTouchStart}
-                >
-                  <img 
-                    src="/jungle/icon/arrow.png"
-                    alt="Arrow"
-                    style={styles.arrowIcon}
-                  />
-                </div>
-                <span style={styles.slideButtonText}>TEST THE MODEL</span>
-              </div>
-            )}
-            
-            {showPrediction && (
-              <div style={styles.predictionContainer}>
-                <p style={styles.predictionLabel}>YOUR AI PREDICTION</p>
-                <p style={styles.predictionValue}>45%</p>
-                <p style={styles.predictionUnit}>ACCURACY</p>
-                <button 
-                  style={{ ...styles.goButton, marginTop: '30px' }}
-                  onClick={handleValidationComplete}
-                  onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-                  onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
-                >
-                  Continue →
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Model Adjustment Intro Phase - Dialogue and Choice */}
-      {phase === 'ADJUST_MODEL_INTRO' && (
-        <div style={styles.leftDialogueContainer}>
-          <div style={styles.dialogueHistoryBox}>
-            <p style={styles.speakerName}>Ranger Moss:</p>
-            
-            {/* Show dialogue history */}
-            {adjustDialogueHistory.map((text, index) => (
-              <p key={index} style={{
-                ...styles.dialogueHistoryItem,
-                ...(index === adjustDialogueHistory.length - 1 && !adjustDisplayedText && adjustStep !== 1 ? styles.dialogueHistoryItemLast : {}),
-              }}>
-                {text}
-              </p>
-            ))}
-            
-            {/* Current dialogue with typing effect */}
-            {adjustStep === 0 && adjustDisplayedText && (
-              <p style={{...styles.dialogueHistoryItem, ...styles.dialogueHistoryItemLast}}>
-                {adjustDisplayedText}
-                {isAdjustTyping && <span style={{ opacity: 0.5 }}>|</span>}
-              </p>
-            )}
-            
-            {/* Continue/Skip button during dialogue */}
-            {adjustStep === 0 && (
-              <button 
-                style={styles.continueButton} 
-                onClick={handleAdjustDialogueContinue}
-              >
-                {isAdjustTyping ? 'Skip' : 'Continue →'}
-              </button>
-            )}
-            
-            {/* Choice options after dialogues */}
-            {adjustStep === 1 && (
-              <div style={styles.adjustOptionsContainer}>
-                {ADJUST_MODEL_OPTIONS.map((option, index) => (
-                  <button
-                    key={index}
-                    style={{
-                      ...styles.adjustOptionButton,
-                      ...(selectedWrongOption === index ? { opacity: 0.1 } : {}),
-                    }}
-                    onClick={() => handleAdjustOptionSelect(option, index)}
-                    onMouseOver={(e) => { if (selectedWrongOption !== index) e.target.style.borderColor = '#7B68EE' }}
-                    onMouseOut={(e) => { if (selectedWrongOption !== index) e.target.style.borderColor = '#ddd' }}
-                    disabled={selectedWrongOption === index}
-                  >
-                    {String.fromCharCode(65 + index)}. {option.text}
-                  </button>
-                ))}
-              </div>
-            )}
-            
-            {/* Success response after correct selection */}
-            {adjustStep === 2 && (
+            {!showPrediction ? (
               <>
-                <p style={{...styles.dialogueHistoryItem, marginTop: '15px', color: '#4CAF50', borderBottom: 'none'}}>
-                  {ADJUST_CORRECT_RESPONSE}
-                </p>
-                <button 
-                  style={styles.continueButton} 
-                  onClick={() => setPhase('ADJUST_MODEL_DATA')}
-                >
-                  Select Training Data →
-                </button>
+                {/* Mushroom Grid */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(3, 1fr)',
+                  gap: '25px',
+                  marginBottom: '30px',
+                }}>
+                  {TEST_MUSHROOMS.map((mushroom) => {
+                    const isSelected = selectedTestMushrooms.includes(mushroom.id)
+                    
+                    return (
+                      <div
+                        key={mushroom.id}
+                        style={{
+                          width: '150px',
+                          height: '150px',
+                          background: isSelected ? 'rgba(0, 191, 99, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+                          borderRadius: '15px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          cursor: 'pointer',
+                          position: 'relative',
+                          transition: 'all 0.3s',
+                          boxShadow: isSelected 
+                            ? '0 8px 25px rgba(0, 191, 99, 0.4), inset 0 -3px 10px rgba(0, 0, 0, 0.3)'
+                            : '0 5px 15px rgba(0, 0, 0, 0.3), inset 0 -3px 10px rgba(0, 0, 0, 0.2)',
+                        }}
+                        onClick={() => handleTestMushroomClick(mushroom.id)}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-5px)'
+                          e.currentTarget.style.boxShadow = isSelected
+                            ? '0 12px 30px rgba(0, 191, 99, 0.5), inset 0 -3px 10px rgba(0, 0, 0, 0.3)'
+                            : '0 8px 20px rgba(255, 255, 255, 0.2), inset 0 -3px 10px rgba(0, 0, 0, 0.2)'
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)'
+                          e.currentTarget.style.boxShadow = isSelected
+                            ? '0 8px 25px rgba(0, 191, 99, 0.4), inset 0 -3px 10px rgba(0, 0, 0, 0.3)'
+                            : '0 5px 15px rgba(0, 0, 0, 0.3), inset 0 -3px 10px rgba(0, 0, 0, 0.2)'
+                        }}
+                      >
+                        <img 
+                          src={`/jungle/object/${mushroom.id}.png`}
+                          alt={`Mushroom ${mushroom.id}`}
+                          style={{
+                            width: '120px',
+                            height: '120px',
+                            objectFit: 'contain',
+                          }}
+                        />
+                        {isSelected && mushroom.isNew && (
+                          <img 
+                            src="/jungle/icon/correct.png"
+                            alt="Correct"
+                            style={{
+                              position: 'absolute',
+                              top: '10px',
+                              right: '10px',
+                              width: '40px',
+                              height: '40px',
+                            }}
+                          />
+                        )}
+                        {isScanning && isSelected && (
+                          <div style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: 'rgba(0, 191, 99, 0.3)',
+                            borderRadius: '15px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}>
+                            <span style={{ color: '#fff', fontWeight: 'bold', fontSize: '14px' }}>Scanning...</span>
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
               </>
+            ) : (
+              /* Prediction Results Card */
+              <div style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <h2 style={{
+                  fontFamily: "'Coming Soon', cursive",
+                  fontSize: '28px',
+                  color: '#fff',
+                  margin: '0 0 30px 0',
+                  letterSpacing: '2px',
+                }}>
+                  YOUR AI PREDICTION
+                </h2>
+                
+                {/* Circular Progress */}
+                <div style={{
+                  position: 'relative',
+                  width: '200px',
+                  height: '200px',
+                  marginBottom: '20px',
+                }}>
+                  <svg width="200" height="200" style={{ transform: 'rotate(-90deg)' }}>
+                    {/* Background circle */}
+                    <circle
+                      cx="100"
+                      cy="100"
+                      r="85"
+                      fill="none"
+                      stroke="rgba(255, 255, 255, 0.1)"
+                      strokeWidth="15"
+                    />
+                    {/* Progress circle - animated */}
+                    <circle
+                      cx="100"
+                      cy="100"
+                      r="85"
+                      fill="none"
+                      stroke="#00bf63"
+                      strokeWidth="15"
+                      strokeDasharray={`${2 * Math.PI * 85 * (accuracyProgress / 100)} ${2 * Math.PI * 85}`}
+                      strokeLinecap="round"
+                      style={{
+                        filter: 'drop-shadow(0 0 10px #00bf63)',
+                        transition: 'stroke-dasharray 0.1s ease-out',
+                      }}
+                    />
+                  </svg>
+                  <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    textAlign: 'center',
+                  }}>
+                    <div style={{
+                      fontFamily: "'Coming Soon', cursive",
+                      fontSize: '48px',
+                      fontWeight: 'bold',
+                      color: '#00bf63',
+                      lineHeight: 1,
+                    }}>
+                      {accuracyProgress}%
+                    </div>
+                  </div>
+                </div>
+                
+                <p style={{
+                  fontFamily: "'Roboto', sans-serif",
+                  fontSize: '18px',
+                  color: '#ccc',
+                  marginBottom: '40px',
+                  letterSpacing: '2px',
+                }}>
+                  ACCURACY
+                </p>
+                
+                {/* Continue Button */}
+                <button 
+                  style={{
+                    background: '#00bf63',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '15px 50px',
+                    color: '#fff',
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '18px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    boxShadow: '0 4px 15px rgba(0, 191, 99, 0.4)',
+                  }}
+                  onClick={handleValidationComplete}
+                  onMouseOver={(e) => {
+                    e.target.style.transform = 'scale(1.05)'
+                    e.target.style.boxShadow = '0 6px 20px rgba(0, 191, 99, 0.6)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.transform = 'scale(1)'
+                    e.target.style.boxShadow = '0 4px 15px rgba(0, 191, 99, 0.4)'
+                  }}
+                >
+                  CONTINUE
+                </button>
+              </div>
             )}
           </div>
-        </div>
-      )}
-
-      {/* Model Adjustment Data Selection Phase */}
-      {phase === 'ADJUST_MODEL_DATA' && (
-        <>
-          {/* Training Photos Grid - Left side */}
-          <div style={styles.leftDialogueContainer}>
-            <div style={styles.trainingPhotosCard}>
-              <h3 style={styles.trainingPhotosTitle}>Potential Training Photos</h3>
-              <div style={styles.trainingPhotosGrid}>
-                {TRAINING_PHOTOS.map((photo) => (
-                  <div
-                    key={photo.id}
-                    style={{
-                      ...styles.trainingPhotoCard,
-                      ...(selectedTrainingPhotos.includes(photo.id) ? styles.trainingPhotoCardSelected : {}),
-                    }}
-                    onClick={() => handleTrainingPhotoClick(photo)}
-                  >
-                    <img 
-                      src={`/jungle/object/${photo.id}.png`}
-                      alt={`Training photo ${photo.id}`}
-                      style={styles.trainingPhotoImage}
-                    />
-                    {selectedTrainingPhotos.includes(photo.id) && photo.isGood && (
-                      <img 
-                        src="/jungle/icon/correct.png"
-                        alt="Correct"
-                        style={styles.trainingPhotoCheck}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-              
-              {/* Improve Prediction Accuracy Button */}
-              {selectedTrainingPhotos.length >= 4 && (
-                <div 
-                  ref={adjustSliderRef}
-                  style={styles.slideButtonContainer}
-                >
-                  <div 
-                    style={{
-                      ...styles.slideButtonTrack,
-                      left: `${5 + adjustSliderPos}px`,
-                      cursor: 'grab',
-                      ...(isAdjustDragging ? { cursor: 'grabbing' } : {}),
-                    }}
-                    onMouseDown={handleAdjustSliderMouseDown}
-                  >
-                    <img 
-                      src="/jungle/icon/arrow.png"
-                      alt="Arrow"
-                      style={styles.arrowIcon}
-                    />
-                  </div>
-                  <span style={styles.slideButtonText}>IMPROVE ACCURACY</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Feedback Panel - Only show when clicking wrong photo */}
-          {showFeedbackPanel && feedbackPhoto && (
-            <div style={styles.feedbackPanelContainer}>
-              <div style={styles.feedbackPanel}>
-                <h3 style={styles.feedbackTitle}>Feedback Panel</h3>
+          
+          {/* Slide to Test Button - Outside card, below */}
+          {!showPrediction && (
+            <div 
+              ref={sliderContainerRef}
+              style={{
+                position: 'absolute',
+                top: 'calc(50% + 35%)',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '350px',
+                height: '60px',
+                background: '#fff',
+                border: '3px solid #00bf63',
+                borderRadius: '35px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 51,
+                boxShadow: '0 8px 25px rgba(0, 191, 99, 0.4)',
+              }}
+            >
+              <div 
+                style={{
+                  position: 'absolute',
+                  left: `${5 + sliderPosition}px`,
+                  width: '50px',
+                  height: '50px',
+                  background: '#00bf63',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'grab',
+                  boxShadow: '0 4px 15px rgba(0, 191, 99, 0.6)',
+                  ...(isDragging ? { cursor: 'grabbing' } : {}),
+                }}
+                onMouseDown={handleSliderMouseDown}
+                onTouchStart={handleSliderTouchStart}
+              >
                 <img 
-                  src={`/jungle/object/${feedbackPhoto.duplicateOf}.png`}
-                  alt="Duplicate"
-                  style={styles.feedbackImage}
+                  src="/jungle/icon/arrow.png"
+                  alt="Arrow"
+                  style={{ width: '24px', height: '24px' }}
                 />
-                <p style={styles.feedbackValueText}>LOW VALUE</p>
               </div>
+              <span style={{
+                fontFamily: "'Roboto', sans-serif",
+                fontSize: '16px',
+                fontWeight: 700,
+                color: '#00bf63',
+                letterSpacing: '1.5px',
+              }}>
+                TEST THE MODEL
+              </span>
             </div>
           )}
         </>
       )}
 
-      {/* Ranger Moss Praise Popup */}
-      {showRangerPraise && (
-        <div style={styles.rangerPraisePopup}>
-          <p style={styles.rangerPraiseText}>
-            🌟 Excellent choice! A new angle/condition. That will help it generalize!
-          </p>
-        </div>
+      {/* Model Adjustment Intro Phase - Dialogue and Choice */}
+      {/* Model Adjustment Data Selection Phase */}
+      {phase === 'ADJUST_MODEL_DATA' && (
+        <>
+          {/* Main Container */}
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '65%',
+            height: '75%',
+            background: 'rgba(0, 0, 0, 0.8)',
+            borderRadius: '20px',
+            padding: '35px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            zIndex: 50,
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.5)',
+          }}>
+            {/* Title */}
+            <h2 style={{
+              fontFamily: "'Coming Soon', cursive",
+              fontSize: '28px',
+              color: '#fff',
+              margin: '0 0 8px 0',
+              letterSpacing: '2px',
+            }}>
+              TRAINING PHOTOS
+            </h2>
+            
+            {/* Subtitle */}
+            <p style={{
+              fontFamily: "'Roboto', sans-serif",
+              fontSize: '13px',
+              color: '#ccc',
+              marginBottom: '20px',
+              textAlign: 'center',
+            }}>
+              Feed the AI <strong>High Quality Data</strong>
+            </p>
+            
+            {/* Content Area with Photos Grid and Feedback Panel */}
+            <div style={{
+              display: 'flex',
+              gap: '15px',
+              width: '100%',
+              flex: 1,
+              marginBottom: '15px',
+            }}>
+              {/* Training Photos Grid */}
+              <div style={{
+                flex: showFeedbackPanel ? '0 0 60%' : '1',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(4, 1fr)',
+                gap: '12px',
+                alignContent: 'start',
+              }}>
+                {TRAINING_PHOTOS.map((photo) => {
+                  const isSelected = selectedTrainingPhotos.includes(photo.id)
+                  
+                  return (
+                    <div
+                      key={photo.id}
+                      style={{
+                        width: '100%',
+                        aspectRatio: '1',
+                        background: isSelected ? 'rgba(0, 191, 99, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        position: 'relative',
+                        transition: 'all 0.3s',
+                        boxShadow: isSelected 
+                          ? '0 6px 20px rgba(0, 191, 99, 0.4), inset 0 -2px 8px rgba(0, 0, 0, 0.3)'
+                          : '0 4px 12px rgba(0, 0, 0, 0.3), inset 0 -2px 8px rgba(0, 0, 0, 0.2)',
+                      }}
+                      onClick={() => handleTrainingPhotoClick(photo)}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-3px)'
+                        e.currentTarget.style.boxShadow = isSelected
+                          ? '0 8px 25px rgba(0, 191, 99, 0.5), inset 0 -2px 8px rgba(0, 0, 0, 0.3)'
+                          : '0 6px 16px rgba(255, 255, 255, 0.2), inset 0 -2px 8px rgba(0, 0, 0, 0.2)'
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = isSelected
+                          ? '0 6px 20px rgba(0, 191, 99, 0.4), inset 0 -2px 8px rgba(0, 0, 0, 0.3)'
+                          : '0 4px 12px rgba(0, 0, 0, 0.3), inset 0 -2px 8px rgba(0, 0, 0, 0.2)'
+                      }}
+                    >
+                      <img 
+                        src={`/jungle/object/${photo.id}.png`}
+                        alt={`Training photo ${photo.id}`}
+                        style={{
+                          width: '80%',
+                          height: '80%',
+                          objectFit: 'contain',
+                        }}
+                      />
+                      {isSelected && photo.isGood && (
+                        <img 
+                          src="/jungle/icon/correct.png"
+                          alt="Correct"
+                          style={{
+                            position: 'absolute',
+                            top: '6px',
+                            right: '6px',
+                            width: '25px',
+                            height: '25px',
+                          }}
+                        />
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+              
+              {/* Feedback Panel - Glassmorphism */}
+              {showFeedbackPanel && feedbackPhoto && (
+                <div style={{
+                  flex: '0 0 35%',
+                  height: '100%',
+                  background: 'rgba(143, 204, 174, 0.15)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: '15px',
+                  padding: '20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '15px',
+                }}>
+                  <h3 style={{
+                    fontFamily: "'Coming Soon', cursive",
+                    fontSize: '18px',
+                    color: '#fff',
+                    margin: 0,
+                  }}>
+                    FEEDBACK PANEL
+                  </h3>
+                  <img 
+                    src={`/jungle/object/${feedbackPhoto.duplicateOf}.png`}
+                    alt="Duplicate"
+                    style={{
+                      width: '120px',
+                      height: '120px',
+                      objectFit: 'contain',
+                    }}
+                  />
+                  <p style={{
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '15px',
+                    fontWeight: 'bold',
+                    color: '#ff6b6b',
+                    margin: 0,
+                  }}>
+                    LOW VALUE
+                  </p>
+                  <p style={{
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '12px',
+                    color: '#ccc',
+                    textAlign: 'center',
+                    margin: 0,
+                  }}>
+                    This is a duplicate. Choose unique samples!
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            {/* Selected Photos Display - Bottom */}
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'center',
+              marginTop: 'auto',
+            }}>
+              {[0, 1, 2, 3, 4].map((index) => {
+                const selectedPhoto = selectedTrainingPhotos[index]
+                
+                return (
+                  <div
+                    key={index}
+                    style={{
+                      width: '70px',
+                      height: '70px',
+                      background: selectedPhoto ? 'rgba(0, 191, 99, 0.2)' : 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: '10px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3), inset 0 -2px 6px rgba(0, 0, 0, 0.2)',
+                    }}
+                  >
+                    {selectedPhoto ? (
+                      <img 
+                        src={`/jungle/object/${selectedPhoto}.png`}
+                        alt={`Selected ${selectedPhoto}`}
+                        style={{
+                          width: '60px',
+                          height: '60px',
+                          objectFit: 'contain',
+                        }}
+                      />
+                    ) : (
+                      <img 
+                        src="/jungle/icon/download.svg"
+                        alt="Empty"
+                        style={{
+                          width: '30px',
+                          height: '30px',
+                          opacity: 0.3,
+                        }}
+                      />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+          
+          {/* Improve Accuracy Button - Outside card, below */}
+          {selectedTrainingPhotos.length >= 5 && (
+            <div 
+              ref={adjustSliderRef}
+              style={{
+                position: 'absolute',
+                top: 'calc(50% + 39%)',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '350px',
+                height: '60px',
+                background: '#fff',
+                border: '3px solid #00bf63',
+                borderRadius: '35px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 51,
+                boxShadow: '0 8px 25px rgba(0, 191, 99, 0.4)',
+              }}
+            >
+              <div 
+                style={{
+                  position: 'absolute',
+                  left: `${5 + adjustSliderPos}px`,
+                  width: '50px',
+                  height: '50px',
+                  background: '#00bf63',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'grab',
+                  boxShadow: '0 4px 15px rgba(0, 191, 99, 0.6)',
+                  ...(isAdjustDragging ? { cursor: 'grabbing' } : {}),
+                }}
+                onMouseDown={handleAdjustSliderMouseDown}
+              >
+                <img 
+                  src="/jungle/icon/arrow.png"
+                  alt="Arrow"
+                  style={{ width: '24px', height: '24px' }}
+                />
+              </div>
+              <span style={{
+                fontFamily: "'Roboto', sans-serif",
+                fontSize: '16px',
+                fontWeight: 700,
+                color: '#00bf63',
+                letterSpacing: '1.5px',
+              }}>
+                IMPROVE ACCURACY
+              </span>
+            </div>
+          )}
+
+          {/* Ranger Moss Praise Popup - Top Right of NPC */}
+          {showRangerPraise && (
+            <div style={{
+              position: 'absolute',
+              top: '15%',
+              left: '12%',
+              background: 'rgba(255, 255, 255, 0.95)',
+              border: '2px solid #00bf63',
+              borderRadius: '15px',
+              padding: '15px 20px',
+              maxWidth: '250px',
+              zIndex: 52,
+              boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+            }}>
+              <p style={{
+                fontFamily: "'Roboto', sans-serif",
+                fontSize: '14px',
+                color: '#333',
+                margin: 0,
+                lineHeight: 1.5,
+              }}>
+                🌟 Excellent choice! A new angle/condition. That will help it generalize!
+              </p>
+            </div>
+          )}
+        </>
       )}
 
       {/* Model Adjustment Retraining Phase */}
       {phase === 'ADJUST_MODEL_TRAINING' && (
-        <div style={styles.retrainingContainer}>
-          <img src="/jungle/model.GIF" alt="Model Training" style={styles.modelGif} />
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '60%',
+          height: '80%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 50,
+        }}>
+          <img 
+            src="/jungle/model.GIF"
+            alt="Model Training"
+            style={{
+              width: 'auto',
+              height: '80%',
+              objectFit: 'contain',
+              marginBottom: '30px',
+            }}
+          />
           
           {adjustProgress < 100 && (
-            <div style={styles.progressBarContainer}>
-              <div style={{...styles.progressBarFill, width: `${adjustProgress}%`}} />
-            </div>
+            <>
+              {/* Bouncing Mushrooms Animation */}
+              <div style={{
+                width: '80%',
+                height: '60px',
+                background: 'rgba(0, 0, 0, 0.9)',
+                borderRadius: '10px',
+                marginBottom: '15px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                position: 'relative',
+              }}>
+                {[...Array(10)].map((_, index) => (
+                  <img
+                    key={index}
+                    src={index % 2 === 0 ? '/jungle/icon/red.svg' : '/jungle/icon/green.svg'}
+                    alt="mushroom"
+                    style={{
+                      width: '35px',
+                      height: '35px',
+                      position: 'absolute',
+                      animation: `bounceMove 3s ease-in-out infinite`,
+                      animationDelay: `${index * 0.2}s`,
+                      left: `${100 - (index * 8)}%`,
+                    }}
+                  />
+                ))}
+              </div>
+              
+              <div style={{
+                width: '80%',
+                height: '30px',
+                background: 'rgba(255, 255, 255, 0.3)',
+                borderRadius: '15px',
+                overflow: 'hidden',
+                border: '2px solid #8FCCAE',
+              }}>
+                <div style={{
+                  height: '100%',
+                  width: `${adjustProgress}%`,
+                  background: 'linear-gradient(90deg, #00bf63, #8FCCAE)',
+                  transition: 'width 0.1s linear',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <span style={{
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    color: '#fff',
+                  }}>
+                    {adjustProgress}%
+                  </span>
+                </div>
+              </div>
+            </>
           )}
           
           {adjustProgress >= 100 && (
-            <div style={styles.finalAccuracyContainer}>
-              <p style={styles.finalAccuracyLabel}>Your AI Prediction</p>
-              <p style={styles.finalAccuracyValue}>95%</p>
-              <p style={styles.finalAccuracyUnit}>ACCURACY</p>
+            <div style={{
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <h2 style={{
+                fontFamily: "'Coming Soon', cursive",
+                fontSize: '28px',
+                color: '#fff',
+                margin: '0 0 30px 0',
+                letterSpacing: '2px',
+              }}>
+                YOUR AI PREDICTION
+              </h2>
+              
+              {/* Circular Progress */}
+              <div style={{
+                position: 'relative',
+                width: '200px',
+                height: '200px',
+                marginBottom: '20px',
+              }}>
+                <svg width="200" height="200" style={{ transform: 'rotate(-90deg)' }}>
+                  {/* Background circle */}
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r="85"
+                    fill="none"
+                    stroke="rgba(255, 255, 255, 0.1)"
+                    strokeWidth="15"
+                  />
+                  {/* Progress circle - animated */}
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r="85"
+                    fill="none"
+                    stroke="#00bf63"
+                    strokeWidth="15"
+                    strokeDasharray={`${2 * Math.PI * 85 * (finalAccuracyProgress / 100)} ${2 * Math.PI * 85}`}
+                    strokeLinecap="round"
+                    style={{
+                      filter: 'drop-shadow(0 0 10px #00bf63)',
+                      transition: 'stroke-dasharray 0.1s ease-out',
+                    }}
+                  />
+                </svg>
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  textAlign: 'center',
+                }}>
+                  <div style={{
+                    fontFamily: "'Coming Soon', cursive",
+                    fontSize: '48px',
+                    fontWeight: 'bold',
+                    color: '#00bf63',
+                    lineHeight: 1,
+                  }}>
+                    {finalAccuracyProgress}%
+                  </div>
+                </div>
+              </div>
+              
+              <p style={{
+                fontFamily: "'Roboto', sans-serif",
+                fontSize: '18px',
+                color: '#ccc',
+                marginBottom: '40px',
+                letterSpacing: '2px',
+              }}>
+                ACCURACY
+              </p>
+              
+              {/* Done Button */}
               <button 
-                style={{...styles.goButton, marginTop: '30px'}}
+                style={{
+                  background: '#00bf63',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '15px 50px',
+                  color: '#fff',
+                  fontFamily: "'Roboto', sans-serif",
+                  fontSize: '18px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 4px 15px rgba(0, 191, 99, 0.4)',
+                }}
                 onClick={handleAdjustComplete}
-                onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
-                onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+                onMouseOver={(e) => {
+                  e.target.style.transform = 'scale(1.05)'
+                  e.target.style.boxShadow = '0 6px 20px rgba(0, 191, 99, 0.6)'
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.transform = 'scale(1)'
+                  e.target.style.boxShadow = '0 4px 15px rgba(0, 191, 99, 0.4)'
+                }}
               >
-                Done
+                DONE
               </button>
             </div>
           )}
@@ -4798,7 +5855,8 @@ const DataCleaning = ({ onComplete, onExit }) => {
         </div>
       )}
 
-    </div>
+      </div>
+    </>
   )
 }
 
