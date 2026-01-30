@@ -344,6 +344,7 @@ const DesertMap = ({ onExit }) => {
   
   // Mission 2 completion states
   const [isMission2Completion, setIsMission2Completion] = useState(false)
+  const [isMission3Completion, setIsMission3Completion] = useState(false)
   const [mission2CompletionMessages, setMission2CompletionMessages] = useState([])
   const [currentMission2CompletionStep, setCurrentMission2CompletionStep] = useState(0)
   const [showMission2CompletionQuiz, setShowMission2CompletionQuiz] = useState(false)
@@ -352,6 +353,10 @@ const DesertMap = ({ onExit }) => {
   const [alphaDisplayedText, setAlphaDisplayedText] = useState('')
   const [alphaIsTyping, setAlphaIsTyping] = useState(false)
   const [currentTypingMessage, setCurrentTypingMessage] = useState(null)
+  
+  // Mission 3 completion dialogue states
+  const [alphaDialogueStep, setAlphaDialogueStep] = useState('') // For Mission 3 quiz flow
+  const [alphaDialogueHistory, setAlphaDialogueHistory] = useState([]) // For Mission 3 dialogue history
   
   // Mission 2 states
   const [showModelGif, setShowModelGif] = useState(false)
@@ -373,9 +378,20 @@ const DesertMap = ({ onExit }) => {
   const [mission3Phase, setMission3Phase] = useState('intro') // 'intro', 'sample', 'puzzle1', 'puzzle2', 'puzzle3', 'quiz1', 'quiz2', 'complete'
   const [selectedTag, setSelectedTag] = useState(null)
   const [clickedTags, setClickedTags] = useState([]) // Track clicked tags in sample phase
-  const [showAlphaIcon, setShowAlphaIcon] = useState(false)
   const [currentPuzzle, setCurrentPuzzle] = useState(null)
+  
+  // Mission 4 states
+  const [mission4Started, setMission4Started] = useState(false)
+  const [mission4LeafIndex, setMission4LeafIndex] = useState(0) // 0-3 for 4 leaves
+  const [mission4Votes, setMission4Votes] = useState({}) // Store votes for each leaf
+  const [mission4DiscussionUsed, setMission4DiscussionUsed] = useState({}) // Track if discussion was used
+  const [showMission4Discussion, setShowMission4Discussion] = useState(false)
+  const [showAlphaIcon, setShowAlphaIcon] = useState(false)
   const [wrongAnswerIndex, setWrongAnswerIndex] = useState(null) // Track wrong answer selection
+  const [mission4VotesVisible, setMission4VotesVisible] = useState(false) // Control vote badge visibility
+  const [mission4Complete, setMission4Complete] = useState(false) // Track Mission 4 completion
+  const [mission4LeafInfoText, setMission4LeafInfoText] = useState('') // Typing text for leaf info
+  const [mission4LeafInfoTyping, setMission4LeafInfoTyping] = useState(false) // Typing state
   
   // Post-Mission 3 states
   const [showMission3Loading, setShowMission3Loading] = useState(false)
@@ -427,6 +443,55 @@ const DesertMap = ({ onExit }) => {
       }
     ]
   }
+  
+  // Mission 4 data - Expert voting on leaf health
+  const mission4Leaves = [
+    {
+      id: 1,
+      name: "Silverbark Frond",
+      description: "Glass-hard leaves that shatter when threatened, releasing mild toxin dust.",
+      image: '/desert/Mission/leaf1.png',
+      initialVotes: ['healthy', 'healthy', 'uncertain'], // Two agree on healthy
+      correctAnswer: 'healthy',
+      needsDiscussion: false
+    },
+    {
+      id: 2,
+      name: "Glowmoss Petal-Leaf",
+      description: "Half-plant, half-fungus; glows softly at night and clings to old pipes.",
+      image: '/desert/Mission/leaf2.png',
+      initialVotes: ['unhealthy', 'unhealthy', 'uncertain'], // Two agree on unhealthy
+      correctAnswer: 'unhealthy',
+      needsDiscussion: false
+    },
+    {
+      id: 3,
+      name: "Crystal Thornleaf",
+      description: "Said to sense emotions—its leaves vibrate faintly with sound waves.",
+      image: '/desert/Mission/leaf3.png',
+      initialVotes: ['unhealthy', 'healthy', 'uncertain'], // All disagree
+      afterDiscussionVotes: ['healthy', 'healthy', 'uncertain'], // After discussion: two agree on healthy
+      correctAnswer: 'healthy',
+      needsDiscussion: true
+    },
+    {
+      id: 4,
+      name: "Whisper Vine Leaf",
+      description: "Grows in castle cracks; metallic crystals make it shimmer in sunlight.",
+      image: '/desert/Mission/leaf4.png',
+      initialVotes: ['unhealthy', 'healthy', 'uncertain'], // All disagree
+      afterDiscussionVotes: ['unhealthy', 'unhealthy', 'uncertain'], // After discussion: two agree on unhealthy
+      correctAnswer: 'unhealthy',
+      needsDiscussion: true
+    }
+  ]
+  
+  // Biologist names
+  const biologists = [
+    { id: 1, name: 'Prickle', npc: 'npc7' },
+    { id: 2, name: 'Obsidian', npc: 'npc6' },
+    { id: 3, name: 'Bloom', npc: 'npc3' }
+  ]
 
   // Mission 2 data - correct answers: image 1 and 5 should be "confirmed", others "rejected"
   const mission2Images = [
@@ -467,6 +532,22 @@ const DesertMap = ({ onExit }) => {
         setCurrentView(desertProgress.currentView || 'desert')
         setMissionStarted(desertProgress.missionStarted || false)
         setCapturedObjects(desertProgress.capturedObjects || [])
+        
+        // Load mission completion states
+        if (desertProgress.mission1Completed) {
+          // Mission 1 already completed, skip to next
+        }
+        if (desertProgress.mission2Completed) {
+          setPhase2Completed(true)
+        }
+        if (desertProgress.mission3Completed) {
+          // Mission 3 completed
+        }
+        if (desertProgress.mission4Completed) {
+          // Mission 4 completed, enable color mode
+          setColorMode(true)
+        }
+        
         console.log('Loaded Desert progress:', desertProgress)
       }
     }
@@ -488,12 +569,16 @@ const DesertMap = ({ onExit }) => {
         currentView,
         missionStarted,
         capturedObjects,
+        mission1Completed: capturedObjects.length >= 11,
+        mission2Completed: phase2Completed,
+        mission3Completed: colorMode && !mission4Started,
+        mission4Completed: colorMode && mission4Complete,
         lastSaved: Date.now()
       }
       localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
       console.log('Saved Desert progress:', userData.desertProgress)
     }
-  }, [currentSegment, currentView, missionStarted, capturedObjects])
+  }, [currentSegment, currentView, missionStarted, capturedObjects, phase2Completed, colorMode, mission4Started, mission4Complete])
 
   // Typing effect with auto-progression for multi-part dialogues
   useEffect(() => {
@@ -620,6 +705,42 @@ const DesertMap = ({ onExit }) => {
 
     return () => clearInterval(typingInterval)
   }, [currentTypingMessage])
+  
+  // Auto-advance Mission 3 completion dialogue
+  useEffect(() => {
+    if (!isMission3Completion) return
+    
+    // Auto-advance after typing completes
+    if (alphaDialogueStep === 'quiz1_intro' && !alphaIsTyping) {
+      const timer = setTimeout(() => {
+        handleMission3QuizContinue()
+      }, 2000) // Wait 2 seconds after typing completes
+      return () => clearTimeout(timer)
+    }
+    
+    if (alphaDialogueStep === 'quiz1_feedback' && !alphaIsTyping) {
+      const timer = setTimeout(() => {
+        handleMission3QuizContinue()
+      }, 2000)
+      return () => clearTimeout(timer)
+    }
+    
+    if (alphaDialogueStep === 'mission4_part1' && !alphaIsTyping) {
+      const timer = setTimeout(() => {
+        setAlphaDialogueStep('mission4_part2')
+        setAlphaDialogueHistory(prev => [...prev, { type: 'alpha', text: "One final task… and it's urgent.\n\nGo to the gate of the castle. For each leaf image, you'll see labels from three expert biologists: Healthy, Infected, or Uncertain." }])
+      }, 2500)
+      return () => clearTimeout(timer)
+    }
+    
+    if (alphaDialogueStep === 'mission4_part2' && !alphaIsTyping) {
+      const timer = setTimeout(() => {
+        setAlphaDialogueStep('mission4_part3')
+        setAlphaDialogueHistory(prev => [...prev, { type: 'alpha', text: "If two or more agree, the system will automatically accept the majority verdict." }])
+      }, 2500)
+      return () => clearTimeout(timer)
+    }
+  }, [alphaDialogueStep, alphaIsTyping, isMission3Completion])
 
   const handleNavigate = (direction) => {
     console.log('Navigate:', direction, 'Current segment:', currentSegment)
@@ -838,7 +959,15 @@ const DesertMap = ({ onExit }) => {
   }
 
   const handleDialogueClick = () => {
-    if (currentDialogue && currentDialogue.isMission3) {
+    if (currentDialogue && currentDialogue.isMission4Complete) {
+      // Mission 4 completion dialogue - don't close on click, wait for button
+      if (isTyping) {
+        setDisplayedText(currentDialogue.text)
+        setIsTyping(false)
+        stopTypingSound()
+      }
+      return
+    } else if (currentDialogue && currentDialogue.isMission3) {
       if (isTyping) {
         setDisplayedText(currentDialogue.text)
         setIsTyping(false)
@@ -1561,15 +1690,16 @@ const DesertMap = ({ onExit }) => {
       setCurrentPuzzle(mission3Data.puzzles[2])
       setSelectedTag(null)
     } else if (mission3Phase === 'puzzle3') {
-      // Start quiz phase with first question
+      // Start quiz phase with modern Alpha dialogue
       setMission3Phase('quiz1')
-      setCurrentDialogue({
-        text: "Threats cleared.\n\nI nearly fired the defense lasers—at a celebration… and a worker just battling the wind.\n\nMy core logic failed me.",
-        speaker: 'Alpha',
-        isMission3: true,
-        step: 'quiz1_intro',
-        showContinueButton: true
-      })
+      setShowDialogue(false)
+      setShowMission3(false)
+      setCurrentDialogue(null)
+      setCurrentView('castle') // Ensure we're in castle view for Alpha dialogue
+      setShowAlphaDialogue(true)
+      setIsMission3Completion(true)
+      setAlphaDialogueStep('quiz1_intro')
+      setAlphaDialogueHistory([])
     }
   }
 
@@ -1624,47 +1754,28 @@ const DesertMap = ({ onExit }) => {
   const handleMission3QuizAnswer = (answerIndex, isCorrect) => {
     if (mission3Phase === 'quiz1') {
       if (isCorrect) {
-        // Play correct sound, clear wrong answer state and show correct feedback
+        // Play correct sound and move to feedback
         playCorrectSound()
         setWrongAnswerIndex(null)
-        setCurrentDialogue({
-          text: "The action didn't change. Only the context did—the sandstorm, the setting, the intent.",
-          speaker: 'Alpha',
-          isMission3: true,
-          step: 'quiz1_feedback',
-          showContinueButton: true
-        })
+        setAlphaDialogueStep('quiz1_feedback')
+        setAlphaDialogueHistory(prev => [...prev, { type: 'user', text: 'Selected correct answer' }])
       } else {
         // Play wrong sound and highlight wrong answer
         playWrongSound()
         setWrongAnswerIndex(answerIndex)
-        // Keep the quiz visible with error state
-        setCurrentDialogue({
-          ...currentDialogue,
-          error: 'Try again! Think about what changed between the scenarios.'
-        })
       }
     } else if (mission3Phase === 'quiz2') {
       if (isCorrect) {
-        // Play correct sound, clear wrong answer state and show final feedback
+        // Play correct sound and move to complete
         playCorrectSound()
         setWrongAnswerIndex(null)
-        setCurrentDialogue({
-          text: "Exactly.\n\nI process data—but you bring the common sense and context I'll never have on my own.",
-          speaker: 'Alpha',
-          isMission3: true,
-          step: 'complete',
-          showDoneButton: true
-        })
         setMission3Phase('complete')
+        setAlphaDialogueStep('complete')
+        setAlphaDialogueHistory(prev => [...prev, { type: 'user', text: 'Selected correct answer' }])
       } else {
         // Play wrong sound and highlight wrong answer
         playWrongSound()
         setWrongAnswerIndex(answerIndex)
-        setCurrentDialogue({
-          ...currentDialogue,
-          error: 'Think about what AI might be missing that humans naturally understand.'
-        })
       }
     }
   }
@@ -1675,39 +1786,141 @@ const DesertMap = ({ onExit }) => {
     // Clear wrong answer state when continuing
     setWrongAnswerIndex(null)
     
-    if (currentDialogue.step === 'quiz1_intro') {
+    if (alphaDialogueStep === 'quiz1_intro') {
       // Show first quiz question
-      setCurrentDialogue({
-        text: "Why did the meaning of the 'Iron Sheet' change completely?",
-        speaker: 'Alpha',
-        isMission3: true,
-        step: 'quiz1',
-        showQuiz: true,
-        quizOptions: [
-          { text: "A. Because the iron sheet changed shape.", correct: false },
-          { text: "B. Because context (the weather) changes how we interpret an action.", correct: true },
-          { text: "C. Because the worker yelled at me.", correct: false }
-        ]
-      })
-    } else if (currentDialogue.step === 'quiz1_feedback') {
+      setAlphaDialogueStep('quiz1')
+      setAlphaDialogueHistory(prev => [...prev, { type: 'alpha', text: "Threats cleared.\n\nI nearly fired the defense lasers—at a celebration… and a worker just battling the wind.\n\nMy core logic failed me." }])
+    } else if (alphaDialogueStep === 'quiz1_feedback') {
       // Show second quiz question
       setMission3Phase('quiz2')
-      setCurrentDialogue({
-        text: "If you hadn't helped me, I would have attacked them. What does this teach us about AI?",
-        speaker: 'Alpha',
-        isMission3: true,
-        step: 'quiz2',
-        showQuiz: true,
-        quizOptions: [
-          { text: "A. AI is always right and doesn't need humans.", correct: false },
-          { text: "B. AI can sometimes lack 'Common Sense' without human context.", correct: true },
-          { text: "C. AI hates holidays.", correct: false }
-        ]
-      })
+      setAlphaDialogueStep('quiz2')
+      setAlphaDialogueHistory(prev => [...prev, { type: 'alpha', text: "The action didn't change. Only the context did—the sandstorm, the setting, the intent." }])
     }
   }
-
-
+  
+  // Mission 4 handlers
+  const handleMission4Discussion = () => {
+    playClickSound()
+    const currentLeaf = mission4Leaves[mission4LeafIndex]
+    
+    if (!currentLeaf.needsDiscussion) {
+      // This leaf doesn't need discussion
+      playWrongSound()
+      return
+    }
+    
+    // Mark discussion as used for this leaf
+    setMission4DiscussionUsed(prev => ({ ...prev, [mission4LeafIndex]: true }))
+    
+    // Hide current vote badges
+    setMission4VotesVisible(false)
+    
+    // Show discussion animation/effect
+    setShowMission4Discussion(true)
+    
+    // After 1.5 seconds, hide discussion and wait 2 more seconds before showing updated votes
+    setTimeout(() => {
+      setShowMission4Discussion(false)
+      // Wait 2 seconds before showing updated vote badges
+      setTimeout(() => {
+        setMission4VotesVisible(true)
+      }, 2000)
+    }, 1500)
+  }
+  
+  const handleMission4Vote = (vote) => {
+    playClickSound()
+    const currentLeaf = mission4Leaves[mission4LeafIndex]
+    
+    // Check if discussion is needed but not used yet
+    if (currentLeaf.needsDiscussion && !mission4DiscussionUsed[mission4LeafIndex]) {
+      playWrongSound()
+      return
+    }
+    
+    // Check if vote is correct
+    if (vote === currentLeaf.correctAnswer) {
+      playCorrectSound()
+      
+      // Store the vote
+      setMission4Votes(prev => ({ ...prev, [mission4LeafIndex]: vote }))
+      
+      // Move to next leaf after delay
+      setTimeout(() => {
+        if (mission4LeafIndex < 3) {
+          setMission4LeafIndex(mission4LeafIndex + 1)
+          setMission4VotesVisible(false) // Reset vote visibility for next leaf
+          // Start typing effect for new leaf info
+          startMission4LeafTyping(mission4LeafIndex + 1)
+        } else {
+          // All leaves completed - show NPC7 completion dialogue
+          handleMission4Complete()
+        }
+      }, 1000)
+    } else {
+      playWrongSound()
+    }
+  }
+  
+  const startMission4LeafTyping = (leafIndex) => {
+    const leaf = mission4Leaves[leafIndex]
+    const fullText = `Leaf #${leafIndex + 1}: "${leaf.name}"\n${leaf.description}`
+    
+    let charIndex = 0
+    setMission4LeafInfoText('')
+    setMission4LeafInfoTyping(true)
+    startTypingSound()
+    
+    const typingInterval = setInterval(() => {
+      if (charIndex < fullText.length) {
+        setMission4LeafInfoText(fullText.substring(0, charIndex + 1))
+        charIndex++
+      } else {
+        setMission4LeafInfoTyping(false)
+        stopTypingSound()
+        clearInterval(typingInterval)
+        // Show vote badges after typing completes
+        setTimeout(() => {
+          setMission4VotesVisible(true)
+        }, 500)
+      }
+    }, 30)
+  }
+  
+  const handleMission4Complete = () => {
+    playClickSound()
+    console.log('Mission 4 completed!')
+    
+    // Mark Mission 4 as complete and show NPC7 dialogue
+    setMission4Complete(true)
+    setMission4Started(false)
+    
+    // Show NPC7 completion dialogue
+    setCurrentDialogue({
+      text: "Consensus achieved. The castle's AI systems are now stable and ready to reboot.",
+      speaker: 'NPC7',
+      isMission4Complete: true
+    })
+    setCurrentNpcType('npc7')
+    setShowDialogue(true)
+  }
+  
+  const handleMission4RebootAccept = () => {
+    playClickSound()
+    setShowDialogue(false)
+    
+    // Show loading screen with desert icon and transition to color mode
+    setShowMission3Loading(true)
+    
+    // After loading, switch to color mode
+    setTimeout(() => {
+      setShowMission3Loading(false)
+      setColorMode(true)
+      setCurrentView('desert')
+      setCurrentSegment(0)
+      setMission4Complete(false)
+    }, 4000)
+  }
 
   const getBackgroundImage = () => {
     const suffix = colorMode ? '_color.png' : '.png'
@@ -3396,7 +3609,7 @@ const DesertMap = ({ onExit }) => {
           )}
 
           {/* Zoom button - always show in SEGMENT_2 */}
-          {currentSegment === SEGMENTS.SEGMENT_2 && (
+          {currentSegment === SEGMENTS.SEGMENT_2 && !colorMode && (
             <button style={styles.zoomButton} onClick={handleZoomClick}>
               <img src="/desert/icon/zoom.png" alt="Zoom" style={styles.zoomImage} />
             </button>
@@ -3439,6 +3652,346 @@ const DesertMap = ({ onExit }) => {
         </>
       )}
 
+      {/* Mission 4: Expert Voting Interface in Gate View - Outside desert view block */}
+      {mission4Started && currentView === 'gate' && (
+        <>
+          {/* Three Biologist NPCs - Horizontally aligned at bottom */}
+          {biologists.map((biologist, index) => {
+            const currentLeaf = mission4Leaves[mission4LeafIndex]
+            const votes = mission4DiscussionUsed[mission4LeafIndex] && currentLeaf.afterDiscussionVotes 
+              ? currentLeaf.afterDiscussionVotes 
+              : currentLeaf.initialVotes
+            const vote = votes[index]
+            
+            // Calculate position for equal spacing
+            const totalWidth = window.innerWidth
+            const spacing = totalWidth / 4
+            const leftPosition = spacing * (index + 1) - 125 // Center each NPC
+            
+            return (
+              <div
+                key={biologist.id}
+                style={{
+                  position: 'absolute',
+                  left: `${leftPosition}px`,
+                  bottom: '150px', // Increased from 80px to 150px for more spacing
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  zIndex: 30,
+                }}
+              >
+                {/* Vote badge in dialogue bubble - only show after typing completes */}
+                {mission4VotesVisible && !mission4LeafInfoTyping && (
+                  <div style={{
+                    position: 'relative',
+                    marginBottom: '10px',
+                    animation: 'fadeIn 0.5s ease-in-out',
+                  }}>
+                    <img 
+                      src="/desert/icon/dialogue.png"
+                      alt="Dialogue"
+                      style={{
+                        width: '100px',
+                        height: '80px',
+                      }}
+                    />
+                    <img 
+                      src={`/desert/icon/${vote}.svg`}
+                      alt={vote}
+                      style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: '50px',
+                        height: '50px',
+                      }}
+                    />
+                  </div>
+                )}
+                
+                {/* NPC Image Container with relative positioning */}
+                <div style={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  {/* NPC Image */}
+                  <img 
+                    src={`/desert/npc/${biologist.npc}.png`}
+                    alt={biologist.name}
+                    style={{
+                      height: '250px',
+                      width: 'auto',
+                    }}
+                  />
+                  
+                  {/* NPC Name - Overlapping on NPC image */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '20px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    padding: '8px 16px',
+                    background: 'rgba(101, 67, 33, 0.9)', // Deep brown with transparency
+                    color: 'white',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+                  }}>
+                    BIOLOGIST{biologist.id}<br/>
+                    {biologist.name}
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+          
+          {/* Top Card with Leaf Info and Discussion Button */}
+          <div style={{
+            position: 'absolute',
+            left: '50%',
+            top: '40px',
+            transform: 'translateX(-50%)',
+            background: 'rgba(244, 228, 188, 0.95)',
+            borderRadius: '20px',
+            padding: '25px',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+            zIndex: 100,
+            width: '800px',
+            display: 'flex',
+            gap: '20px',
+            alignItems: 'center',
+          }}>
+            {/* Left: Leaf Image */}
+            <div style={{
+              flex: '0 0 150px',
+            }}>
+              <img 
+                src={mission4Leaves[mission4LeafIndex].image}
+                alt="Leaf"
+                style={{
+                  width: '150px',
+                  height: '150px',
+                  objectFit: 'contain',
+                }}
+              />
+            </div>
+            
+            {/* Vertical divider line */}
+            <div style={{
+              width: '2px',
+              height: '120px',
+              background: 'rgba(0, 0, 0, 0.2)',
+              borderRadius: '1px',
+            }} />
+            
+            {/* Middle: Leaf Info with Typing Effect */}
+            <div style={{
+              flex: 1,
+            }}>
+              <div style={{
+                fontSize: '16px',
+                color: '#333',
+                lineHeight: '1.6',
+                whiteSpace: 'pre-wrap',
+                fontFamily: "'Coming Soon', cursive",
+              }}>
+                {mission4LeafInfoText}
+                {mission4LeafInfoTyping && <span style={{
+                  animation: 'blink 1s infinite',
+                  marginLeft: '2px',
+                }}>|</span>}
+              </div>
+            </div>
+            
+            {/* Right: Discussion Button */}
+            <div style={{
+              flex: '0 0 auto',
+            }}>
+              <button
+                onClick={handleMission4Discussion}
+                disabled={mission4DiscussionUsed[mission4LeafIndex] || mission4LeafInfoTyping}
+                style={{
+                  padding: '15px 25px',
+                  background: (mission4DiscussionUsed[mission4LeafIndex] || mission4LeafInfoTyping) ? '#ccc' : 'white',
+                  border: 'none',
+                  borderRadius: '12px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  cursor: (mission4DiscussionUsed[mission4LeafIndex] || mission4LeafInfoTyping) ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  transition: 'transform 0.2s',
+                  opacity: (mission4DiscussionUsed[mission4LeafIndex] || mission4LeafInfoTyping) ? 0.6 : 1,
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                }}
+                onMouseOver={(e) => {
+                  if (!mission4DiscussionUsed[mission4LeafIndex] && !mission4LeafInfoTyping) {
+                    e.currentTarget.style.transform = 'scale(1.05)'
+                  }
+                }}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                <img src="/desert/icon/discussion.png" alt="Discussion" style={{width: '30px', height: '30px'}} />
+                Discussion
+              </button>
+            </div>
+          </div>
+          
+          {/* Bottom: Status Buttons with 3D Effect */}
+          <div style={{
+            position: 'absolute',
+            left: '50%',
+            bottom: '20px',
+            transform: 'translateX(-50%)',
+            display: 'flex',
+            gap: '30px',
+            zIndex: 100,
+          }}>
+            {/* Healthy Status Button */}
+            <div style={{position: 'relative'}}>
+              {/* Green shadow layer */}
+              <div style={{
+                position: 'absolute',
+                top: '8px',
+                left: '0',
+                right: '0',
+                height: '100%',
+                background: '#4CAF50',
+                borderRadius: '15px',
+                zIndex: 1,
+              }} />
+              {/* White button layer */}
+              <button
+                onClick={() => handleMission4Vote('healthy')}
+                disabled={mission4LeafInfoTyping}
+                style={{
+                  position: 'relative',
+                  zIndex: 2,
+                  padding: '18px 40px',
+                  background: 'white',
+                  border: 'none',
+                  borderRadius: '15px',
+                  fontSize: '20px',
+                  fontWeight: 'bold',
+                  cursor: mission4LeafInfoTyping ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                  transition: 'transform 0.2s',
+                  opacity: mission4LeafInfoTyping ? 0.6 : 1,
+                }}
+                onMouseOver={(e) => {
+                  if (!mission4LeafInfoTyping) {
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                  }
+                }}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+              >
+                <img src="/desert/icon/healthy.svg" alt="Healthy" style={{width: '35px', height: '35px'}} />
+                Healthy Status
+              </button>
+            </div>
+            
+            {/* Unhealthy Status Button */}
+            <div style={{position: 'relative'}}>
+              {/* Red shadow layer */}
+              <div style={{
+                position: 'absolute',
+                top: '8px',
+                left: '0',
+                right: '0',
+                height: '100%',
+                background: '#F44336',
+                borderRadius: '15px',
+                zIndex: 1,
+              }} />
+              {/* White button layer */}
+              <button
+                onClick={() => handleMission4Vote('unhealthy')}
+                disabled={mission4LeafInfoTyping}
+                style={{
+                  position: 'relative',
+                  zIndex: 2,
+                  padding: '18px 40px',
+                  background: 'white',
+                  border: 'none',
+                  borderRadius: '15px',
+                  fontSize: '20px',
+                  fontWeight: 'bold',
+                  cursor: mission4LeafInfoTyping ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                  transition: 'transform 0.2s',
+                  opacity: mission4LeafInfoTyping ? 0.6 : 1,
+                }}
+                onMouseOver={(e) => {
+                  if (!mission4LeafInfoTyping) {
+                    e.currentTarget.style.transform = 'translateY(-2px)'
+                  }
+                }}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+              >
+                <img src="/desert/icon/unhealthy.svg" alt="Unhealthy" style={{width: '35px', height: '35px'}} />
+                Unhealthy Status
+              </button>
+            </div>
+          </div>
+          
+          {/* Discussion Animation */}
+          {showMission4Discussion && (
+            <div style={{
+              position: 'absolute',
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              background: 'rgba(0, 0, 0, 0.8)',
+              color: 'white',
+              padding: '30px 50px',
+              borderRadius: '15px',
+              fontSize: '24px',
+              fontWeight: 'bold',
+              zIndex: 200,
+              animation: 'fadeIn 0.3s ease-in-out',
+            }}>
+              Experts are discussing...
+            </div>
+          )}
+        </>
+      )}
+      
+      {/* NPC7 for Mission 4 Completion - Show in gate view */}
+      {mission4Complete && currentView === 'gate' && (
+        <div 
+          style={{
+            position: 'absolute',
+            bottom: '15%',
+            left: '5%',
+            width: '300px',
+            height: '300px',
+            cursor: 'pointer',
+            zIndex: 30,
+            transition: 'transform 0.2s',
+          }}
+          onClick={() => {
+            // NPC7 dialogue is already shown, this is just for visual presence
+          }}
+          onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+          onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <img src="/desert/npc/npc7.png" alt="NPC 7" style={styles.npcImage} />
+        </div>
+      )}
+
       {/* Mission Progress Tracker - only show in non-color mode */}
       {!colorMode && missionStarted && currentView === 'desert' && (
         <div style={styles.progressTracker}>
@@ -3479,17 +4032,20 @@ const DesertMap = ({ onExit }) => {
         </div>
       )}
 
-      {/* Gate view */}
-      {currentView === 'gate' && (
+      {/* Gate view - hide arrow button during Mission 4 */}
+      {currentView === 'gate' && !mission4Started && (
         <>
           <button style={styles.arrowButton} onClick={handleArrowClick}>
             <img src="/desert/icon/arrow.png" alt="Enter" style={styles.zoomImage} />
           </button>
-          
-          <button style={styles.downButton} onClick={handleBackToDesert}>
-            <img src="/jungle/icon/down.png" alt="Back to Desert" style={styles.zoomImage} />
-          </button>
         </>
+      )}
+      
+      {/* Gate view - back button always visible */}
+      {currentView === 'gate' && (
+        <button style={styles.downButton} onClick={handleBackToDesert}>
+          <img src="/jungle/icon/down.png" alt="Back to Desert" style={styles.zoomImage} />
+        </button>
       )}
 
       {/* Castle view */}
@@ -3872,6 +4428,42 @@ const DesertMap = ({ onExit }) => {
                 MISSION COMPLETE
               </button>
             )}
+            
+            {/* Mission 4 Completion Button */}
+            {currentDialogue.isMission4Complete && !isTyping && (
+              <button 
+                style={{
+                  marginTop: '20px',
+                  padding: '15px 40px',
+                  background: 'rgba(139, 90, 43, 0.3)', // Brown glass effect
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: '2px solid rgba(139, 90, 43, 0.5)',
+                  borderRadius: '15px',
+                  color: '#8B5A2B',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 4px 15px rgba(139, 90, 43, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                  letterSpacing: '1px',
+                }}
+                onClick={handleMission4RebootAccept}
+                onMouseOver={(e) => {
+                  e.target.style.background = 'rgba(139, 90, 43, 0.4)'
+                  e.target.style.transform = 'translateY(-2px)'
+                  e.target.style.boxShadow = '0 6px 20px rgba(139, 90, 43, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3)'
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = 'rgba(139, 90, 43, 0.3)'
+                  e.target.style.transform = 'translateY(0)'
+                  e.target.style.boxShadow = '0 4px 15px rgba(139, 90, 43, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2)'
+                }}
+              >
+                🔄 REBOOT SYSTEM
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -3879,8 +4471,8 @@ const DesertMap = ({ onExit }) => {
       {/* Alpha Dialogue - Modern Design (Based on Reference Image 2) */}
       {showAlphaDialogue && (() => {
         const theme = getNpcTheme('alpha')
-        const totalSteps = 3
-        const currentStep = isMission2Completion ? 3 : (isPhase2 ? 2 : 1) // Phase 1 is step 1, Phase 2 is step 2, Mission 2 Completion is step 3
+        const totalSteps = 4 // Changed from 3 to 4 for 4 missions
+        const currentStep = mission4Started || mission4Complete ? 4 : (isMission3Completion ? 3 : (isMission2Completion ? 2 : (isPhase2 ? 2 : 1))) // Phase 1 is step 1, Phase 2/Mission 2 is step 2, Mission 3 is step 3, Mission 4 is step 4
         const progressPercent = (currentStep / totalSteps) * 100
         
         return (
@@ -3895,7 +4487,7 @@ const DesertMap = ({ onExit }) => {
                   ...styles.modernMissionTitle,
                   color: theme.borderColor
                 }}>
-                  {isMission2Completion ? 'MISSION: DATA LABELING COMPLETE' : (isPhase2 ? 'MISSION: DATA ANALYSIS' : 'MISSION: CASTLE DEFENSE')}
+                  {isMission3Completion ? 'MISSION: CONTEXT UNDERSTANDING COMPLETE' : (isMission2Completion ? 'MISSION: DATA LABELING COMPLETE' : (isPhase2 ? 'MISSION: DATA ANALYSIS' : 'MISSION: CASTLE DEFENSE'))}
                 </div>
                 <div style={styles.modernStepIndicator}>
                   Step {currentStep} of {totalSteps}
@@ -4232,6 +4824,274 @@ const DesertMap = ({ onExit }) => {
                   {mission2CompletionFlow[currentMission2CompletionStep].text}
                 </button>
               )}
+              
+              {/* Mission 3 Completion Messages */}
+              {isMission3Completion && alphaDialogueHistory.map((message, index) => {
+                const timestamp = getCurrentTimestamp()
+                
+                if (message.type === 'alpha') {
+                  return (
+                    <div key={index} style={styles.modernNpcMessage}>
+                      <div style={styles.modernNpcSpeaker}>ALPHA:</div>
+                      <p style={styles.modernNpcText}>{formatTextWithBold(message.text)}</p>
+                      <div style={styles.modernTimestamp}>{timestamp}</div>
+                    </div>
+                  )
+                }
+                
+                if (message.type === 'user') {
+                  return (
+                    <div key={index} style={styles.modernUserMessage}>
+                      <div style={styles.modernUserSpeaker}>YOU:</div>
+                      <div style={{
+                        ...styles.modernUserBubble,
+                        background: theme.borderColor
+                      }}>
+                        <p style={styles.modernUserText}>{message.text}</p>
+                      </div>
+                      <div style={{...styles.modernTimestamp, textAlign: 'right'}}>{timestamp}</div>
+                    </div>
+                  )
+                }
+                
+                return null
+              })}
+              
+              {/* Mission 3 Quiz 1 Intro */}
+              {isMission3Completion && alphaDialogueStep === 'quiz1_intro' && (
+                <div style={styles.modernNpcMessage}>
+                  <div style={styles.modernNpcSpeaker}>ALPHA:</div>
+                  <p style={styles.modernNpcText}>
+                    {formatTextWithBold("Threats cleared.\n\nI nearly fired the defense lasers—at a celebration… and a worker just battling the wind.\n\nMy core logic failed me.")}
+                  </p>
+                  <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
+                </div>
+              )}
+              
+              {/* Mission 3 Quiz 1 */}
+              {isMission3Completion && alphaDialogueStep === 'quiz1' && (
+                <>
+                  <div style={styles.modernNpcMessage}>
+                    <div style={styles.modernNpcSpeaker}>ALPHA:</div>
+                    <p style={{...styles.modernNpcText, fontWeight: 600}}>
+                      Why did the meaning of the 'Iron Sheet' change completely?
+                    </p>
+                  </div>
+                  
+                  {[
+                    { text: "A. Because the iron sheet changed shape.", correct: false },
+                    { text: "B. Because context (the weather) changes how we interpret an action.", correct: true },
+                    { text: "C. Because the worker yelled at me.", correct: false }
+                  ].map((option, index) => (
+                    <button
+                      key={index}
+                      style={{
+                        ...styles.modernActionButton,
+                        ...(wrongAnswerIndex === index ? {
+                          borderColor: '#FF0845',
+                          background: '#ffe0e6'
+                        } : {})
+                      }}
+                      onClick={() => handleMission3QuizAnswer(index, option.correct)}
+                      onMouseOver={(e) => {
+                        if (wrongAnswerIndex !== index) {
+                          e.target.style.borderColor = theme.borderColor
+                          e.target.style.transform = 'translateX(5px)'
+                        }
+                      }}
+                      onMouseOut={(e) => {
+                        if (wrongAnswerIndex !== index) {
+                          e.target.style.borderColor = '#E0E0E0'
+                          e.target.style.transform = 'translateX(0)'
+                        }
+                      }}
+                    >
+                      <span style={{fontSize: '16px', color: wrongAnswerIndex === index ? '#FF0845' : theme.borderColor}}>→</span>
+                      {option.text}
+                    </button>
+                  ))}
+                </>
+              )}
+              
+              {/* Mission 3 Quiz 1 Feedback */}
+              {isMission3Completion && alphaDialogueStep === 'quiz1_feedback' && (
+                <div style={styles.modernNpcMessage}>
+                  <div style={styles.modernNpcSpeaker}>ALPHA:</div>
+                  <p style={styles.modernNpcText}>
+                    {formatTextWithBold("The action didn't change. Only the context did—the sandstorm, the setting, the intent.")}
+                  </p>
+                  <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
+                </div>
+              )}
+              
+              {/* Mission 3 Quiz 2 */}
+              {isMission3Completion && alphaDialogueStep === 'quiz2' && (
+                <>
+                  <div style={styles.modernNpcMessage}>
+                    <div style={styles.modernNpcSpeaker}>ALPHA:</div>
+                    <p style={{...styles.modernNpcText, fontWeight: 600}}>
+                      If you hadn't helped me, I would have attacked them. What does this teach us about AI?
+                    </p>
+                  </div>
+                  
+                  {[
+                    { text: "A. AI is always right.", correct: false },
+                    { text: "B. AI needs human context and common sense to make good decisions.", correct: true },
+                    { text: "C. AI should work alone.", correct: false }
+                  ].map((option, index) => (
+                    <button
+                      key={index}
+                      style={{
+                        ...styles.modernActionButton,
+                        ...(wrongAnswerIndex === index ? {
+                          borderColor: '#FF0845',
+                          background: '#ffe0e6'
+                        } : {})
+                      }}
+                      onClick={() => handleMission3QuizAnswer(index, option.correct)}
+                      onMouseOver={(e) => {
+                        if (wrongAnswerIndex !== index) {
+                          e.target.style.borderColor = theme.borderColor
+                          e.target.style.transform = 'translateX(5px)'
+                        }
+                      }}
+                      onMouseOut={(e) => {
+                        if (wrongAnswerIndex !== index) {
+                          e.target.style.borderColor = '#E0E0E0'
+                          e.target.style.transform = 'translateX(0)'
+                        }
+                      }}
+                    >
+                      <span style={{fontSize: '16px', color: wrongAnswerIndex === index ? '#FF0845' : theme.borderColor}}>→</span>
+                      {option.text}
+                    </button>
+                  ))}
+                </>
+              )}
+              {/* Mission 3 Quiz 1 Feedback */}
+              {isMission3Completion && alphaDialogueStep === 'quiz1_feedback' && (
+                <>
+                  <div style={styles.modernNpcMessage}>
+                    <div style={styles.modernNpcSpeaker}>ALPHA:</div>
+                    <p style={styles.modernNpcText}>
+                      {formatTextWithBold("The action didn't change. Only the context did—the sandstorm, the setting, the intent.")}
+                    </p>
+                    <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
+                  </div>
+                  
+                  <button 
+                    style={styles.modernActionButton}
+                    onClick={handleMission3QuizContinue}
+                    onMouseOver={(e) => {
+                      e.target.style.borderColor = theme.borderColor
+                      e.target.style.transform = 'translateX(5px)'
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.borderColor = '#E0E0E0'
+                      e.target.style.transform = 'translateX(0)'
+                    }}
+                  >
+                    <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                    CONTINUE
+                  </button>
+                </>
+              )}
+              
+              {/* Mission 3 Complete */}
+              {isMission3Completion && alphaDialogueStep === 'complete' && (
+                <>
+                  <div style={styles.modernNpcMessage}>
+                    <div style={styles.modernNpcSpeaker}>ALPHA:</div>
+                    <p style={styles.modernNpcText}>
+                      {formatTextWithBold("Exactly.\n\nI process data—but you bring the common sense and context I'll never have on my own.")}
+                    </p>
+                    <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
+                  </div>
+                  
+                  <button 
+                    style={styles.modernActionButton}
+                    onClick={() => {
+                      playClickSound()
+                      setAlphaDialogueStep('mission4_part1')
+                      setAlphaDialogueHistory(prev => [...prev, { type: 'alpha', text: "Exactly.\n\nI process data—but you bring the common sense and context I'll never have on my own." }])
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.borderColor = theme.borderColor
+                      e.target.style.transform = 'translateX(5px)'
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.borderColor = '#E0E0E0'
+                      e.target.style.transform = 'translateX(0)'
+                    }}
+                  >
+                    <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                    CONTINUE
+                  </button>
+                </>
+              )}
+              
+              {/* Mission 4 Part 1 */}
+              {isMission3Completion && alphaDialogueStep === 'mission4_part1' && (
+                <div style={styles.modernNpcMessage}>
+                  <div style={styles.modernNpcSpeaker}>ALPHA:</div>
+                  <p style={styles.modernNpcText}>
+                    {formatTextWithBold("One final task… and it's urgent.\n\nGo to the gate of the castle. For each leaf image, you'll see labels from three expert biologists: Healthy, Infected, or Uncertain.")}
+                  </p>
+                  <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
+                </div>
+              )}
+              
+              {/* Mission 4 Part 2 */}
+              {isMission3Completion && alphaDialogueStep === 'mission4_part2' && (
+                <div style={styles.modernNpcMessage}>
+                  <div style={styles.modernNpcSpeaker}>ALPHA:</div>
+                  <p style={styles.modernNpcText}>
+                    {formatTextWithBold("If two or more agree, the system will automatically accept the majority verdict.")}
+                  </p>
+                  <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
+                </div>
+              )}
+              
+              {/* Mission 4 Part 3 */}
+              {isMission3Completion && alphaDialogueStep === 'mission4_part3' && (
+                <>
+                  <div style={styles.modernNpcMessage}>
+                    <div style={styles.modernNpcSpeaker}>ALPHA:</div>
+                    <p style={styles.modernNpcText}>
+                      {formatTextWithBold("But if all three disagree… that's where you come in. 👉 Tap \"Discussion\" to convene the experts—they'll re-examine the leaf and reach a new consensus.")}
+                    </p>
+                    <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
+                  </div>
+                  
+                  <button 
+                    style={styles.modernActionButton}
+                    onClick={() => {
+                      playClickSound()
+                      setShowAlphaDialogue(false)
+                      setIsMission3Completion(false)
+                      setCurrentView('gate') // Change to gate view
+                      setMission4Started(true)
+                      setMission4LeafIndex(0)
+                      setMission4VotesVisible(false) // Start with votes hidden
+                      // Start typing effect for first leaf
+                      setTimeout(() => {
+                        startMission4LeafTyping(0)
+                      }, 500)
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.borderColor = theme.borderColor
+                      e.target.style.transform = 'translateX(5px)'
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.borderColor = '#E0E0E0'
+                      e.target.style.transform = 'translateX(0)'
+                    }}
+                  >
+                    <span style={{fontSize: '16px', color: theme.borderColor}}>→</span>
+                    MISSION ACCEPTED
+                  </button>
+                </>
+              )}
             </div>
           </div>
         )
@@ -4332,11 +5192,20 @@ const DesertMap = ({ onExit }) => {
       {/* Mission 3 Loading Screen */}
       {showMission3Loading && (
         <div style={styles.mission3LoadingOverlay}>
+          <img 
+            src="/desert/icon/desert.svg" 
+            alt="Desert" 
+            style={{
+              width: '120px',
+              height: '120px',
+              marginBottom: '30px',
+              animation: 'spin 2s linear infinite',
+            }}
+          />
           <div style={styles.mission3LoadingText}>
             {loadingText}
             {loadingTyping && <span style={styles.loadingCursor}></span>}
           </div>
-          <div style={styles.mission3LoadingSpinner}></div>
         </div>
       )}
     </div>
