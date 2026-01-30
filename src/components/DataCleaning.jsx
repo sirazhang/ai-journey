@@ -7,11 +7,10 @@ const NOISE_ITEMS = ['03', '05', '07']
 // All collected items (will be shown in 3 batches of 4)
 const ALL_ITEMS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 
-// Batch groupings for noise removal display
+// Batch groupings for noise removal display - 6 items per batch
 const NOISE_BATCHES = [
-  ['01', '02', '03', '04'],
-  ['05', '06', '07', '08'],
-  ['09', '10', '11', '12'],
+  ['01', '02', '03', '04', '05', '06'],
+  ['07', '08', '09', '10', '11', '12'],
 ]
 
 // Dirty data for label correction
@@ -230,6 +229,16 @@ const DataCleaning = ({ onComplete, onExit }) => {
   const [phase, setPhase] = useState('INTRO') // INTRO, NOISE_REMOVAL, LABEL_CORRECTION, FILL_MISSING_INTRO, FILL_MISSING, QUIZ, TRAINING, VALIDATION_INTRO, VALIDATION_DATA, ADJUST_MODEL_INTRO, ADJUST_MODEL_DATA, ADJUST_MODEL_TRAINING, LOADING, COLOR_MAP_EXPLORATION, COMPLETE
   const [noiseBatch, setNoiseBatch] = useState(0)
   const [removedItems, setRemovedItems] = useState([])
+  const [wrongSelections, setWrongSelections] = useState([]) // Track wrong selections with red border
+  
+  // Modern Ranger Moss dialogue states
+  const [showModernRangerDialogue, setShowModernRangerDialogue] = useState(false)
+  const [rangerMessages, setRangerMessages] = useState([])
+  const [currentRangerStep, setCurrentRangerStep] = useState(0)
+  const [rangerDisplayedText, setRangerDisplayedText] = useState('')
+  const [rangerIsTyping, setRangerIsTyping] = useState(false)
+  const [currentTypingMessage, setCurrentTypingMessage] = useState(null)
+  const [waitingForRangerAction, setWaitingForRangerAction] = useState(false)
 
   // Load saved progress on mount
   useEffect(() => {
@@ -327,9 +336,77 @@ const DataCleaning = ({ onComplete, onExit }) => {
     "We must enter the Data Cleaning Phase.",
   ]
 
-  const labelIntroDialogue = "Great job removing the noise. Now, look at this Data Table. The auto-tagging system was glitching, so some Labels are wrong. Click on the cells you think contain errors!"
+  const labelIntroDialogues = [
+    "Great job removing the noise. Now, look at this Data Table.",
+    "The auto-tagging system was glitching, so some Labels are wrong. Click on the cells you think contain errors!",
+    "Here's what to watch for:",
+    "<strong>Color</strong> should be plain color names like Purple, Red / White, or Lavender—not codes like #2323332, RGB values like rgb(255,0,0), or random strings like 7F3A9C.",
+    "<strong>Texture</strong> needs descriptive words—Smooth, Rough, Striped—not yes/no answers, booleans like True, or numbers like 1.",
+    "<strong>Toxic</strong> is strictly Yes or No. Anything fuzzy like Maybe, Probably, N/A, or idk? That's a glitch.",
+    "If you see any of that nonsense—click the cell and flag it!"
+  ]
   
-  const fillMissingIntroDialogue = "Some data fields are completely Empty (Null). The AI cannot learn from nothing! Click on the empty cells. I will project the hologram (photo) of the mushroom. Look at the photo, and fill in the blank."
+  const fillMissingIntroDialogues = [
+    "Some data fields are completely Empty (Null).",
+    "The AI cannot learn from nothing! Click on the empty cells.",
+    "I will project the hologram (photo) of the mushroom. Look at the photo, and fill in the blank."
+  ]
+  
+  const preTrainingQuizDialogues = [
+    { type: 'message', text: "Hold on! Before we push the big button, I need to make sure you understand what we are doing." },
+    { 
+      type: 'quiz', 
+      question: "Quick check: How does an AI actually learn?",
+      options: [
+        { text: "By analyzing patterns in data", correct: true },
+        { text: "By just guessing randomly", correct: false },
+      ],
+      correctResponse: "Correct! AI isn't magic, and it doesn't verify answers by itself. It needs massive amounts of data to find the hidden rules.",
+      incorrectResponse: "Not quite! AI doesn't just guess randomly. It learns by analyzing patterns in data."
+    },
+    { 
+      type: 'quiz', 
+      question: "Now, think about the data you just collected. To help the AI decide if a mushroom is toxic, which features are actually helpful?",
+      options: [
+        { text: "Color, Shape, and Texture", correct: true },
+        { text: "The name of the person who picked it", correct: false },
+      ],
+      correctResponse: "Precisely! To make accurate predictions, the AI needs data related to the object itself. Irrelevant info—like who picked it—is just Noise. It will only confuse the model!",
+      incorrectResponse: "Actually, the name of the person who picked it is irrelevant! The AI needs data related to the object itself."
+    },
+    { type: 'message', text: "The dataset is clean. The patterns are clear. Are you ready? Let's initiate the Model Training process!" },
+  ]
+  
+  const validationIntroDialogues = [
+    { type: 'message', text: "Training complete! The AI has learned to identify the 'Toxic Traits'." },
+    { 
+      type: 'quiz', 
+      question: "But wait... we need to verify if it really learned, or if it just memorized our list. How should we test the AI?",
+      options: [
+        { text: "Test with NEW mushrooms it hasn't seen", correct: true },
+        { text: "Test with the SAME mushrooms it already studied", correct: false },
+      ],
+      correctResponse: "Spot on! If we test with old data, the AI is just cheating—like memorizing the answers to a test. Only by using Unseen Data (New Mushrooms) can we prove it can truly judge and generalize!",
+      incorrectResponse: "Not quite! Testing with the same data is like cheating. We need NEW mushrooms to verify real learning."
+    }
+  ]
+  
+  const adjustModelIntroDialogues = [
+    "Uh oh... 😱 This is bad news! The AI only got 45% correct on the new mushrooms.",
+    "It's confusing 😵‍💫 the 'Death Cap' with the 'Edible Paddy Straw' mushroom! If we use this AI now, the Elf might get a tummy ache... or worse!",
+    "We can't give up, but we need to fix this.",
+    {
+      type: 'quiz',
+      question: "Think like a Data Scientist. Why is the AI failing? It probably hasn't seen enough examples of the tricky mushrooms yet. What should we do to improve the AI's accuracy?",
+      options: [
+        { text: "Feed it MORE varied photos & Retrain", correct: true },
+        { text: "Only test it on mushrooms it knows", correct: false },
+        { text: "Change the code to say 'Safe' for everything", correct: false },
+      ],
+      correctResponse: "Brilliant! 🌟 Option B is cheating (and dangerous!), and Option C is just lazy code.",
+      incorrectResponse: "That won't help the AI learn better! Think about what data scientists do."
+    }
+  ]
 
   // Reset selected cells when batch changes
   useEffect(() => {
@@ -362,9 +439,215 @@ const DataCleaning = ({ onComplete, onExit }) => {
 
   useEffect(() => {
     if (phase === 'INTRO') {
-      setTimeout(() => setShowRangerDialogue(true), 500)
+      setTimeout(() => {
+        setShowModernRangerDialogue(true)
+        startRangerDialogue()
+      }, 500)
+    } else if (phase === 'LABEL_INTRO') {
+      setTimeout(() => {
+        setShowModernRangerDialogue(true)
+        startLabelIntroDialogue()
+      }, 500)
+    } else if (phase === 'FILL_MISSING_INTRO') {
+      setTimeout(() => {
+        setShowModernRangerDialogue(true)
+        startFillMissingIntroDialogue()
+      }, 500)
     }
   }, [phase])
+  
+  // Typing sound
+  const [typingSound] = useState(new Audio('/sound/typing_jungle.wav'))
+  
+  // Sound effects
+  const [trashSound] = useState(new Audio('/sound/trash.wav'))
+  const [wrongSound] = useState(new Audio('/sound/wrong.mp3'))
+  
+  useEffect(() => {
+    trashSound.volume = 0.5
+    wrongSound.volume = 0.5
+  }, [trashSound, wrongSound])
+  
+  // Format text with bold keywords
+  const formatTextWithBold = (text) => {
+    if (!text) return text
+    const parts = text.split(/(<strong>.*?<\/strong>)/g)
+    return parts.map((part, index) => {
+      if (part.startsWith('<strong>')) {
+        const content = part.replace(/<\/?strong>/g, '')
+        return <span key={index} style={{ fontWeight: 700, color: '#8B4513' }}>{content}</span>
+      }
+      return part
+    })
+  }
+  
+  // Get current timestamp
+  const getCurrentTimestamp = () => {
+    const now = new Date()
+    return now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+  }
+  
+  // Start Ranger dialogue for INTRO
+  const startRangerDialogue = () => {
+    setRangerMessages([])
+    setCurrentRangerStep(0)
+    addRangerMessage(0)
+  }
+  
+  // Start Label Intro dialogue
+  const startLabelIntroDialogue = () => {
+    setRangerMessages([])
+    setCurrentRangerStep(0)
+    addLabelIntroMessage(0)
+  }
+  
+  // Start Fill Missing Intro dialogue
+  const startFillMissingIntroDialogue = () => {
+    setRangerMessages([])
+    setCurrentRangerStep(0)
+    addFillMissingIntroMessage(0)
+  }
+  
+  // Add Ranger message with typing effect
+  const addRangerMessage = (stepIndex) => {
+    if (stepIndex >= rangerDialogues.length) return
+    
+    const text = rangerDialogues[stepIndex]
+    const newMessage = { type: 'message', text }
+    setRangerMessages(prev => [...prev, newMessage])
+    setCurrentTypingMessage(newMessage)
+    
+    // Start typing effect and sound
+    let charIndex = 0
+    setRangerDisplayedText('')
+    setRangerIsTyping(true)
+    typingSound.play().catch(err => console.log('Typing sound error:', err))
+    
+    const typingInterval = setInterval(() => {
+      if (charIndex < text.length) {
+        setRangerDisplayedText(text.substring(0, charIndex + 1))
+        charIndex++
+      } else {
+        setRangerIsTyping(false)
+        setCurrentTypingMessage(null)
+        typingSound.pause()
+        typingSound.currentTime = 0
+        clearInterval(typingInterval)
+        
+        // Check if this is the last message
+        if (stepIndex === rangerDialogues.length - 1) {
+          setWaitingForRangerAction(true)
+        } else {
+          // Auto-continue to next message
+          setTimeout(() => {
+            setCurrentRangerStep(stepIndex + 1)
+            addRangerMessage(stepIndex + 1)
+          }, 500)
+        }
+      }
+    }, 25)
+  }
+  
+  // Add Label Intro message with typing effect
+  const addLabelIntroMessage = (stepIndex) => {
+    if (stepIndex >= labelIntroDialogues.length) return
+    
+    const text = labelIntroDialogues[stepIndex]
+    const newMessage = { type: 'message', text }
+    setRangerMessages(prev => [...prev, newMessage])
+    setCurrentTypingMessage(newMessage)
+    
+    // Start typing effect and sound
+    let charIndex = 0
+    setRangerDisplayedText('')
+    setRangerIsTyping(true)
+    typingSound.play().catch(err => console.log('Typing sound error:', err))
+    
+    const typingInterval = setInterval(() => {
+      if (charIndex < text.length) {
+        setRangerDisplayedText(text.substring(0, charIndex + 1))
+        charIndex++
+      } else {
+        setRangerIsTyping(false)
+        setCurrentTypingMessage(null)
+        typingSound.pause()
+        typingSound.currentTime = 0
+        clearInterval(typingInterval)
+        
+        // Check if this is the last message
+        if (stepIndex === labelIntroDialogues.length - 1) {
+          setWaitingForRangerAction(true)
+        } else {
+          // Auto-continue to next message
+          setTimeout(() => {
+            setCurrentRangerStep(stepIndex + 1)
+            addLabelIntroMessage(stepIndex + 1)
+          }, 500)
+        }
+      }
+    }, 25)
+  }
+  
+  // Add Fill Missing Intro message with typing effect
+  const addFillMissingIntroMessage = (stepIndex) => {
+    if (stepIndex >= fillMissingIntroDialogues.length) return
+    
+    const text = fillMissingIntroDialogues[stepIndex]
+    const newMessage = { type: 'message', text }
+    setRangerMessages(prev => [...prev, newMessage])
+    setCurrentTypingMessage(newMessage)
+    
+    // Start typing effect and sound
+    let charIndex = 0
+    setRangerDisplayedText('')
+    setRangerIsTyping(true)
+    typingSound.play().catch(err => console.log('Typing sound error:', err))
+    
+    const typingInterval = setInterval(() => {
+      if (charIndex < text.length) {
+        setRangerDisplayedText(text.substring(0, charIndex + 1))
+        charIndex++
+      } else {
+        setRangerIsTyping(false)
+        setCurrentTypingMessage(null)
+        typingSound.pause()
+        typingSound.currentTime = 0
+        clearInterval(typingInterval)
+        
+        // Check if this is the last message
+        if (stepIndex === fillMissingIntroDialogues.length - 1) {
+          // Show example image after last message
+          setWaitingForRangerAction(true)
+        } else {
+          // Auto-continue to next message
+          setTimeout(() => {
+            setCurrentRangerStep(stepIndex + 1)
+            addFillMissingIntroMessage(stepIndex + 1)
+          }, 500)
+        }
+      }
+    }, 25)
+  }
+  
+  // Handle Mission Accepted button
+  const handleMissionAccepted = () => {
+    setShowModernRangerDialogue(false)
+    
+    if (phase === 'INTRO') {
+      setPhase('NOISE_REMOVAL')
+      // Save phase progress
+      const savedUser = localStorage.getItem('aiJourneyUser')
+      if (savedUser) {
+        const userData = JSON.parse(savedUser)
+        userData.rangerMossPhase = 2 // Phase 2: Data Cleaning
+        localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+      }
+    } else if (phase === 'LABEL_INTRO') {
+      setPhase('LABEL_CORRECTION')
+    } else if (phase === 'FILL_MISSING_INTRO') {
+      setPhase('FILL_MISSING')
+    }
+  }
 
   const handleRangerContinue = () => {
     if (isTyping) {
@@ -385,12 +668,27 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }
 
   const handleItemClick = (itemId) => {
+    const isNoise = NOISE_ITEMS.includes(itemId)
+    
     if (removedItems.includes(itemId)) {
-      // Put back
+      // Put back from trash
       setRemovedItems(prev => prev.filter(id => id !== itemId))
+      setWrongSelections(prev => prev.filter(id => id !== itemId))
     } else {
-      // Remove to trash
-      setRemovedItems(prev => [...prev, itemId])
+      if (isNoise) {
+        // Correct - remove to trash
+        trashSound.currentTime = 0
+        trashSound.play().catch(err => console.log('Trash sound error:', err))
+        setRemovedItems(prev => [...prev, itemId])
+        setWrongSelections(prev => prev.filter(id => id !== itemId))
+      } else {
+        // Wrong - show red border
+        wrongSound.currentTime = 0
+        wrongSound.play().catch(err => console.log('Wrong sound error:', err))
+        if (!wrongSelections.includes(itemId)) {
+          setWrongSelections(prev => [...prev, itemId])
+        }
+      }
     }
   }
 
@@ -409,7 +707,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
       return
     }
 
-    if (noiseBatch < 2) {
+    if (noiseBatch < 1) {
       setNoiseBatch(prev => prev + 1)
     } else {
       // All noise removed, move to label correction
@@ -2104,10 +2402,310 @@ const DataCleaning = ({ onComplete, onExit }) => {
       cursor: 'pointer',
       transition: 'all 0.2s',
     },
+    // Modern Ranger Moss dialogue styles
+    modernDialogueContainer: {
+      position: 'absolute',
+      top: '12.5%',
+      left: '10%',
+      width: '40%',
+      height: '70%',
+      zIndex: 100,
+      background: 'rgba(245, 245, 245, 0.98)',
+      borderRadius: '15px',
+      display: 'flex',
+      flexDirection: 'column',
+      boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+      border: '3px solid #8B4513',
+    },
+    modernDialogueHeader: {
+      padding: '20px 25px 15px 25px',
+      borderBottom: 'none',
+    },
+    modernProgressContainer: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '15px',
+    },
+    modernMissionTitle: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      fontWeight: 700,
+      textTransform: 'uppercase',
+      letterSpacing: '1px',
+      color: '#8B4513',
+    },
+    modernStepIndicator: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '13px',
+      color: '#999',
+    },
+    modernProgressBar: {
+      width: '100%',
+      height: '4px',
+      backgroundColor: 'rgba(200,200,200,0.3)',
+      borderRadius: '2px',
+      overflow: 'hidden',
+      marginBottom: '20px',
+    },
+    modernProgressFill: {
+      height: '100%',
+      borderRadius: '2px',
+      transition: 'width 0.3s ease',
+      background: '#8FCCAE',
+    },
+    modernNpcInfo: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      marginBottom: '15px',
+      flex: 1,
+    },
+    modernNpcAvatar: {
+      width: '50px',
+      height: '50px',
+      borderRadius: '50%',
+      objectFit: 'cover',
+      border: '2px solid white',
+      boxShadow: '0 2px 6px rgba(0,0,0,0.15)',
+    },
+    modernNpcName: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '16px',
+      fontWeight: 700,
+      color: '#333',
+    },
+    modernNpcStatus: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '12px',
+      color: '#999',
+    },
+    modernCloseButton: {
+      position: 'relative',
+      background: 'none',
+      border: 'none',
+      fontSize: '20px',
+      color: '#999',
+      cursor: 'pointer',
+      padding: '5px',
+      width: '30px',
+      height: '30px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'all 0.2s',
+      flexShrink: 0,
+    },
+    modernDialogueContent: {
+      flex: 1,
+      padding: '0 25px 25px 25px',
+      overflowY: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '12px',
+    },
+    modernNpcMessage: {
+      alignSelf: 'flex-start',
+      maxWidth: '100%',
+    },
+    modernNpcSpeaker: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '12px',
+      fontWeight: 700,
+      color: '#666',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
+      marginBottom: '6px',
+    },
+    modernNpcText: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      color: '#333',
+      lineHeight: 1.6,
+      margin: 0,
+    },
+    modernTimestamp: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '11px',
+      color: '#999',
+      marginTop: '4px',
+    },
+    modernActionButton: {
+      alignSelf: 'stretch',
+      background: '#8B4513',
+      color: '#fff',
+      fontWeight: 'bold',
+      fontSize: '16px',
+      padding: '15px 30px',
+      border: 'none',
+      borderRadius: '25px',
+      fontFamily: "'Roboto', sans-serif",
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+      marginTop: '8px',
+    },
   }
 
   const currentBatchItems = NOISE_BATCHES[noiseBatch] || []
   const currentTableData = DIRTY_DATA[labelBatch]
+  
+  // Render modern Ranger Moss dialogue
+  const renderModernRangerDialogue = () => {
+    if (!showModernRangerDialogue) return null
+    
+    // Get current phase from localStorage
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    const userData = savedUser ? JSON.parse(savedUser) : {}
+    const currentPhase = userData.rangerMossPhase || 2
+    
+    const totalSteps = 5
+    const progressPercent = (currentPhase / totalSteps) * 100
+    
+    // Phase titles
+    const phaseTitles = {
+      1: 'PHASE 1: COLLECTING DATA',
+      2: 'PHASE 2: DATA CLEANING',
+      3: 'PHASE 3: CORRECT LABELS + FILL MISSING VALUES',
+      4: 'PHASE 4: TEST THE MODEL',
+      5: 'PHASE 5: REFINE THE MODEL'
+    }
+    
+    return (
+      <div style={styles.modernDialogueContainer}>
+        {/* Header with Progress */}
+        <div style={styles.modernDialogueHeader}>
+          <div style={styles.modernProgressContainer}>
+            <div style={styles.modernMissionTitle}>
+              {phaseTitles[currentPhase]}
+            </div>
+            <div style={styles.modernStepIndicator}>
+              Phase {currentPhase} of {totalSteps}
+            </div>
+          </div>
+          <div style={styles.modernProgressBar}>
+            <div style={{
+              ...styles.modernProgressFill,
+              width: `${progressPercent}%`,
+            }} />
+          </div>
+          
+          {/* NPC Info and Close Button Container */}
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+            {/* NPC Info */}
+            <div style={styles.modernNpcInfo}>
+              <img 
+                src="/jungle/npc_c.png" 
+                alt="Ranger Moss" 
+                style={styles.modernNpcAvatar}
+              />
+              <div>
+                <div style={styles.modernNpcName}>Ranger Moss</div>
+                <div style={styles.modernNpcStatus}>Jungle Ranger</div>
+              </div>
+            </div>
+            
+            {/* Close Button */}
+            <button 
+              style={styles.modernCloseButton}
+              onClick={() => {
+                typingSound.pause()
+                typingSound.currentTime = 0
+                setShowModernRangerDialogue(false)
+              }}
+              onMouseOver={(e) => e.target.style.color = '#333'}
+              onMouseOut={(e) => e.target.style.color = '#999'}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+        
+        {/* Messages Content */}
+        <div style={styles.modernDialogueContent}>
+          {rangerMessages.map((message, index) => {
+            const timestamp = getCurrentTimestamp()
+            
+            if (message.type === 'message') {
+              return (
+                <div key={index} style={styles.modernNpcMessage}>
+                  <div style={styles.modernNpcSpeaker}>RANGER MOSS:</div>
+                  <p style={styles.modernNpcText}>
+                    {currentTypingMessage && currentTypingMessage === message ? (
+                      <>
+                        {formatTextWithBold(rangerDisplayedText)}
+                        {rangerIsTyping && <span style={{ opacity: 0.5 }}>|</span>}
+                      </>
+                    ) : (
+                      formatTextWithBold(message.text)
+                    )}
+                  </p>
+                  <div style={styles.modernTimestamp}>{timestamp}</div>
+                </div>
+              )
+            }
+            
+            return null
+          })}
+          
+          {/* Example Image for FILL_MISSING_INTRO */}
+          {phase === 'FILL_MISSING_INTRO' && waitingForRangerAction && (
+            <div style={{
+              background: '#1a1a2e',
+              borderRadius: '15px',
+              padding: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              marginTop: '10px',
+            }}>
+              <img 
+                src="/jungle/object/12.png"
+                alt="Example Mushroom"
+                style={{
+                  width: '150px',
+                  height: '150px',
+                  objectFit: 'contain',
+                  marginBottom: '15px',
+                }}
+              />
+              <p style={{
+                fontFamily: "'Roboto Mono', monospace",
+                fontSize: '13px',
+                color: '#fff',
+                lineHeight: 1.6,
+                margin: 0,
+                textAlign: 'center',
+              }}>
+                <strong>Color:</strong> Pink / Purple<br/>
+                <strong>Texture:</strong> Slimy / Webbed<br/>
+                <strong>Spikes:</strong> Yes
+              </p>
+            </div>
+          )}
+          
+          {/* Mission Accepted Button */}
+          {waitingForRangerAction && (
+            <button 
+              style={styles.modernActionButton}
+              onClick={handleMissionAccepted}
+              onMouseOver={(e) => {
+                e.target.style.transform = 'scale(1.05)'
+              }}
+              onMouseOut={(e) => {
+                e.target.style.transform = 'scale(1)'
+              }}
+            >
+              MISSION ACCEPTED
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={styles.container}>
@@ -2346,81 +2944,223 @@ const DataCleaning = ({ onComplete, onExit }) => {
 
           {/* Ranger Moss NPC */}
           <img src="/jungle/npc_c.png" alt="Ranger Moss" style={styles.rangerNpc} />
+          
+          {/* Modern Ranger Moss Dialogue */}
+          {renderModernRangerDialogue()}
         </>
       )}
 
-      {/* Noise Removal Phase */}
+      {/* Noise Removal Phase - New Design */}
       {phase === 'NOISE_REMOVAL' && (
-        <div style={styles.cardContainer}>
-          <div style={styles.card}>
-            <h2 style={styles.cardTitle}>CLEAN THE DATA</h2>
-            <p style={styles.cardSubtitle}>
-              Please click on the irrelevant items to remove them. Keep ONLY the mushrooms!
-            </p>
-            
-            <div style={styles.itemGrid}>
-              {currentBatchItems.map(id => (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '85%',
+          height: '70%',
+          background: 'rgba(0, 0, 0, 0.8)',
+          borderRadius: '20px',
+          padding: '40px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          zIndex: 50,
+        }}>
+          {/* Title */}
+          <div style={{
+            background: '#fff',
+            border: '3px solid #00bf63',
+            borderRadius: '15px',
+            padding: '15px 40px',
+            marginBottom: '20px',
+          }}>
+            <h2 style={{
+              fontFamily: "'Coming Soon', cursive",
+              fontSize: '32px',
+              color: '#333',
+              margin: 0,
+              letterSpacing: '2px',
+            }}>
+              CLEAN THE DATA
+            </h2>
+          </div>
+          
+          {/* Subtitle */}
+          <p style={{
+            fontFamily: "'Roboto', sans-serif",
+            fontSize: '18px',
+            color: '#fff',
+            marginBottom: '30px',
+          }}>
+            Please click on the <span style={{ fontWeight: 'bold', color: '#00bf63' }}>irrelevant items</span>. Keep ONLY the mushrooms!
+          </p>
+          
+          {/* Items Grid */}
+          <div style={{
+            display: 'flex',
+            gap: '25px',
+            marginBottom: '30px',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            justifyContent: 'center',
+          }}>
+            {currentBatchItems.map(id => {
+              const isRemoved = removedItems.includes(id)
+              const isWrong = wrongSelections.includes(id)
+              
+              return (
                 <div
                   key={id}
                   style={{
-                    ...styles.itemCard,
-                    ...(removedItems.includes(id) ? styles.itemCardRemoved : {}),
+                    width: '160px',
+                    height: '160px',
+                    background: isRemoved ? 'transparent' : '#fff',
+                    borderRadius: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: isRemoved ? 'default' : 'pointer',
+                    boxShadow: isRemoved ? 'none' : (isWrong ? '0 0 20px rgba(255, 0, 0, 0.8)' : '0 0 20px rgba(255, 255, 255, 0.5)'),
+                    border: isWrong ? '3px solid #ff0000' : 'none',
+                    transition: 'all 0.3s',
+                    opacity: isRemoved ? 0 : 1,
                   }}
-                  onClick={() => handleItemClick(id)}
+                  onClick={() => !isRemoved && handleItemClick(id)}
+                  onMouseOver={(e) => {
+                    if (!isRemoved) {
+                      e.currentTarget.style.transform = 'scale(1.05)'
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)'
+                  }}
                 >
-                  {!removedItems.includes(id) && (
+                  {!isRemoved && (
                     <img 
                       src={`/jungle/object/${id}.png`}
                       alt={`Object ${id}`}
-                      style={styles.itemImage}
+                      style={{
+                        width: '130px',
+                        height: '130px',
+                        objectFit: 'contain',
+                      }}
                     />
                   )}
                 </div>
-              ))}
-            </div>
-
-            <div style={styles.trashArea}>
-              {[0, 1, 2].map(i => {
-                // Show ALL removed items across all batches, not just current batch
-                const item = removedItems[i]
-                return (
-                  <div 
-                    key={i} 
+              )
+            })}
+            
+            {/* Next Button */}
+            {noiseBatch < 1 && (
+              <button
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  color: '#fff',
+                  fontFamily: "'Roboto', sans-serif",
+                  fontSize: '18px',
+                  fontWeight: 600,
+                  padding: '10px 20px',
+                  transition: 'transform 0.2s',
+                }}
+                onClick={handleNoiseNext}
+                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              >
+                NEXT
+                <img 
+                  src="/jungle/icon/right.png"
+                  alt="Next"
+                  style={{ width: '30px', height: '30px' }}
+                />
+              </button>
+            )}
+          </div>
+          
+          {/* Trash Area */}
+          <div style={{
+            display: 'flex',
+            gap: '20px',
+            marginTop: 'auto',
+          }}>
+            {/* Trash Bins - Show removed items */}
+            {[0, 1, 2].map(i => {
+              const removedItem = removedItems[i] // Get the i-th removed item
+              
+              return (
+                <div
+                  key={i}
+                  style={{
+                    width: '160px',
+                    height: '160px',
+                    background: '#00bf63',
+                    borderRadius: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative',
+                  }}
+                >
+                  {/* Trash icon as background */}
+                  <img 
+                    src="/jungle/icon/trash.svg"
+                    alt="Trash"
                     style={{
-                      ...styles.trashSlot,
-                      cursor: item ? 'pointer' : 'default',
+                      width: '80px',
+                      height: '80px',
+                      filter: 'brightness(0) invert(1)',
+                      opacity: removedItem ? 0.3 : 1,
+                      position: 'absolute',
                     }}
-                    onClick={() => item && handleItemClick(item)}
-                  >
-                    {item && (
-                      <img 
-                        src={`/jungle/object/${item}.png`}
-                        alt={`Removed ${item}`}
-                        style={{ width: '60px', height: '60px', objectFit: 'contain', opacity: 0.7 }}
-                      />
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-
-            <button style={styles.nextButton} onClick={handleNoiseNext}>
-              NEXT
-            </button>
+                  />
+                  
+                  {/* Show removed item on top of trash icon */}
+                  {removedItem && (
+                    <img 
+                      src={`/jungle/object/${removedItem}.png`}
+                      alt={`Removed ${removedItem}`}
+                      style={{
+                        width: '120px',
+                        height: '120px',
+                        objectFit: 'contain',
+                        position: 'relative',
+                        zIndex: 1,
+                      }}
+                    />
+                  )}
+                </div>
+              )
+            })}
           </div>
-        </div>
-      )}
-
-      {/* Label Intro Phase */}
-      {phase === 'LABEL_INTRO' && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.dialogueBox}>
-            <p style={styles.speakerName}>Ranger Moss:</p>
-            <p style={styles.dialogueText}>{labelIntroDialogue}</p>
-            <button style={styles.continueButton} onClick={handleLabelIntroNext}>
-              Continue →
+          
+          {/* Final Next Button */}
+          {noiseBatch === 1 && (
+            <button
+              style={{
+                marginTop: '20px',
+                background: '#00bf63',
+                border: 'none',
+                borderRadius: '10px',
+                padding: '15px 40px',
+                color: '#fff',
+                fontFamily: "'Roboto', sans-serif",
+                fontSize: '18px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'transform 0.2s',
+              }}
+              onClick={handleNoiseNext}
+              onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+              onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              CONTINUE
             </button>
-          </div>
+          )}
         </div>
       )}
 
@@ -3066,8 +3806,8 @@ const DataCleaning = ({ onComplete, onExit }) => {
         </div>
       )}
 
-      {/* Ranger Moss Dialogue - Left Side Panel */}
-      {showRangerDialogue && (
+      {/* Ranger Moss Dialogue - Left Side Panel (OLD - only show if not using modern dialogue) */}
+      {showRangerDialogue && !showModernRangerDialogue && (
         <div style={styles.leftDialogueContainer}>
           <div style={styles.dialogueHistoryBox}>
             <p style={styles.speakerName}>Ranger Moss:</p>
