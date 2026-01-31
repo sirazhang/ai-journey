@@ -399,6 +399,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
   const [colorMapNpcDisplayedText, setColorMapNpcDisplayedText] = useState('')
   const [colorMapNpcIsTyping, setColorMapNpcIsTyping] = useState(false)
   const [colorMapNpcAutoShown, setColorMapNpcAutoShown] = useState({}) // Track which NPCs have auto-shown dialogue
+  const [dialogueInitialized, setDialogueInitialized] = useState(false) // Prevent duplicate dialogue initialization
 
   const rangerDialogues = [
     "Outstanding work, Human! You've gathered enough raw data. But... we can't feed this directly to the <strong>AI</strong>. Not yet.",
@@ -509,23 +510,31 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }, [rangerDialogueIndex, showRangerDialogue])
 
   useEffect(() => {
-    if (phase === 'INTRO') {
+    if (phase === 'INTRO' && !dialogueInitialized) {
       setTimeout(() => {
         setShowModernRangerDialogue(true)
+        setDialogueInitialized(true)
         startRangerDialogue()
       }, 500)
-    } else if (phase === 'LABEL_INTRO') {
+    } else if (phase === 'LABEL_INTRO' && !dialogueInitialized) {
       setTimeout(() => {
         setShowModernRangerDialogue(true)
+        setDialogueInitialized(true)
         startLabelIntroDialogue()
       }, 500)
-    } else if (phase === 'FILL_MISSING_INTRO') {
+    } else if (phase === 'FILL_MISSING_INTRO' && !dialogueInitialized) {
       setTimeout(() => {
         setShowModernRangerDialogue(true)
+        setDialogueInitialized(true)
         startFillMissingIntroDialogue()
       }, 500)
     }
-  }, [phase])
+    
+    // Reset dialogue initialized flag when phase changes to a non-intro phase
+    if (phase !== 'INTRO' && phase !== 'LABEL_INTRO' && phase !== 'FILL_MISSING_INTRO') {
+      setDialogueInitialized(false)
+    }
+  }, [phase, dialogueInitialized])
   
   // Typing sound
   const [typingSound] = useState(new Audio('/sound/typing_jungle.wav'))
