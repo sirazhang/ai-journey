@@ -7,6 +7,7 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
   const { t } = useLanguage()
   const [hasProgress, setHasProgress] = useState(false)
   const [username, setUsername] = useState('')
+  const [allRegionsComplete, setAllRegionsComplete] = useState(false)
   const { playClickSound } = useSoundEffects()
 
   useEffect(() => {
@@ -17,6 +18,57 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
       setUsername(userData.username || '')
       setHasProgress(userData.hasStarted === true)
     }
+    
+    // Check if all 4 regions are complete
+    const checkAllRegionsComplete = () => {
+      const progress = {}
+      
+      // Load Glacier progress
+      const glacierProgress = localStorage.getItem('glacierProgress')
+      if (glacierProgress) {
+        const data = JSON.parse(glacierProgress)
+        progress.glacier = data.isComplete ? 100 : 0
+      } else {
+        progress.glacier = 0
+      }
+      
+      // Load Island progress
+      const islandProgress = localStorage.getItem('islandProgress')
+      if (islandProgress) {
+        const data = JSON.parse(islandProgress)
+        progress.island = data.islandRestored ? 100 : 0
+      } else {
+        progress.island = 0
+      }
+      
+      // Load Desert progress
+      const desertProgress = localStorage.getItem('desertProgress')
+      if (desertProgress) {
+        const data = JSON.parse(desertProgress)
+        progress.desert = data.isComplete ? 100 : 0
+      } else {
+        progress.desert = 0
+      }
+      
+      // Load Fungi progress
+      if (savedUser) {
+        const userData = JSON.parse(savedUser)
+        const rangerMossPhase = userData.rangerMossPhase || 1
+        progress.fungi = rangerMossPhase === 5 ? 100 : 0
+      } else {
+        progress.fungi = 0
+      }
+      
+      // Check if all 4 regions are 100% complete
+      const allComplete = progress.fungi === 100 && 
+                         progress.desert === 100 && 
+                         progress.island === 100 && 
+                         progress.glacier === 100
+      
+      setAllRegionsComplete(allComplete)
+    }
+    
+    checkAllRegionsComplete()
   }, [])
 
   const handleStartOver = () => {
@@ -259,7 +311,7 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
     <div style={styles.container}>
       <style>{styles.keyframes}</style>
       <img 
-        src="/background/home.gif" 
+        src={allRegionsComplete ? "/background/home_color.gif" : "/background/home.gif"}
         alt="Background" 
         style={styles.backgroundGif}
       />

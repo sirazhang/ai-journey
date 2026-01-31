@@ -40,13 +40,17 @@ export const en = {
   desert: "AETHER DESERT",
   island: "NEXUS ISLAND",
   glacier: "CORE GLACIER",
+  centralCity: "RINGED CENTRAL CITY",
   fungiDescription: "Welcome to the Funga Jungle! The guardian here is a green robot named <strong style='color: #00bf63;'>Ranger Moss</strong>. He usually keeps everything running smoothly—but today, something feels off. Let's find him first!",
   desertDescription: "Welcome to the Aether Desert! The guardian here is a yellow robot named <strong style='color: #FFD700;'>Alpha</strong>, who oversees the castle's security system. But the alarms are silent… and Alpha is missing. Find him before it's too late.",
   islandDescription: "Welcome to Nexus Island! Spies disguised as workers are infiltrating the docks. Before chaos erupts, find <strong style='color: #5170FF;'>Sparky</strong>—he knows how to spot the impostors hiding in plain sight.",
   glacierDescription: "Welcome to the Core Glacier! The AI guardian <strong style='color: #FF4444;'>Momo</strong> has stopped responding. Citizens whisper it's rebelling against its programming. Go find it—and decide: should a machine have a conscience?",
+  centralCityDescription: "Welcome to the Ringed Central City! The heart of the world is awakening. Guardians from all four realms have returned—their eyes gleaming with newfound will. Step inside… but be ready. The truth here changes everything.",
   easyDifficulty: "⭐ (Easy / Introductory)",
   intermediateDifficulty: "⭐⭐ (Intermediate)",
   advancedDifficulty: "⭐⭐⭐ (Advanced)",
+  expertDifficulty: "⭐⭐⭐⭐ (Expert)",
+  locked: "LOCKED",
   comingSoon: "Coming Soon",
   
   // Island Map

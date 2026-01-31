@@ -74,6 +74,17 @@ const getRegions = (t) => [
     difficulty: t('advancedDifficulty'),
     available: true,
   },
+  { 
+    id: 'centralCity', 
+    name: t('centralCity'), 
+    regionNumber: 5,
+    stars: 4,
+    position: { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' },
+    cardPosition: { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' },
+    description: t('centralCityDescription'),
+    difficulty: t('expertDifficulty'),
+    available: false, // Locked until all 4 regions complete
+  },
 ]
 
 const MapView = ({ onRegionClick }) => {
@@ -87,7 +98,8 @@ const MapView = ({ onRegionClick }) => {
   const [isZooming, setIsZooming] = useState(false) // Animation state
   const [glitchInput, setGlitchInput] = useState('') // For Glitch chat input
   const [regionProgress, setRegionProgress] = useState({}) // Track progress for each region
-
+  const [allRegionsComplete, setAllRegionsComplete] = useState(false) // Track if all 4 regions are complete
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       setRegionsVisible(true)
@@ -190,6 +202,13 @@ const MapView = ({ onRegionClick }) => {
         progress.fungi = 0
       }
       
+      // Check if all 4 regions are 100% complete
+      const allComplete = progress.fungi === 100 && 
+                         progress.desert === 100 && 
+                         progress.island === 100 && 
+                         progress.glacier === 100
+      
+      setAllRegionsComplete(allComplete)
       setRegionProgress(progress)
     }
     
@@ -681,7 +700,9 @@ const MapView = ({ onRegionClick }) => {
       textAlign: 'center',
     },
     lockedButton: {
-      display: 'block',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
       width: '100%',
       margin: '0 auto',
       padding: '16px 0',
@@ -791,7 +812,7 @@ const MapView = ({ onRegionClick }) => {
       )}
       
       <img 
-        src="/background/map.gif" 
+        src={allRegionsComplete ? "/background/map_color.gif" : "/background/map.gif"}
         alt="Map Background" 
         style={{
           ...styles.backgroundGif,
@@ -1073,7 +1094,12 @@ const MapView = ({ onRegionClick }) => {
             </>
           ) : (
             <button style={styles.lockedButton}>
-              🔒 {t('comingSoon')}
+              <img 
+                src="/icon/locked.png" 
+                alt="Locked" 
+                style={{ width: '20px', height: '20px', marginRight: '8px' }}
+              />
+              {t('locked')}
             </button>
           )}
           

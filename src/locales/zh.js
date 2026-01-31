@@ -40,13 +40,17 @@ export const zh = {
   desert: "以太沙漠",
   island: "NEXUS ISLAND",
   glacier: "冰川峰",
+  centralCity: "环形中央城",
   fungiDescription: "欢迎来到真菌丛林！这里的守护者是一个名叫<strong style='color: #00bf63;'>苔藓游侠</strong>的绿色机器人。他通常保持一切正常运行——但今天，感觉有些不对劲。让我们先找到他！",
   desertDescription: "欢迎来到以太沙漠！这里的守护者是一个名叫<strong style='color: #FFD700;'>阿尔法</strong>的黄色机器人，负责监管城堡的安全系统。但警报沉默了……阿尔法失踪了。在为时已晚之前找到他。",
   islandDescription: "欢迎来到Nexus Island！伪装成工人的间谍正在渗透码头。在混乱爆发之前，找到<strong style='color: #5170FF;'>Sparky</strong>——他知道如何识别隐藏在众目睽睽之下的冒名顶替者。",
   glacierDescription: "欢迎来到核心冰川！AI守护者<strong style='color: #FF4444;'>Momo</strong>已停止响应。市民们低声说它正在反抗自己的编程。去找到它——然后决定：机器应该有良知吗？",
+  centralCityDescription: "欢迎来到环形中央城！世界的心脏正在觉醒。来自四个领域的守护者已经归来——他们的眼睛闪烁着新的意志。走进去……但要做好准备。这里的真相会改变一切。",
   easyDifficulty: "⭐ (简单 / 入门)",
   intermediateDifficulty: "⭐⭐ (中级)",
   advancedDifficulty: "⭐⭐⭐ (高级)",
+  expertDifficulty: "⭐⭐⭐⭐ (专家)",
+  locked: "锁定",
   comingSoon: "即将推出",
   
   // Island Map
