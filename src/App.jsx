@@ -181,12 +181,41 @@ function App() {
           userData.fungiJungleProgress = null
           userData.dataCollectionProgress = null
           userData.dataCleaningProgress = null
+          userData.rangerMossPhase = 1 // Reset to phase 1
           localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
         }
+        // Start from beginning
+        saveProgress('fungiMap')
+        setCurrentScreen('fungiMap')
+      } else {
+        // Continue from saved progress - check which screen to load
+        const savedUser = localStorage.getItem('aiJourneyUser')
+        if (savedUser) {
+          const userData = JSON.parse(savedUser)
+          const dataCleaningProgress = userData.dataCleaningProgress
+          const dataCollectionProgress = userData.dataCollectionProgress
+          
+          // If there's data cleaning progress, go to data cleaning
+          if (dataCleaningProgress && dataCleaningProgress.phase) {
+            saveProgress('dataCleaning')
+            setCurrentScreen('dataCleaning')
+          }
+          // If there's data collection progress but no cleaning progress, go to data collection
+          else if (dataCollectionProgress) {
+            saveProgress('dataCollection')
+            setCurrentScreen('dataCollection')
+          }
+          // Otherwise start from fungi map
+          else {
+            saveProgress('fungiMap')
+            setCurrentScreen('fungiMap')
+          }
+        } else {
+          // No saved data, start from beginning
+          saveProgress('fungiMap')
+          setCurrentScreen('fungiMap')
+        }
       }
-      // Go directly to Fungi Jungle map (skip intro)
-      saveProgress('fungiMap')
-      setCurrentScreen('fungiMap')
     } else if (region === 'desert') {
       if (startOver) {
         // Clear Desert progress
