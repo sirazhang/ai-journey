@@ -761,6 +761,8 @@ const MapView = ({ onRegionClick }) => {
         return t('fungiJungle')
       case 'glacier':
         return t('glacier')
+      case 'centralCity':
+        return t('centralCity')
       default:
         return regionData.name
     }
@@ -913,7 +915,15 @@ const MapView = ({ onRegionClick }) => {
       )}
       
       {/* Region Labels - New Card Style */}
-      {regions.map((region, index) => (
+      {regions
+        .filter(region => {
+          // Show central city only when all 4 regions are complete
+          if (region.id === 'centralCity') {
+            return allRegionsComplete
+          }
+          return true
+        })
+        .map((region, index) => (
         <div
           key={region.id}
           style={{
