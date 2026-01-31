@@ -528,27 +528,49 @@ const DesertMap = ({ onExit }) => {
       const userData = JSON.parse(savedUser)
       const desertProgress = userData.desertProgress
       if (desertProgress) {
+        // Restore basic states
         setCurrentSegment(desertProgress.currentSegment || SEGMENTS.SEGMENT_1)
         setCurrentView(desertProgress.currentView || 'desert')
-        setMissionStarted(desertProgress.missionStarted || false)
-        setCapturedObjects(desertProgress.capturedObjects || [])
         
-        // Load mission completion states
-        if (desertProgress.mission1Completed) {
-          // Mission 1 already completed, skip to next
+        // Fix data inconsistency: if phase2Completed is true but capturedObjects is empty,
+        // it means Mission 1 was completed, so restore capturedObjects to 11
+        let capturedObjectsData = desertProgress.capturedObjects || []
+        if (desertProgress.phase2Completed && capturedObjectsData.length < 11) {
+          console.warn('Data inconsistency detected: phase2Completed is true but capturedObjects is empty. Fixing...')
+          // Create a dummy array of 11 objects to represent completed Mission 1
+          capturedObjectsData = Array.from({ length: 11 }, (_, i) => `object_${i + 1}`)
         }
-        if (desertProgress.mission2Completed) {
+        setCapturedObjects(capturedObjectsData)
+        
+        // Restore mission started state
+        const mission1Done = capturedObjectsData.length >= 11
+        if (desertProgress.missionStarted || mission1Done) {
+          setMissionStarted(true)
+        }
+        
+        // Restore mission states
+        if (desertProgress.phase2Completed) {
           setPhase2Completed(true)
+          setIsPhase2(true)
+        } else if (mission1Done && !desertProgress.phase2Completed) {
+          // Mission 1 done but Phase 2 not completed - user should be able to continue Phase 2
+          setIsPhase2(false) // Don't auto-start Phase 2, let user click Alpha
         }
-        if (desertProgress.mission3Completed) {
-          // Mission 3 completed
-        }
-        if (desertProgress.mission4Completed) {
-          // Mission 4 completed, enable color mode
+        
+        if (desertProgress.colorMode) {
           setColorMode(true)
         }
         
+        if (desertProgress.mission4Started) {
+          setMission4Started(true)
+        }
+        
+        if (desertProgress.mission4Complete) {
+          setMission4Complete(true)
+        }
+        
         console.log('Loaded Desert progress:', desertProgress)
+        console.log('Restored capturedObjects count:', capturedObjectsData.length)
       }
     }
     
@@ -564,19 +586,39 @@ const DesertMap = ({ onExit }) => {
     const savedUser = localStorage.getItem('aiJourneyUser')
     if (savedUser) {
       const userData = JSON.parse(savedUser)
+      
+      // Determine mission completion states
+      const mission1Done = capturedObjects.length >= 11
+      const mission2Done = phase2Completed
+      // Mission 3 is done if colorMode is active (regardless of mission4 state)
+      const mission3Done = colorMode
+      // Mission 4 is done if mission4Complete is true (final state)
+      const mission4Done = mission4Complete
+      
       userData.desertProgress = {
         currentSegment,
         currentView,
         missionStarted,
         capturedObjects,
-        mission1Completed: capturedObjects.length >= 11,
-        mission2Completed: phase2Completed,
-        mission3Completed: colorMode && !mission4Started,
-        mission4Completed: colorMode && mission4Complete,
+        phase2Completed,
+        colorMode,
+        mission4Started,
+        mission4Complete,
+        mission1Completed: mission1Done,
+        mission2Completed: mission2Done,
+        mission3Completed: mission3Done,
+        mission4Completed: mission4Done,
         lastSaved: Date.now()
       }
       localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
-      console.log('Saved Desert progress:', userData.desertProgress)
+      console.log('Saved Desert progress:', {
+        mission1Completed: mission1Done,
+        mission2Completed: mission2Done,
+        mission3Completed: mission3Done,
+        mission4Completed: mission4Done,
+        colorMode,
+        mission4Complete
+      })
     }
   }, [currentSegment, currentView, missionStarted, capturedObjects, phase2Completed, colorMode, mission4Started, mission4Complete])
 
@@ -1029,7 +1071,7 @@ const DesertMap = ({ onExit }) => {
   }
 
   const handleAlphaClick = () => {
-    console.log('Alpha clicked. Captured objects:', capturedObjects.length)
+    console.log('Alpha clicked. Captured objects:', capturedObjects.length, 'isPhase2:', isPhase2, 'phase2Completed:', phase2Completed, 'showMission3:', showMission3)
     
     // If currently in Mission 2 (showing dialogue box with isMission2), don't restart
     if (currentDialogue && currentDialogue.isMission2) {
@@ -1037,9 +1079,16 @@ const DesertMap = ({ onExit }) => {
       return
     }
     
-    // If Phase 2 is completed, don't restart
-    if (phase2Completed) {
-      console.log('Phase 2 already completed, ignoring click')
+    // If Phase 2 is completed and Mission 3 hasn't started, start Mission 3
+    if (phase2Completed && !showMission3 && !colorMode) {
+      console.log('Phase 2 completed, starting Mission 3')
+      handleStartMission3()
+      return
+    }
+    
+    // If Phase 2 is completed and Mission 3 is active, ignore click
+    if (phase2Completed && (showMission3 || colorMode)) {
+      console.log('Phase 2 already completed and Mission 3 active/complete, ignoring click')
       return
     }
     
@@ -1049,8 +1098,8 @@ const DesertMap = ({ onExit }) => {
       return
     }
     
-    // Check if all 11 objects are collected
-    if (capturedObjects.length === 11) {
+    // Check if all 11 objects are collected and Phase 2 hasn't started yet
+    if (capturedObjects.length >= 11 && !isPhase2 && !phase2Completed) {
       console.log('Starting Phase 2 dialogue')
       // Start Phase 2 dialogue
       setIsPhase2(true)
@@ -1062,15 +1111,15 @@ const DesertMap = ({ onExit }) => {
       setTimeout(() => {
         addPhase2Message(alphaPhase2DialogueFlow[0])
       }, 100)
-    } else if (missionStarted) {
+    } else if (missionStarted && capturedObjects.length < 11) {
       // Show progress if mission started but not complete
       setCurrentDialogue({
         text: `Keep collecting photos! Progress: ${capturedObjects.length}/11 objects photographed.`,
         speaker: 'Alpha'
       })
       setShowDialogue(true)
-    } else {
-      // Original Alpha dialogue (Phase 1)
+    } else if (!missionStarted) {
+      // Original Alpha dialogue (Phase 1) - start the mission
       setShowAlphaDialogue(true)
       setAlphaDialogueMessages([])
       setCurrentAlphaStep(0)
@@ -1296,6 +1345,13 @@ const DesertMap = ({ onExit }) => {
     const quiz = alphaPhase2DialogueFlow[currentPhase2Step]
     const selectedOption = quiz.options[answerIndex]
     setSelectedAnswer(answerIndex)
+    
+    // Play sound based on answer correctness
+    if (selectedOption.correct) {
+      playCorrectSound()
+    } else {
+      playWrongSound()
+    }
     
     // Add user's answer
     setPhase2Messages(prev => [...prev, { 
@@ -1895,6 +1951,17 @@ const DesertMap = ({ onExit }) => {
     setMission4Complete(true)
     setMission4Started(false)
     
+    // Immediately save progress to ensure mission4Complete is persisted
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (savedUser) {
+      const userData = JSON.parse(savedUser)
+      if (!userData.desertProgress) userData.desertProgress = {}
+      userData.desertProgress.mission4Complete = true
+      userData.desertProgress.mission4Completed = true
+      localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+      console.log('Force saved mission4Complete = true')
+    }
+    
     // Show NPC7 completion dialogue
     setCurrentDialogue({
       text: "Consensus achieved. The castle's AI systems are now stable and ready to reboot.",
@@ -1918,7 +1985,17 @@ const DesertMap = ({ onExit }) => {
       setColorMode(true)
       setCurrentView('desert')
       setCurrentSegment(0)
-      setMission4Complete(false)
+      
+      // Immediately save colorMode to ensure it's persisted
+      const savedUser = localStorage.getItem('aiJourneyUser')
+      if (savedUser) {
+        const userData = JSON.parse(savedUser)
+        if (!userData.desertProgress) userData.desertProgress = {}
+        userData.desertProgress.colorMode = true
+        userData.desertProgress.mission3Completed = true
+        localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+        console.log('Force saved colorMode = true')
+      }
     }, 4000)
   }
 

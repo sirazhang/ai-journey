@@ -1181,7 +1181,7 @@ const IslandMap = ({ onExit }) => {
 
   // Sound effects and music
   useBackgroundMusic('/sound/island.mp3')
-  const { playClickSound } = useSoundEffects()
+  const { playClickSound, playCorrectSound, playWrongSound } = useSoundEffects()
   const { startTypingSound, stopTypingSound } = useTypingSound('/sound/island_typing.wav')
   
   // Save progress to localStorage
@@ -2057,7 +2057,13 @@ const IslandMap = ({ onExit }) => {
   }
 
   const handleQuizChoice = (choiceId, isCorrect, choiceText) => {
-    playClickSound()
+    // Play sound based on correctness
+    if (isCorrect) {
+      playCorrectSound()
+    } else {
+      playWrongSound()
+    }
+    
     setShowQuizChoice(false)
     
     if (showFinalSparkyDialogue) {
@@ -2177,8 +2183,8 @@ const IslandMap = ({ onExit }) => {
         setTimeout(() => {
           addFinalSparkyMessage(responseItem)
           
-          // If this is the final step (choiceId === 4), trigger island restoration
-          if (choiceId === 4) {
+          // If this is the final step (choiceId === 5), trigger island restoration
+          if (choiceId === 5) {
             setTimeout(() => {
               setShowFinalSparkyDialogue(false)
               setShowSparkyDialogue(false)
@@ -5000,6 +5006,19 @@ const IslandMap = ({ onExit }) => {
           justifyContent: 'center',
           zIndex: 1000,
         }}>
+          {/* Island Icon */}
+          <img 
+            src="/island/icon/island.png" 
+            alt="Island" 
+            style={{
+              width: '120px',
+              height: '120px',
+              objectFit: 'contain',
+              marginBottom: '30px',
+              animation: 'pulse 2s ease-in-out infinite',
+            }}
+          />
+          
           <div style={{
             color: 'white',
             fontSize: '48px',
@@ -5022,6 +5041,16 @@ const IslandMap = ({ onExit }) => {
               @keyframes spin {
                 0% { transform: rotate(0deg); }
                 100% { transform: rotate(360deg); }
+              }
+              @keyframes pulse {
+                0%, 100% { 
+                  transform: scale(1);
+                  opacity: 1;
+                }
+                50% { 
+                  transform: scale(1.1);
+                  opacity: 0.8;
+                }
               }
             `}
           </style>

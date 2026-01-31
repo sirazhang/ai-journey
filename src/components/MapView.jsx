@@ -112,6 +112,10 @@ const MapView = ({ onRegionClick }) => {
     const loadProgress = () => {
       const progress = {}
       
+      // Load savedUser once for all regions that use it
+      const savedUser = localStorage.getItem('aiJourneyUser')
+      const userData = savedUser ? JSON.parse(savedUser) : null
+      
       // Load Glacier progress
       const glacierProgress = localStorage.getItem('glacierProgress')
       if (glacierProgress) {
@@ -152,22 +156,34 @@ const MapView = ({ onRegionClick }) => {
       const islandProgress = localStorage.getItem('islandProgress')
       if (islandProgress) {
         const data = JSON.parse(islandProgress)
-        // Calculate based on island's completion logic
-        // Phase 1: Mission completed (9 GenAI NPCs) - 40%
-        // Phase 2: Phase 2 completed (5 GenAI NPCs) - 40%
-        // Final: Island restored - 20%
+        // Calculate based on island's completion logic with more granular stages
+        // Stage 1: Phase 1 in progress (0-40%) - 9 GenAI NPCs
+        // Stage 2: Phase 1 completed, Phase 2 in progress (40-80%) - 5 GenAI NPCs
+        // Stage 3: Phase 2 completed, final dialogue in progress (80-100%)
+        // Stage 4: Island restored (100%)
         let islandPercent = 0
         
-        if (data.missionCompleted) {
-          islandPercent += 40
-        }
-        
-        if (data.phase2Completed) {
-          islandPercent += 40
-        }
-        
         if (data.islandRestored) {
-          islandPercent = 100 // Fully complete
+          // Fully complete
+          islandPercent = 100
+        } else if (data.phase2Completed) {
+          // Phase 2 completed, working on final dialogue (80-100%)
+          // Check final dialogue progress
+          if (data.showFinalSparkyDialogue || data.finalDialogueStep > 0) {
+            // Final dialogue in progress: 80% + (dialogueStep/5 * 20%)
+            const dialogueProgress = (data.finalDialogueStep || 0) / 5
+            islandPercent = 80 + (dialogueProgress * 20)
+          } else {
+            islandPercent = 80
+          }
+        } else if (data.missionCompleted && data.phase2Active) {
+          // Phase 1 completed, Phase 2 in progress (40-80%)
+          const phase2Progress = (data.phase2CompletedMissions?.length || 0) / 5
+          islandPercent = 40 + (phase2Progress * 40)
+        } else if (data.missionActive) {
+          // Phase 1 in progress (0-40%)
+          const phase1Progress = (data.completedMissions?.length || 0) / 9
+          islandPercent = phase1Progress * 40
         }
         
         progress.island = Math.round(islandPercent)
@@ -175,19 +191,51 @@ const MapView = ({ onRegionClick }) => {
         progress.island = 0
       }
       
-      // Load Desert progress (if exists)
-      const desertProgress = localStorage.getItem('desertProgress')
-      if (desertProgress) {
-        const data = JSON.parse(desertProgress)
-        progress.desert = data.isComplete ? 100 : 0
+      // Load Desert progress (stored in aiJourneyUser.desertProgress)
+      if (userData && userData.desertProgress) {
+        const desertData = userData.desertProgress
+        
+        console.log('MapView - Loading Desert progress:', {
+          mission1Completed: desertData.mission1Completed,
+          mission2Completed: desertData.mission2Completed,
+          mission3Completed: desertData.mission3Completed,
+          mission4Completed: desertData.mission4Completed,
+          colorMode: desertData.colorMode,
+          mission4Complete: desertData.mission4Complete
+        })
+        
+        // Calculate desert progress based on 4 mission stages (25% each)
+        // Mission 1: Photo collection - 25%
+        // Mission 2: Data labeling - 25%
+        // Mission 3: Context puzzles - 25%
+        // Mission 4: Expert voting - 25%
+        let desertPercent = 0
+        
+        if (desertData.mission1Completed) {
+          desertPercent += 25
+        }
+        
+        if (desertData.mission2Completed) {
+          desertPercent += 25
+        }
+        
+        if (desertData.mission3Completed) {
+          desertPercent += 25
+        }
+        
+        if (desertData.mission4Completed) {
+          desertPercent += 25
+        }
+        
+        console.log('MapView - Desert progress calculated:', desertPercent + '%')
+        
+        progress.desert = desertPercent
       } else {
         progress.desert = 0
       }
       
-      // Load Fungi progress (if exists)
-      const savedUser = localStorage.getItem('aiJourneyUser')
-      if (savedUser) {
-        const userData = JSON.parse(savedUser)
+      // Load Fungi progress (stored in aiJourneyUser.rangerMossPhase)
+      if (userData) {
         const rangerMossPhase = userData.rangerMossPhase || 1
         
         // Calculate fungi progress based on rangerMossPhase (1-5)
@@ -495,8 +543,6 @@ const MapView = ({ onRegionClick }) => {
       `,
       backgroundOrigin: 'border-box',
       backgroundClip: 'padding-box, border-box',
-      // Add subtle gradient overlay for depth
-      position: 'absolute',
     },
     regionLabelHeader: {
       display: 'flex',
