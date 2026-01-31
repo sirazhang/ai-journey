@@ -5937,8 +5937,8 @@ const DataCleaning = ({ onComplete, onExit }) => {
         </div>
       )}
 
-      {/* Dialogue History - Show until user enters card selection */}
-      {!showRangerDialogue && dialogueHistory.length > 0 && phase !== 'NOISE_REMOVAL' && phase !== 'LABEL_CORRECTION' && phase !== 'FILL_MISSING' && phase !== 'QUIZ' && phase !== 'TRAINING' && phase !== 'VALIDATION_INTRO' && phase !== 'VALIDATION_DATA' && phase !== 'ADJUST_MODEL_INTRO' && phase !== 'ADJUST_MODEL_DATA' && phase !== 'ADJUST_MODEL_TRAINING' && phase !== 'LOADING' && phase !== 'COLOR_MAP_EXPLORATION' && phase !== 'COMPLETE' && (
+      {/* Dialogue History - Show until user enters card selection (exclude INTRO phases that use modern dialogue) */}
+      {!showRangerDialogue && dialogueHistory.length > 0 && phase !== 'INTRO' && phase !== 'LABEL_INTRO' && phase !== 'FILL_MISSING_INTRO' && phase !== 'NOISE_REMOVAL' && phase !== 'LABEL_CORRECTION' && phase !== 'FILL_MISSING' && phase !== 'QUIZ' && phase !== 'TRAINING' && phase !== 'VALIDATION_INTRO' && phase !== 'VALIDATION_DATA' && phase !== 'ADJUST_MODEL_INTRO' && phase !== 'ADJUST_MODEL_DATA' && phase !== 'ADJUST_MODEL_TRAINING' && phase !== 'LOADING' && phase !== 'COLOR_MAP_EXPLORATION' && phase !== 'COMPLETE' && phase !== 'PRE_TRAINING_QUIZ' && phase !== 'TRAINING_COMPLETE_QUIZ' && (
         <div style={styles.leftDialogueContainer}>
           <div style={styles.dialogueHistoryBox}>
             <p style={styles.speakerName}>Ranger Moss:</p>
