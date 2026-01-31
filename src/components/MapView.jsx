@@ -306,6 +306,33 @@ const MapView = ({ onRegionClick }) => {
       transition: 'transform 0.3s ease',
       animation: hoveredNpc ? 'breathe 1s ease-in-out infinite' : 'none',
     },
+    // About Me button in bottom-right corner
+    aboutMeButton: {
+      position: 'absolute',
+      bottom: '5%',
+      right: '5%',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      padding: '10px 20px',
+      borderRadius: '8px',
+      border: '2px solid rgba(255, 255, 255, 0.8)',
+      background: 'rgba(0, 0, 0, 0.3)',
+      color: '#fff',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      fontWeight: 500,
+      cursor: 'pointer',
+      transition: 'all 0.2s',
+      backdropFilter: 'blur(5px)',
+      zIndex: 100,
+      textDecoration: 'none',
+    },
+    aboutMeIcon: {
+      width: '18px',
+      height: '18px',
+      objectFit: 'contain',
+    },
     // NPC dialogue bubble (top-right)
     npcDialogue: {
       position: 'absolute',
@@ -412,22 +439,45 @@ const MapView = ({ onRegionClick }) => {
       justifyContent: 'center',
       transition: 'all 0.2s',
     },
-    // Region label button - New card style
+    // Region label button - New card style with enhanced 3D floating effect
     regionLabel: {
       position: 'absolute',
       width: '280px',
       padding: '15px 20px',
       borderRadius: '20px',
-      border: '3px solid transparent',
-      background: 'rgba(255, 255, 255, 0.95)',
+      border: '2px solid transparent',
+      background: 'rgba(255, 255, 255, 0.98)',
       fontFamily: "'Montserrat', sans-serif",
       cursor: 'pointer',
       zIndex: 5,
-      transition: 'all 0.3s ease',
-      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-      backgroundImage: 'linear-gradient(white, white), linear-gradient(90deg, #5170FF, #FF6B9D)',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      // Enhanced 3D floating effect: stronger bottom shadow + prominent top reflection
+      boxShadow: `
+        0 20px 40px rgba(0, 0, 0, 0.25),
+        0 8px 16px rgba(0, 0, 0, 0.15),
+        0 4px 8px rgba(0, 0, 0, 0.1),
+        inset 0 2px 4px rgba(255, 255, 255, 1),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.08)
+      `,
+      // Enhanced glossy gradient border with shimmer effect
+      backgroundImage: `
+        linear-gradient(to bottom, 
+          rgba(255, 255, 255, 1) 0%, 
+          rgba(255, 255, 255, 0.98) 50%,
+          rgba(245, 245, 250, 0.98) 100%
+        ),
+        linear-gradient(135deg, 
+          rgba(81, 112, 255, 1) 0%, 
+          rgba(255, 107, 157, 1) 25%,
+          rgba(255, 200, 100, 1) 50%,
+          rgba(255, 107, 157, 1) 75%,
+          rgba(81, 112, 255, 1) 100%
+        )
+      `,
       backgroundOrigin: 'border-box',
       backgroundClip: 'padding-box, border-box',
+      // Add subtle gradient overlay for depth
+      position: 'absolute',
     },
     regionLabelHeader: {
       display: 'flex',
@@ -474,7 +524,7 @@ const MapView = ({ onRegionClick }) => {
       borderRadius: '3px',
       transition: 'width 0.3s ease',
     },
-    // Region info card
+    // Region info card with enhanced 3D floating effect
     regionCard: {
       position: 'absolute',
       width: '450px',
@@ -482,12 +532,34 @@ const MapView = ({ onRegionClick }) => {
       paddingBottom: '30px',
       borderRadius: '25px',
       background: 'rgba(255, 255, 255, 0.98)',
-      border: '3px solid transparent',
-      backgroundImage: 'linear-gradient(white, white), linear-gradient(90deg, #5170FF, #FF6B9D)',
+      border: '2px solid transparent',
+      // Enhanced glossy gradient border with shimmer
+      backgroundImage: `
+        linear-gradient(to bottom, 
+          rgba(255, 255, 255, 1) 0%, 
+          rgba(255, 255, 255, 0.98) 50%,
+          rgba(248, 248, 252, 0.98) 100%
+        ),
+        linear-gradient(135deg, 
+          rgba(81, 112, 255, 1) 0%, 
+          rgba(255, 107, 157, 1) 20%,
+          rgba(255, 200, 100, 1) 40%,
+          rgba(100, 255, 218, 1) 60%,
+          rgba(255, 107, 157, 1) 80%,
+          rgba(81, 112, 255, 1) 100%
+        )
+      `,
       backgroundOrigin: 'border-box',
       backgroundClip: 'padding-box, border-box',
       zIndex: 20,
-      boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+      // Enhanced 3D floating effect: much stronger bottom shadow + prominent top reflection
+      boxShadow: `
+        0 30px 60px rgba(0, 0, 0, 0.3),
+        0 15px 30px rgba(0, 0, 0, 0.2),
+        0 8px 16px rgba(0, 0, 0, 0.15),
+        inset 0 3px 6px rgba(255, 255, 255, 1),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.1)
+      `,
       animation: 'fadeInUp 0.3s ease-out',
     },
     cardHeader: {
@@ -692,6 +764,32 @@ const MapView = ({ onRegionClick }) => {
       {/* Settings Panel */}
       {!isZooming && <SettingsPanel position="topLeft" />}
       
+      {/* About Me Button in bottom-right */}
+      {!isZooming && (
+        <a
+          href="https://sirazhang.github.io"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            ...styles.aboutMeButton,
+            opacity: (isCardShowing || isZooming) ? 0 : 1,
+            pointerEvents: (isCardShowing || isZooming) ? 'none' : 'auto',
+          }}
+          onClick={playSelectSound}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(0, 0, 0, 0.5)'
+            e.currentTarget.style.transform = 'scale(1.05)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(0, 0, 0, 0.3)'
+            e.currentTarget.style.transform = 'scale(1)'
+          }}
+        >
+          <img src="/icon/me.png" alt="About Me" style={styles.aboutMeIcon} />
+          <span>About Me</span>
+        </a>
+      )}
+      
       <img 
         src="/background/map.gif" 
         alt="Map Background" 
@@ -805,11 +903,41 @@ const MapView = ({ onRegionClick }) => {
             transitionDelay: `${index * 0.1}s`,
             pointerEvents: zoomRegion ? 'none' : 'auto',
             ...(selectedRegion === region.id ? { 
-              boxShadow: '0 8px 25px rgba(81, 112, 255, 0.4)',
-              transform: 'scale(1.02)'
+              boxShadow: `
+                0 25px 50px rgba(81, 112, 255, 0.4),
+                0 12px 24px rgba(81, 112, 255, 0.3),
+                0 6px 12px rgba(81, 112, 255, 0.2),
+                inset 0 3px 6px rgba(255, 255, 255, 1),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.08)
+              `,
+              transform: 'translateY(-8px) scale(1.03)'
             } : {}),
           }}
           onClick={() => handleRegionClick(region.id)}
+          onMouseEnter={(e) => {
+            if (selectedRegion !== region.id) {
+              e.currentTarget.style.transform = 'translateY(-8px) scale(1.03)'
+              e.currentTarget.style.boxShadow = `
+                0 25px 50px rgba(0, 0, 0, 0.3),
+                0 12px 24px rgba(0, 0, 0, 0.2),
+                0 6px 12px rgba(0, 0, 0, 0.15),
+                inset 0 3px 6px rgba(255, 255, 255, 1),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.08)
+              `
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (selectedRegion !== region.id) {
+              e.currentTarget.style.transform = 'translateY(0) scale(1)'
+              e.currentTarget.style.boxShadow = `
+                0 20px 40px rgba(0, 0, 0, 0.25),
+                0 8px 16px rgba(0, 0, 0, 0.15),
+                0 4px 8px rgba(0, 0, 0, 0.1),
+                inset 0 2px 4px rgba(255, 255, 255, 1),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.08)
+              `
+            }
+          }}
         >
           {/* Header with Region and Stars */}
           <div style={styles.regionLabelHeader}>
@@ -890,9 +1018,10 @@ const MapView = ({ onRegionClick }) => {
             }} />
           </div>
           
-          <p style={styles.cardDescription}>
-            {getHoveredRegionData()?.description}
-          </p>
+          <p 
+            style={styles.cardDescription}
+            dangerouslySetInnerHTML={{ __html: getHoveredRegionData()?.description }}
+          />
           <p style={styles.cardDifficulty}>
             <span>Difficulty: </span>
             <span>{getHoveredRegionData()?.difficulty}</span>
