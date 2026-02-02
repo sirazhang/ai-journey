@@ -410,6 +410,10 @@ const DesertMap = ({ onExit }) => {
   const [recognitionResult, setRecognitionResult] = useState(null)
   const [isRecognizing, setIsRecognizing] = useState(false)
   const [currentPhotoNpc, setCurrentPhotoNpc] = useState(null) // Track which NPC requested photo
+  
+  // Glitch chat states
+  const [glitchChatHistory, setGlitchChatHistory] = useState([]) // Store chat history
+  const [isGlitchTyping, setIsGlitchTyping] = useState(false) // Show typing indicator
 
   // Mission 3 data
   const mission3Data = {
@@ -918,11 +922,52 @@ const DesertMap = ({ onExit }) => {
   }
 
   // Handle Glitch chat send
-  const handleGlitchSend = () => {
+  const handleGlitchSend = async () => {
     if (glitchInput.trim()) {
-      console.log('User message to Glitch:', glitchInput)
-      // Here you can add logic to handle the user's message
+      const userMessage = glitchInput.trim()
+      console.log('User message to Glitch:', userMessage)
+      
+      // Add user message to chat history
+      setGlitchChatHistory(prev => [...prev, { role: 'user', text: userMessage }])
       setGlitchInput('') // Clear input after sending
+      setIsGlitchTyping(true) // Show typing indicator
+      
+      try {
+        // Call Gemini API
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `You are Glitch, a helpful AI assistant in a desert-themed game world. The user is exploring a desert castle where an AI defense system has gone haywire. You help guide players and answer their questions in a friendly, slightly quirky way. Keep responses concise (2-3 sentences max).\n\nUser question: ${userMessage}`
+              }]
+            }]
+          })
+        })
+        
+        const data = await response.json()
+        
+        if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+          const glitchReply = data.candidates[0].content.parts[0].text
+          
+          // Add Glitch's response to chat history
+          setGlitchChatHistory(prev => [...prev, { role: 'glitch', text: glitchReply }])
+        } else {
+          throw new Error('Invalid API response')
+        }
+      } catch (error) {
+        console.error('Glitch chat error:', error)
+        // Add error message
+        setGlitchChatHistory(prev => [...prev, { 
+          role: 'glitch', 
+          text: "Oops! My circuits are a bit scrambled right now. Try asking me again?" 
+        }])
+      } finally {
+        setIsGlitchTyping(false)
+      }
     }
   }
 
@@ -3843,6 +3888,11 @@ const DesertMap = ({ onExit }) => {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
+          
+          @keyframes blink {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+          }
         `}
       </style>
       
@@ -3884,7 +3934,10 @@ const DesertMap = ({ onExit }) => {
           {/* Close button */}
           <button
             style={styles.glitchDialogueCloseButton}
-            onClick={() => setShowDialogue(false)}
+            onClick={() => {
+              setShowDialogue(false)
+              setGlitchChatHistory([]) // Clear chat history when closing
+            }}
             onMouseOver={(e) => {
               e.target.style.color = '#333'
             }}
@@ -3903,10 +3956,91 @@ const DesertMap = ({ onExit }) => {
             <h4 style={styles.glitchDialogueName}>Glitch</h4>
           </div>
           
-          {/* Dialogue text */}
-          <p style={styles.glitchDialogueTextMapStyle}>
-            {currentDialogue.text}
-          </p>
+          {/* Chat history */}
+          <div style={{
+            maxHeight: '300px',
+            overflowY: 'auto',
+            marginBottom: '15px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+          }}>
+            {/* Initial greeting if no chat history */}
+            {glitchChatHistory.length === 0 && (
+              <p style={styles.glitchDialogueTextMapStyle}>
+                {currentDialogue.text}
+              </p>
+            )}
+            
+            {/* Chat messages */}
+            {glitchChatHistory.map((message, index) => (
+              <div
+                key={index}
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: '12px',
+                  background: message.role === 'user' 
+                    ? 'rgba(175, 77, 202, 0.1)' 
+                    : 'rgba(175, 77, 202, 0.05)',
+                  border: message.role === 'user'
+                    ? '1px solid rgba(175, 77, 202, 0.3)'
+                    : '1px solid rgba(175, 77, 202, 0.1)',
+                  alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
+                  maxWidth: '85%',
+                }}
+              >
+                <div style={{
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: '#af4dca',
+                  marginBottom: '4px',
+                  fontFamily: "'Roboto', sans-serif",
+                }}>
+                  {message.role === 'user' ? 'YOU' : 'GLITCH'}
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#333',
+                  lineHeight: 1.5,
+                  fontFamily: "'Roboto', sans-serif",
+                  whiteSpace: 'pre-wrap',
+                }}>
+                  {message.text}
+                </div>
+              </div>
+            ))}
+            
+            {/* Typing indicator */}
+            {isGlitchTyping && (
+              <div style={{
+                padding: '10px 12px',
+                borderRadius: '12px',
+                background: 'rgba(175, 77, 202, 0.05)',
+                border: '1px solid rgba(175, 77, 202, 0.1)',
+                alignSelf: 'flex-start',
+                maxWidth: '85%',
+              }}>
+                <div style={{
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: '#af4dca',
+                  marginBottom: '4px',
+                  fontFamily: "'Roboto', sans-serif",
+                }}>
+                  GLITCH
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#999',
+                  fontFamily: "'Roboto', sans-serif",
+                }}>
+                  <span style={{ animation: 'blink 1.4s infinite' }}>●</span>
+                  <span style={{ animation: 'blink 1.4s infinite 0.2s' }}>●</span>
+                  <span style={{ animation: 'blink 1.4s infinite 0.4s' }}>●</span>
+                </div>
+              </div>
+            )}
+          </div>
           
           {/* Input container */}
           <div style={styles.glitchDialogueInputContainer}>
@@ -3917,13 +4051,19 @@ const DesertMap = ({ onExit }) => {
               onChange={(e) => setGlitchInput(e.target.value)}
               onKeyPress={handleGlitchInputKeyPress}
               style={styles.glitchDialogueInput}
+              disabled={isGlitchTyping}
             />
             <div style={styles.glitchDialogueDivider}></div>
             <button
               onClick={handleGlitchSend}
-              style={styles.glitchDialogueSendButton}
+              style={{
+                ...styles.glitchDialogueSendButton,
+                opacity: isGlitchTyping ? 0.5 : 1,
+                cursor: isGlitchTyping ? 'not-allowed' : 'pointer',
+              }}
+              disabled={isGlitchTyping}
               onMouseOver={(e) => {
-                e.target.style.transform = 'scale(1.1)'
+                if (!isGlitchTyping) e.target.style.transform = 'scale(1.1)'
               }}
               onMouseOut={(e) => {
                 e.target.style.transform = 'scale(1)'

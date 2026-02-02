@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
 import SettingsPanel from './SettingsPanel'
+import ExplorerJournal from './ExplorerJournal'
 
 // Simple sound effect function
 const playSelectSound = () => {
@@ -97,8 +98,11 @@ const MapView = ({ onRegionClick }) => {
   const [zoomRegion, setZoomRegion] = useState(null) // For zoom effect
   const [isZooming, setIsZooming] = useState(false) // Animation state
   const [glitchInput, setGlitchInput] = useState('') // For Glitch chat input
+  const [glitchChatHistory, setGlitchChatHistory] = useState([]) // Store chat history
+  const [isGlitchTyping, setIsGlitchTyping] = useState(false) // Show typing indicator
   const [regionProgress, setRegionProgress] = useState({}) // Track progress for each region
   const [allRegionsComplete, setAllRegionsComplete] = useState(false) // Track if all 4 regions are complete
+  const [showJournal, setShowJournal] = useState(false) // Track Explorer's Journal visibility
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -321,12 +325,53 @@ const MapView = ({ onRegionClick }) => {
   }
 
   // Handle Glitch chat send
-  const handleGlitchSend = () => {
+  const handleGlitchSend = async () => {
     if (glitchInput.trim()) {
+      const userMessage = glitchInput.trim()
       playSelectSound()
-      console.log('User message to Glitch:', glitchInput)
-      // Here you can add logic to handle the user's message
+      console.log('User message to Glitch:', userMessage)
+      
+      // Add user message to chat history
+      setGlitchChatHistory(prev => [...prev, { role: 'user', text: userMessage }])
       setGlitchInput('') // Clear input after sending
+      setIsGlitchTyping(true) // Show typing indicator
+      
+      try {
+        // Call Gemini API
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `You are Glitch, a helpful AI guide in an educational game about AI and machine learning. You help players navigate through different regions (Fungi Jungle, Desert, Nexus Island, Glacier) where they learn about data collection, labeling, model training, and AI ethics. You're friendly, encouraging, and explain concepts in simple terms. Keep responses concise (2-3 sentences max).\n\nUser question: ${userMessage}`
+              }]
+            }]
+          })
+        })
+        
+        const data = await response.json()
+        
+        if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+          const glitchReply = data.candidates[0].content.parts[0].text
+          
+          // Add Glitch's response to chat history
+          setGlitchChatHistory(prev => [...prev, { role: 'glitch', text: glitchReply }])
+        } else {
+          throw new Error('Invalid API response')
+        }
+      } catch (error) {
+        console.error('Glitch chat error:', error)
+        // Add error message
+        setGlitchChatHistory(prev => [...prev, { 
+          role: 'glitch', 
+          text: "Oops! My circuits are a bit scrambled right now. Try asking me again?" 
+        }])
+      } finally {
+        setIsGlitchTyping(false)
+      }
     }
   }
 
@@ -805,6 +850,10 @@ const MapView = ({ onRegionClick }) => {
           transform: translateY(0);
         }
       }
+      @keyframes blink {
+        0%, 100% { opacity: 0.2; }
+        50% { opacity: 1; }
+      }
     `,
   }
 
@@ -876,8 +925,7 @@ const MapView = ({ onRegionClick }) => {
           }}
           onClick={() => {
             playSelectSound()
-            // TODO: Open journal panel
-            console.log('Open Explorer\'s Journal')
+            setShowJournal(true)
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'rgba(0, 0, 0, 0.5)'
@@ -963,7 +1011,10 @@ const MapView = ({ onRegionClick }) => {
           {/* Close button */}
           <button
             style={styles.npcDialogueCloseButton}
-            onClick={() => setShowGlitchDialogue(false)}
+            onClick={() => {
+              setShowGlitchDialogue(false)
+              setGlitchChatHistory([]) // Clear chat history when closing
+            }}
             onMouseOver={(e) => {
               e.target.style.color = '#333'
               e.target.style.transform = 'scale(1.1)'
@@ -984,10 +1035,91 @@ const MapView = ({ onRegionClick }) => {
             <h4 style={styles.npcDialogueName}>Glitch</h4>
           </div>
           
-          {/* Message content */}
-          <p style={styles.npcDialogueText}>
-            I suggest go to the Fungi Jungle first.
-          </p>
+          {/* Chat history */}
+          <div style={{
+            maxHeight: '300px',
+            overflowY: 'auto',
+            marginBottom: '15px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+          }}>
+            {/* Initial greeting if no chat history */}
+            {glitchChatHistory.length === 0 && (
+              <p style={styles.npcDialogueText}>
+                I suggest go to the Fungi Jungle first.
+              </p>
+            )}
+            
+            {/* Chat messages */}
+            {glitchChatHistory.map((message, index) => (
+              <div
+                key={index}
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: '12px',
+                  background: message.role === 'user' 
+                    ? 'rgba(175, 77, 202, 0.1)' 
+                    : 'rgba(175, 77, 202, 0.05)',
+                  border: message.role === 'user'
+                    ? '1px solid rgba(175, 77, 202, 0.3)'
+                    : '1px solid rgba(175, 77, 202, 0.1)',
+                  alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
+                  maxWidth: '85%',
+                }}
+              >
+                <div style={{
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: '#af4dca',
+                  marginBottom: '4px',
+                  fontFamily: "'Roboto', sans-serif",
+                }}>
+                  {message.role === 'user' ? 'YOU' : 'GLITCH'}
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#333',
+                  lineHeight: 1.5,
+                  fontFamily: "'Roboto', sans-serif",
+                  whiteSpace: 'pre-wrap',
+                }}>
+                  {message.text}
+                </div>
+              </div>
+            ))}
+            
+            {/* Typing indicator */}
+            {isGlitchTyping && (
+              <div style={{
+                padding: '10px 12px',
+                borderRadius: '12px',
+                background: 'rgba(175, 77, 202, 0.05)',
+                border: '1px solid rgba(175, 77, 202, 0.1)',
+                alignSelf: 'flex-start',
+                maxWidth: '85%',
+              }}>
+                <div style={{
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: '#af4dca',
+                  marginBottom: '4px',
+                  fontFamily: "'Roboto', sans-serif",
+                }}>
+                  GLITCH
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#999',
+                  fontFamily: "'Roboto', sans-serif",
+                }}>
+                  <span style={{ animation: 'blink 1.4s infinite' }}>●</span>
+                  <span style={{ animation: 'blink 1.4s infinite 0.2s' }}>●</span>
+                  <span style={{ animation: 'blink 1.4s infinite 0.4s' }}>●</span>
+                </div>
+              </div>
+            )}
+          </div>
           
           {/* Input container */}
           <div 
@@ -1005,14 +1137,20 @@ const MapView = ({ onRegionClick }) => {
               value={glitchInput}
               onChange={(e) => setGlitchInput(e.target.value)}
               onKeyPress={handleGlitchInputKeyPress}
+              disabled={isGlitchTyping}
               style={styles.npcDialogueInput}
             />
             <div style={styles.npcDialogueDivider}></div>
             <button
               onClick={handleGlitchSend}
-              style={styles.npcDialogueSendButton}
+              style={{
+                ...styles.npcDialogueSendButton,
+                opacity: isGlitchTyping ? 0.5 : 1,
+                cursor: isGlitchTyping ? 'not-allowed' : 'pointer',
+              }}
+              disabled={isGlitchTyping}
               onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'scale(1.1)'
+                if (!isGlitchTyping) e.currentTarget.style.transform = 'scale(1.1)'
               }}
               onMouseOut={(e) => {
                 e.currentTarget.style.transform = 'scale(1)'
@@ -1235,6 +1373,12 @@ const MapView = ({ onRegionClick }) => {
           />
         </div>
       )}
+      
+      {/* Explorer's Journal */}
+      <ExplorerJournal 
+        isOpen={showJournal} 
+        onClose={() => setShowJournal(false)} 
+      />
     </div>
   )
 }

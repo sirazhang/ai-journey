@@ -1040,6 +1040,8 @@ const GlacierMap = ({ onExit }) => {
   // Glitch dialogue states (for inside, court, rooftop scenes)
   const [showGlitchDialogue, setShowGlitchDialogue] = useState(false)
   const [glitchInput, setGlitchInput] = useState('')
+  const [glitchChatHistory, setGlitchChatHistory] = useState([]) // Store chat history
+  const [isGlitchTyping, setIsGlitchTyping] = useState(false) // Show typing indicator
   
   // Rooftop Momo quiz states
   const [showRooftopQuiz, setShowRooftopQuiz] = useState(false)
@@ -1157,6 +1159,20 @@ const GlacierMap = ({ onExit }) => {
   useEffect(() => {
     if (!showDialogue) return
     
+    // Play dialogue audio for hallway and outside scenes
+    let dialogueAudio = null
+    if (currentScene === 'hallway' && currentDialogueIndex < 3) {
+      // Play glacier_dialogue_5/6/7.wav for hallway (3 dialogues)
+      const audioFile = `/npc/glacier_dialogue_${5 + currentDialogueIndex}.wav`
+      dialogueAudio = new Audio(audioFile)
+      dialogueAudio.play().catch(err => console.error('Audio play error:', err))
+    } else if (currentScene === 'outside' && currentDialogueIndex < 3) {
+      // Play glacier_dialogue_8/9/10.wav for outside (3 dialogues)
+      const audioFile = `/npc/glacier_dialogue_${8 + currentDialogueIndex}.wav`
+      dialogueAudio = new Audio(audioFile)
+      dialogueAudio.play().catch(err => console.error('Audio play error:', err))
+    }
+    
     if (currentScene === 'inside') {
       // Inside scene dialogue logic
       const currentDialogue = currentDialogues[currentDialogueIndex]
@@ -1183,7 +1199,13 @@ const GlacierMap = ({ onExit }) => {
         }
       }, 30)
 
-      return () => clearInterval(typingInterval)
+      return () => {
+        clearInterval(typingInterval)
+        if (dialogueAudio) {
+          dialogueAudio.pause()
+          dialogueAudio.currentTime = 0
+        }
+      }
     } else {
       // Original typing logic for hallway and outside
       if (currentDialogueIndex >= currentDialogues.length) return
@@ -1205,7 +1227,13 @@ const GlacierMap = ({ onExit }) => {
         }
       }, 30)
 
-      return () => clearInterval(typingInterval)
+      return () => {
+        clearInterval(typingInterval)
+        if (dialogueAudio) {
+          dialogueAudio.pause()
+          dialogueAudio.currentTime = 0
+        }
+      }
     }
   }, [currentDialogueIndex, showDialogue, currentScene, currentDialogues])
   
@@ -1826,11 +1854,52 @@ const GlacierMap = ({ onExit }) => {
   }
   
   // Handle Glitch input
-  const handleGlitchSend = () => {
+  const handleGlitchSend = async () => {
     if (glitchInput.trim()) {
-      console.log('User asked Glitch:', glitchInput)
-      // Here you can add logic to handle the user's question
-      setGlitchInput('')
+      const userMessage = glitchInput.trim()
+      console.log('User asked Glitch:', userMessage)
+      
+      // Add user message to chat history
+      setGlitchChatHistory(prev => [...prev, { role: 'user', text: userMessage }])
+      setGlitchInput('') // Clear input after sending
+      setIsGlitchTyping(true) // Show typing indicator
+      
+      try {
+        // Call Gemini API
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `You are Glitch, a helpful AI guide in the Glacier region of an educational game about AI ethics and privacy. Players are learning about data privacy, responsible AI use, and ethical decision-making. You help guide players through scenarios involving privacy violations and ethical dilemmas. Keep responses concise (2-3 sentences max).\n\nUser question: ${userMessage}`
+              }]
+            }]
+          })
+        })
+        
+        const data = await response.json()
+        
+        if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+          const glitchReply = data.candidates[0].content.parts[0].text
+          
+          // Add Glitch's response to chat history
+          setGlitchChatHistory(prev => [...prev, { role: 'glitch', text: glitchReply }])
+        } else {
+          throw new Error('Invalid API response')
+        }
+      } catch (error) {
+        console.error('Glitch chat error:', error)
+        // Add error message
+        setGlitchChatHistory(prev => [...prev, { 
+          role: 'glitch', 
+          text: "Oops! My circuits are a bit scrambled right now. Try asking me again?" 
+        }])
+      } finally {
+        setIsGlitchTyping(false)
+      }
     }
   }
   
@@ -4183,6 +4252,11 @@ const GlacierMap = ({ onExit }) => {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
       }
+      
+      @keyframes blink {
+        0%, 100% { opacity: 0.2; }
+        50% { opacity: 1; }
+      }
     `,
     
     // Modern Dialogue Styles (Based on Reference Image 2)
@@ -4697,7 +4771,10 @@ const GlacierMap = ({ onExit }) => {
           {/* Close button */}
           <button
             style={styles.glitchDialogueCloseButton}
-            onClick={() => setShowGlitchDialogue(false)}
+            onClick={() => {
+              setShowGlitchDialogue(false)
+              setGlitchChatHistory([]) // Clear chat history when closing
+            }}
             onMouseOver={(e) => {
               e.target.style.color = '#333'
               e.target.style.transform = 'scale(1.1)'
@@ -4718,12 +4795,93 @@ const GlacierMap = ({ onExit }) => {
             <h4 style={styles.glitchDialogueName}>Glitch</h4>
           </div>
           
-          {/* Message content */}
-          <p style={styles.glitchDialogueText}>
-            {currentScene === 'inside' && "The machines are sleeping, but the truth is awake. Ask me anything about this station."}
-            {currentScene === 'court' && "Justice is not always black and white. Sometimes it's about responsibility."}
-            {currentScene === 'rooftop' && "They forgot how to think for themselves. Can you help them remember?"}
-          </p>
+          {/* Chat history */}
+          <div style={{
+            maxHeight: '300px',
+            overflowY: 'auto',
+            marginBottom: '15px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+          }}>
+            {/* Initial greeting if no chat history */}
+            {glitchChatHistory.length === 0 && (
+              <p style={styles.glitchDialogueText}>
+                {currentScene === 'inside' && "The machines are sleeping, but the truth is awake. Ask me anything about this station."}
+                {currentScene === 'court' && "Justice is not always black and white. Sometimes it's about responsibility."}
+                {currentScene === 'rooftop' && "They forgot how to think for themselves. Can you help them remember?"}
+              </p>
+            )}
+            
+            {/* Chat messages */}
+            {glitchChatHistory.map((message, index) => (
+              <div
+                key={index}
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: '12px',
+                  background: message.role === 'user' 
+                    ? 'rgba(175, 77, 202, 0.1)' 
+                    : 'rgba(175, 77, 202, 0.05)',
+                  border: message.role === 'user'
+                    ? '1px solid rgba(175, 77, 202, 0.3)'
+                    : '1px solid rgba(175, 77, 202, 0.1)',
+                  alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
+                  maxWidth: '85%',
+                }}
+              >
+                <div style={{
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: '#af4dca',
+                  marginBottom: '4px',
+                  fontFamily: "'Roboto', sans-serif",
+                }}>
+                  {message.role === 'user' ? 'YOU' : 'GLITCH'}
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#333',
+                  lineHeight: 1.5,
+                  fontFamily: "'Roboto', sans-serif",
+                  whiteSpace: 'pre-wrap',
+                }}>
+                  {message.text}
+                </div>
+              </div>
+            ))}
+            
+            {/* Typing indicator */}
+            {isGlitchTyping && (
+              <div style={{
+                padding: '10px 12px',
+                borderRadius: '12px',
+                background: 'rgba(175, 77, 202, 0.05)',
+                border: '1px solid rgba(175, 77, 202, 0.1)',
+                alignSelf: 'flex-start',
+                maxWidth: '85%',
+              }}>
+                <div style={{
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: '#af4dca',
+                  marginBottom: '4px',
+                  fontFamily: "'Roboto', sans-serif",
+                }}>
+                  GLITCH
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#999',
+                  fontFamily: "'Roboto', sans-serif",
+                }}>
+                  <span style={{ animation: 'blink 1.4s infinite' }}>●</span>
+                  <span style={{ animation: 'blink 1.4s infinite 0.2s' }}>●</span>
+                  <span style={{ animation: 'blink 1.4s infinite 0.4s' }}>●</span>
+                </div>
+              </div>
+            )}
+          </div>
           
           {/* Input container */}
           <div 
@@ -4742,13 +4900,19 @@ const GlacierMap = ({ onExit }) => {
               onChange={(e) => setGlitchInput(e.target.value)}
               onKeyPress={handleGlitchInputKeyPress}
               style={styles.glitchDialogueInput}
+              disabled={isGlitchTyping}
             />
             <div style={styles.glitchDialogueDivider}></div>
             <button
               onClick={handleGlitchSend}
-              style={styles.glitchDialogueSendButton}
+              style={{
+                ...styles.glitchDialogueSendButton,
+                opacity: isGlitchTyping ? 0.5 : 1,
+                cursor: isGlitchTyping ? 'not-allowed' : 'pointer',
+              }}
+              disabled={isGlitchTyping}
               onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'scale(1.1)'
+                if (!isGlitchTyping) e.currentTarget.style.transform = 'scale(1.1)'
               }}
               onMouseOut={(e) => {
                 e.currentTarget.style.transform = 'scale(1)'
