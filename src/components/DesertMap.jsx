@@ -550,10 +550,13 @@ const DesertMap = ({ onExit }) => {
         // Fix data inconsistency: if phase2Completed is true but capturedObjects is empty,
         // it means Mission 1 was completed, so restore capturedObjects to 11
         let capturedObjectsData = desertProgress.capturedObjects || []
+        let needsFixing = false
+        
         if (desertProgress.phase2Completed && capturedObjectsData.length < 11) {
           console.warn('Data inconsistency detected: phase2Completed is true but capturedObjects is empty. Fixing...')
           // Create a dummy array of 11 objects to represent completed Mission 1
           capturedObjectsData = Array.from({ length: 11 }, (_, i) => `object_${i + 1}`)
+          needsFixing = true
         }
         setCapturedObjects(capturedObjectsData)
         
@@ -589,6 +592,27 @@ const DesertMap = ({ onExit }) => {
         
         console.log('Loaded Desert progress:', desertProgress)
         console.log('Restored capturedObjects count:', capturedObjectsData.length)
+        
+        // If we fixed the data, immediately save it back to localStorage
+        if (needsFixing) {
+          console.log('Saving fixed data to localStorage...')
+          const mission1Done = capturedObjectsData.length >= 11
+          const mission2Done = desertProgress.phase2Completed
+          const mission3Done = desertProgress.colorMode
+          const mission4Done = desertProgress.mission4Complete
+          
+          userData.desertProgress = {
+            ...desertProgress,
+            capturedObjects: capturedObjectsData,
+            mission1Completed: mission1Done,
+            mission2Completed: mission2Done,
+            mission3Completed: mission3Done,
+            mission4Completed: mission4Done,
+            lastSaved: Date.now()
+          }
+          localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+          console.log('Fixed data saved to localStorage')
+        }
       }
     }
     
@@ -613,16 +637,23 @@ const DesertMap = ({ onExit }) => {
       // Mission 4 is done if mission4Complete is true (final state)
       const mission4Done = mission4Complete
       
+      // Ensure data consistency: if phase2Completed is true, capturedObjects must have at least 11 items
+      let capturedObjectsToSave = capturedObjects
+      if (phase2Completed && capturedObjects.length < 11) {
+        console.warn('Save: Fixing capturedObjects inconsistency')
+        capturedObjectsToSave = Array.from({ length: 11 }, (_, i) => `object_${i + 1}`)
+      }
+      
       userData.desertProgress = {
         currentSegment,
         currentView,
         missionStarted,
-        capturedObjects,
+        capturedObjects: capturedObjectsToSave,
         phase2Completed,
         colorMode,
         mission4Started,
         mission4Complete,
-        mission1Completed: mission1Done,
+        mission1Completed: mission1Done || phase2Completed, // If phase2 is done, mission1 must be done
         mission2Completed: mission2Done,
         mission3Completed: mission3Done,
         mission4Completed: mission4Done,
@@ -630,12 +661,13 @@ const DesertMap = ({ onExit }) => {
       }
       localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
       console.log('Saved Desert progress:', {
-        mission1Completed: mission1Done,
+        mission1Completed: mission1Done || phase2Completed,
         mission2Completed: mission2Done,
         mission3Completed: mission3Done,
         mission4Completed: mission4Done,
         colorMode,
-        mission4Complete
+        mission4Complete,
+        capturedObjectsCount: capturedObjectsToSave.length
       })
     }
   }, [currentSegment, currentView, missionStarted, capturedObjects, phase2Completed, colorMode, mission4Started, mission4Complete])
@@ -701,24 +733,56 @@ const DesertMap = ({ onExit }) => {
 
   // Auto-show dialogue when entering a new segment with NPCs
   useEffect(() => {
+    console.log('=== Auto-show dialogue useEffect ===', {
+      missionStarted,
+      colorMode,
+      currentView,
+      showAlphaDialogue,
+      currentSegment
+    })
+    
     // Don't auto-show during missions, in castle/gate views, or when showing Alpha dialogue
-    if (missionStarted || colorMode || currentView !== 'desert' || showAlphaDialogue) return
+    if (missionStarted || colorMode || currentView !== 'desert' || showAlphaDialogue) {
+      console.log('Auto-show dialogue: BLOCKED', {
+        reason: missionStarted ? 'missionStarted' : colorMode ? 'colorMode' : currentView !== 'desert' ? 'not desert view' : 'showAlphaDialogue'
+      })
+      return
+    }
     
     // Don't auto-show if currently in Mission 2 (check if dialogue has isMission2 flag)
-    if (currentDialogue && currentDialogue.isMission2) return
+    if (currentDialogue && currentDialogue.isMission2) {
+      console.log('Auto-show dialogue: BLOCKED (Mission 2)')
+      return
+    }
+    
+    console.log('Auto-show dialogue: PROCEEDING to show NPC dialogue')
     
     // Close any existing dialogue first
     setShowDialogue(false)
     
-    // Auto-show dialogue based on current segment
+    // Auto-show dialogue based on current segment (only in non-color mode)
     if (currentSegment === SEGMENTS.SEGMENT_1) {
+      console.log('Auto-showing NPC1 dialogue')
       setTimeout(() => handleNpcClick('npc1'), 300) // Show NPC1 dialogue
     } else if (currentSegment === SEGMENTS.SEGMENT_2) {
+      console.log('Auto-showing Gatekeeper dialogue')
       setTimeout(() => handleNpcClick('gatekeeper'), 300) // Show Gatekeeper dialogue
     } else if (currentSegment === SEGMENTS.SEGMENT_3) {
+      console.log('Auto-showing NPC2 dialogue')
       setTimeout(() => handleNpcClick('npc2'), 300) // Show NPC2 dialogue
     }
-  }, [currentSegment, missionStarted, colorMode, currentView, showAlphaDialogue, currentDialogue])
+  }, [currentSegment, missionStarted, currentView, showAlphaDialogue, colorMode]) // Added colorMode to dependencies
+  
+  // Separate effect to close dialogue when entering color mode
+  useEffect(() => {
+    console.log('=== Color mode effect ===', { colorMode })
+    if (colorMode) {
+      console.log('Closing dialogue due to color mode')
+      setShowDialogue(false)
+      setCurrentDialogue(null)
+      setCurrentNpcType(null)
+    }
+  }, [colorMode])
 
   // Loading text typing effect
   useEffect(() => {
@@ -994,15 +1058,33 @@ const DesertMap = ({ onExit }) => {
           zIndex: 100,
         }
       case 'npc5':
-      case 'npc6':
-      case 'npc7':
-        // Mission 3 NPCs - adjusted position: moved down, right, and wider
+        // NPC5 is at bottom: 10%, right: 10% - show dialogue to the left of NPC
         return {
           position: 'absolute',
-          bottom: '50px', // Moved down from 100px to 50px
-          left: '5%', // Moved right from 2% to 5%
-          width: '60%', // Increased from 48% to 60%
-          maxWidth: '750px', // Increased from 600px to 750px
+          bottom: '15%', // Slightly above NPC
+          right: '25%', // To the left of NPC
+          width: '35%', // Reduced width
+          maxWidth: '450px', // Reduced max width
+          zIndex: 100,
+        }
+      case 'npc6':
+        // NPC6 is at bottom: 35%, right: 40% - show dialogue to the left of NPC
+        return {
+          position: 'absolute',
+          bottom: '40%', // Aligned with NPC
+          right: '55%', // To the left of NPC (40% + 15% gap)
+          width: '35%', // Reduced width
+          maxWidth: '450px', // Reduced max width
+          zIndex: 100,
+        }
+      case 'npc7':
+        // NPC7 is at bottom: 35%, right: 45% - show dialogue to the left of NPC
+        return {
+          position: 'absolute',
+          bottom: '40%', // Aligned with NPC
+          right: '60%', // To the left of NPC (45% + 15% gap)
+          width: '35%', // Reduced width
+          maxWidth: '450px', // Reduced max width
           zIndex: 100,
         }
       default:
@@ -3742,22 +3824,44 @@ const DesertMap = ({ onExit }) => {
   }
 
   return (
-    <div style={styles.container}>
-      {/* Custom Camera Cursor */}
-      {missionStarted && !colorMode && capturedObjects.length < 11 && (
-        <img 
-          src="/desert/icon/camera2.png"
-          alt="Camera Cursor"
-          style={{
-            ...styles.customCursor,
-            left: `${cursorPosition.x}px`,
-            top: `${cursorPosition.y}px`,
-          }}
-        />
-      )}
+    <>
+      {/* CSS Animations */}
+      <style>
+        {`
+          @keyframes breathe {
+            0%, 100% {
+              transform: scale(1);
+              box-shadow: 0 0 20px rgba(0, 212, 255, 0.6), 0 0 40px rgba(255, 51, 51, 0.4);
+            }
+            50% {
+              transform: scale(1.05);
+              box-shadow: 0 0 30px rgba(0, 212, 255, 0.9), 0 0 60px rgba(255, 51, 51, 0.6);
+            }
+          }
+          
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
       
-      <img 
-        src={getBackgroundImage()}
+      <div style={styles.container}>
+        {/* Custom Camera Cursor */}
+        {missionStarted && !colorMode && capturedObjects.length < 11 && (
+          <img 
+            src="/desert/icon/camera2.png"
+            alt="Camera Cursor"
+            style={{
+              ...styles.customCursor,
+              left: `${cursorPosition.x}px`,
+              top: `${cursorPosition.y}px`,
+            }}
+          />
+        )}
+        
+        <img 
+          src={getBackgroundImage()}
         alt="Desert Background" 
         style={styles.backgroundImage}
       />
@@ -4427,10 +4531,18 @@ const DesertMap = ({ onExit }) => {
 
       {/* Regular NPC Dialogue (excluding Glitch) */}
       {showDialogue && currentDialogue && currentNpcType !== 'glitch' && (
+        // In color mode, only show NPC5/6/7 dialogues, not NPC1/2/gatekeeper
+        colorMode ? ['npc5', 'npc6', 'npc7'].includes(currentNpcType) : true
+      ) && (
         <div style={getDialoguePosition(currentNpcType)}>
           <div style={{
             ...styles.dialogueBox,
-            ...(currentNpcType === 'glitch' ? styles.glitchDialogueBox : {})
+            ...(currentNpcType === 'glitch' ? styles.glitchDialogueBox : {}),
+            // Compact style for NPC5/6/7
+            ...(['npc5', 'npc6', 'npc7'].includes(currentNpcType) ? {
+              padding: '30px 20px 15px 20px', // Reduced padding
+              minHeight: 'auto', // Remove minimum height
+            } : {})
           }} onClick={currentDialogue.showMission2Interface || currentDialogue.showMission3Interface || currentDialogue.showQuiz || currentDialogue.showNextButton || currentDialogue.showContinueButton || currentDialogue.showDoneButton ? undefined : handleDialogueClick}>
             <div style={{
               ...styles.speaker,
@@ -4440,7 +4552,13 @@ const DesertMap = ({ onExit }) => {
               <>
                 <p style={{
                   ...styles.dialogueText,
-                  ...(currentNpcType === 'glitch' ? styles.glitchDialogueText : {})
+                  ...(currentNpcType === 'glitch' ? styles.glitchDialogueText : {}),
+                  // Compact text style for NPC5/6/7
+                  ...(['npc5', 'npc6', 'npc7'].includes(currentNpcType) ? {
+                    fontSize: '16px', // Slightly smaller font
+                    lineHeight: 1.6, // Tighter line height
+                    marginBottom: '8px', // Less bottom margin
+                  } : {})
                 }}>
                   {currentNpcType === 'glitch' ? formatGlitchText(displayedText) : formatDialogueText(displayedText)}
                   {isTyping && <span style={styles.cursor}></span>}
@@ -4451,15 +4569,15 @@ const DesertMap = ({ onExit }) => {
                   <div style={{
                     display: 'flex',
                     justifyContent: 'center',
-                    marginTop: '15px'
+                    marginTop: '10px' // Reduced from 15px
                   }}>
                     <button
                       style={{
                         background: 'rgba(255, 255, 255, 0.9)',
                         border: '2px solid #FABA14',
                         borderRadius: '50%',
-                        width: '60px',
-                        height: '60px',
+                        width: '50px', // Reduced from 60px
+                        height: '50px', // Reduced from 60px
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -5658,8 +5776,8 @@ const DesertMap = ({ onExit }) => {
               left: '10%',
               width: '60px',
               height: '60px',
-              borderTop: '3px solid #FABA14',
-              borderLeft: '3px solid #FABA14',
+              borderTop: '5px solid #FABA14',
+              borderLeft: '5px solid #FABA14',
             }} />
             
             {/* Focus Frame - Top Right */}
@@ -5669,8 +5787,8 @@ const DesertMap = ({ onExit }) => {
               right: '10%',
               width: '60px',
               height: '60px',
-              borderTop: '3px solid #FABA14',
-              borderRight: '3px solid #FABA14',
+              borderTop: '5px solid #FABA14',
+              borderRight: '5px solid #FABA14',
             }} />
             
             {/* Focus Frame - Bottom Left */}
@@ -5680,8 +5798,8 @@ const DesertMap = ({ onExit }) => {
               left: '10%',
               width: '60px',
               height: '60px',
-              borderBottom: '3px solid #FABA14',
-              borderLeft: '3px solid #FABA14',
+              borderBottom: '5px solid #FABA14',
+              borderLeft: '5px solid #FABA14',
             }} />
             
             {/* Focus Frame - Bottom Right */}
@@ -5691,11 +5809,11 @@ const DesertMap = ({ onExit }) => {
               right: '10%',
               width: '60px',
               height: '60px',
-              borderBottom: '3px solid #FABA14',
-              borderRight: '3px solid #FABA14',
+              borderBottom: '5px solid #FABA14',
+              borderRight: '5px solid #FABA14',
             }} />
             
-            {/* Center Guide */}
+            {/* Center Guide - Thicker dashed border */}
             <div style={{
               position: 'absolute',
               top: '50%',
@@ -5703,7 +5821,7 @@ const DesertMap = ({ onExit }) => {
               transform: 'translate(-50%, -50%)',
               width: '200px',
               height: '200px',
-              border: '2px dashed rgba(250, 186, 20, 0.5)',
+              border: '4px dashed rgba(250, 186, 20, 0.7)',
               borderRadius: '10px',
             }} />
             
@@ -5733,24 +5851,91 @@ const DesertMap = ({ onExit }) => {
           
           {/* Camera Controls */}
           <div style={{
-            height: '120px',
+            height: '180px',
             background: '#000',
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
             borderTop: '1px solid #333',
+            borderRadius: '20px 20px 0 0',
+            gap: '15px',
           }}>
-            {/* Shutter Button */}
+            {/* Zoom Controls */}
+            <div style={{
+              display: 'flex',
+              gap: '15px',
+              alignItems: 'center',
+            }}>
+              {/* Zoom Out Button */}
+              <button
+                style={{
+                  width: '45px',
+                  height: '45px',
+                  borderRadius: '50%',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: '2px solid rgba(250, 186, 20, 0.6)',
+                  color: '#FABA14',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = 'rgba(250, 186, 20, 0.2)'
+                  e.currentTarget.style.borderColor = '#FABA14'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                  e.currentTarget.style.borderColor = 'rgba(250, 186, 20, 0.6)'
+                }}
+              >
+                −
+              </button>
+              
+              {/* Zoom In Button */}
+              <button
+                style={{
+                  width: '45px',
+                  height: '45px',
+                  borderRadius: '50%',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: '2px solid rgba(250, 186, 20, 0.6)',
+                  color: '#FABA14',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = 'rgba(250, 186, 20, 0.2)'
+                  e.currentTarget.style.borderColor = '#FABA14'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+                  e.currentTarget.style.borderColor = 'rgba(250, 186, 20, 0.6)'
+                }}
+              >
+                +
+              </button>
+            </div>
+            
+            {/* Shutter Button with breathing effect */}
             <button
               style={{
                 width: '70px',
                 height: '70px',
                 borderRadius: '50%',
-                background: '#fff',
-                border: '4px solid #FABA14',
+                background: '#ff3333',
+                border: '4px solid #00d4ff',
                 cursor: 'pointer',
                 transition: 'all 0.2s',
-                boxShadow: '0 0 20px rgba(250, 186, 20, 0.5)',
+                boxShadow: '0 0 20px rgba(0, 212, 255, 0.6), 0 0 40px rgba(255, 51, 51, 0.4)',
+                animation: 'breathe 2s ease-in-out infinite',
               }}
               onClick={handleCapturePhoto}
               onMouseDown={(e) => {
@@ -5758,6 +5943,12 @@ const DesertMap = ({ onExit }) => {
               }}
               onMouseUp={(e) => {
                 e.currentTarget.style.transform = 'scale(1)'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.boxShadow = '0 0 30px rgba(0, 212, 255, 0.9), 0 0 50px rgba(255, 51, 51, 0.6)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 212, 255, 0.6), 0 0 40px rgba(255, 51, 51, 0.4)'
               }}
             />
           </div>
@@ -6083,7 +6274,8 @@ const DesertMap = ({ onExit }) => {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }
 

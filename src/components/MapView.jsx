@@ -195,8 +195,26 @@ const MapView = ({ onRegionClick }) => {
       if (userData && userData.desertProgress) {
         const desertData = userData.desertProgress
         
+        // Fix data inconsistency: if phase2Completed is true but capturedObjects is empty,
+        // mission1 must be completed
+        let mission1Completed = desertData.mission1Completed
+        if (desertData.phase2Completed && (!desertData.capturedObjects || desertData.capturedObjects.length < 11)) {
+          console.warn('MapView: Fixing Desert data inconsistency - phase2Completed is true but capturedObjects is empty')
+          mission1Completed = true
+          
+          // Fix the data in localStorage immediately
+          const capturedObjectsFixed = Array.from({ length: 11 }, (_, i) => `object_${i + 1}`)
+          userData.desertProgress = {
+            ...desertData,
+            capturedObjects: capturedObjectsFixed,
+            mission1Completed: true
+          }
+          localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+          console.log('MapView: Fixed Desert data saved to localStorage')
+        }
+        
         console.log('MapView - Loading Desert progress:', {
-          mission1Completed: desertData.mission1Completed,
+          mission1Completed: mission1Completed,
           mission2Completed: desertData.mission2Completed,
           mission3Completed: desertData.mission3Completed,
           mission4Completed: desertData.mission4Completed,
@@ -211,7 +229,7 @@ const MapView = ({ onRegionClick }) => {
         // Mission 4: Expert voting - 25%
         let desertPercent = 0
         
-        if (desertData.mission1Completed) {
+        if (mission1Completed) {
           desertPercent += 25
         }
         
