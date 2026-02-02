@@ -4,22 +4,22 @@ const dialogues = [
   {
     text: "System reconnecting... Connection established! Signal stable! ly, you're here! Oh, I forgot to introduce myself. Hello there, Human! I'm Glitch. I used to be the fastest Data Sprite in this city!",
     highlights: ['System reconnecting', 'Connection established', 'Signal stable', 'Glitch', 'Data Sprite'],
-    audio: '/npc/glitch_dialogue_1.mp3'
+    audio: '/npc/glitch_dialogue_1.wav'
   },
   {
     text: "But ever since the Great Blackout, the entire city has been paralyzed. Everyone is trapped. The big robots are frozen without power, and creatures like me... well, I can only fly for short bursts on my emergency battery reserves.",
     highlights: ['Great Blackout', 'paralyzed', 'trapped', 'frozen without power', 'emergency battery reserves'],
-    audio: '/npc/glitch_dialogue_2.mp3'
+    audio: '/npc/glitch_dialogue_2.wav'
   },
   {
     text: "Our world consumes massive amounts of energy, which comes from four outer regions. To save the city, we need to inspect those areas and restart the main 'Energy Core'.",
     highlights: ['massive amounts of energy', 'four outer regions', 'Energy Core'],
-    audio: '/npc/glitch_dialogue_3.mp3'
+    audio: '/npc/glitch_dialogue_3.wav'
   },
   {
     text: "Please, will you help us? If we don't act now, our world will fade into permanent darkness. Here are the four regions... I suggest we start by checking the Fungi Jungle.",
     highlights: ['help us', 'permanent darkness', 'four regions', 'Fungi Jungle'],
-    audio: '/npc/glitch_dialogue_4.mp3'
+    audio: '/npc/glitch_dialogue_4.wav'
   }
 ]
 
