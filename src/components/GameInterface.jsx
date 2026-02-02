@@ -3,19 +3,23 @@ import React, { useState, useEffect, useCallback } from 'react'
 const dialogues = [
   {
     text: "System reconnecting... Connection established! Signal stable! ly, you're here! Oh, I forgot to introduce myself. Hello there, Human! I'm Glitch. I used to be the fastest Data Sprite in this city!",
-    highlights: ['System reconnecting', 'Connection established', 'Signal stable', 'Glitch', 'Data Sprite']
+    highlights: ['System reconnecting', 'Connection established', 'Signal stable', 'Glitch', 'Data Sprite'],
+    audio: '/npc/glitch_dialogue_1.mp3'
   },
   {
     text: "But ever since the Great Blackout, the entire city has been paralyzed. Everyone is trapped. The big robots are frozen without power, and creatures like me... well, I can only fly for short bursts on my emergency battery reserves.",
-    highlights: ['Great Blackout', 'paralyzed', 'trapped', 'frozen without power', 'emergency battery reserves']
+    highlights: ['Great Blackout', 'paralyzed', 'trapped', 'frozen without power', 'emergency battery reserves'],
+    audio: '/npc/glitch_dialogue_2.mp3'
   },
   {
     text: "Our world consumes massive amounts of energy, which comes from four outer regions. To save the city, we need to inspect those areas and restart the main 'Energy Core'.",
-    highlights: ['massive amounts of energy', 'four outer regions', 'Energy Core']
+    highlights: ['massive amounts of energy', 'four outer regions', 'Energy Core'],
+    audio: '/npc/glitch_dialogue_3.mp3'
   },
   {
     text: "Please, will you help us? If we don't act now, our world will fade into permanent darkness. Here are the four regions... I suggest we start by checking the Fungi Jungle.",
-    highlights: ['help us', 'permanent darkness', 'four regions', 'Fungi Jungle']
+    highlights: ['help us', 'permanent darkness', 'four regions', 'Fungi Jungle'],
+    audio: '/npc/glitch_dialogue_4.mp3'
   }
 ]
 
@@ -25,6 +29,7 @@ const GameInterface = ({ onComplete }) => {
   const [isTyping, setIsTyping] = useState(true)
   const [showCursor, setShowCursor] = useState(true)
   const [showNpc, setShowNpc] = useState(false)
+  const [currentAudio, setCurrentAudio] = useState(null)
 
   // Show NPC after 2 seconds
   useEffect(() => {
@@ -33,6 +38,34 @@ const GameInterface = ({ onComplete }) => {
     }, 2000)
     return () => clearTimeout(timer)
   }, [])
+  
+  // Play audio when dialogue changes
+  useEffect(() => {
+    if (currentDialogue >= dialogues.length || !showNpc) return
+    
+    // Stop previous audio if any
+    if (currentAudio) {
+      currentAudio.pause()
+      currentAudio.currentTime = 0
+    }
+    
+    // Play new audio
+    const dialogue = dialogues[currentDialogue]
+    if (dialogue.audio) {
+      const audio = new Audio(dialogue.audio)
+      audio.volume = 0.7
+      audio.play().catch(err => console.log('Audio play failed:', err))
+      setCurrentAudio(audio)
+    }
+    
+    // Cleanup function
+    return () => {
+      if (currentAudio) {
+        currentAudio.pause()
+        currentAudio.currentTime = 0
+      }
+    }
+  }, [currentDialogue, showNpc])
 
   // Typing effect
   useEffect(() => {
@@ -70,13 +103,28 @@ const GameInterface = ({ onComplete }) => {
       setDisplayedText(dialogues[currentDialogue].text)
       setIsTyping(false)
     } else if (currentDialogue < dialogues.length - 1) {
+      // Stop current audio before moving to next dialogue
+      if (currentAudio) {
+        currentAudio.pause()
+        currentAudio.currentTime = 0
+      }
       setCurrentDialogue(prev => prev + 1)
     } else {
+      // Stop audio before completing
+      if (currentAudio) {
+        currentAudio.pause()
+        currentAudio.currentTime = 0
+      }
       onComplete()
     }
   }
 
   const handleSkip = () => {
+    // Stop audio before skipping
+    if (currentAudio) {
+      currentAudio.pause()
+      currentAudio.currentTime = 0
+    }
     // Skip all dialogues and go directly to map
     onComplete()
   }
