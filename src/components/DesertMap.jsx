@@ -5808,156 +5808,272 @@ const DesertMap = ({ onExit }) => {
           padding: '20px',
         }}>
           <div style={{
-            background: '#fff',
-            borderRadius: '20px',
-            maxWidth: '500px',
+            background: '#FFF9F0',
+            borderRadius: '24px',
+            maxWidth: '600px',
             width: '100%',
-            maxHeight: '90vh',
-            overflow: 'auto',
-            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
+            border: '3px solid #FFD166',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 209, 102, 0.5)',
+            padding: '30px',
           }}>
             {/* Card Header */}
             <div style={{
-              padding: '20px',
-              borderBottom: '2px solid #f0f0f0',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
+              marginBottom: '20px',
             }}>
               <h3 style={{
                 margin: 0,
-                fontSize: '20px',
+                fontSize: '28px',
                 fontWeight: 'bold',
-                color: '#333',
+                color: '#000',
+                fontFamily: "'Roboto', sans-serif",
+                marginBottom: '5px',
               }}>
-                AI Recognition Result
+                #Object detected
               </h3>
+              <p style={{
+                margin: 0,
+                fontSize: '14px',
+                color: '#666',
+                fontFamily: "'Roboto', sans-serif",
+              }}>
+                Look what I spotted!
+              </p>
+            </div>
+            
+            {/* Photo with dashed border and timestamp */}
+            <div style={{
+              position: 'relative',
+              marginBottom: '25px',
+            }}>
+              <div style={{
+                border: '3px dashed #fff',
+                borderRadius: '12px',
+                padding: '8px',
+                background: '#fff',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+              }}>
+                <img 
+                  src={recognitionResult.photo}
+                  alt="Captured"
+                  style={{
+                    width: '100%',
+                    borderRadius: '8px',
+                    display: 'block',
+                  }}
+                />
+                {/* Timestamp overlay */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: '20px',
+                  right: '20px',
+                  background: 'rgba(0, 0, 0, 0.7)',
+                  color: '#fff',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontFamily: "'Roboto Mono', monospace",
+                  backdropFilter: 'blur(4px)',
+                }}>
+                  Captured: {new Date(recognitionResult.timestamp).toLocaleString('en-US', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false
+                  }).replace(',', ',')}
+                </div>
+              </div>
+              
+              {/* Object highlight overlay */}
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '60%',
+                height: '60%',
+                border: '3px solid rgba(248, 147, 3, 0.6)',
+                borderRadius: '12px',
+                pointerEvents: 'none',
+                boxShadow: '0 0 20px rgba(248, 147, 3, 0.4), inset 0 0 20px rgba(248, 147, 3, 0.2)',
+              }} />
+            </div>
+            
+            {/* Recognition Info - Side by side */}
+            <div style={{
+              display: 'flex',
+              gap: '20px',
+              marginBottom: '25px',
+            }}>
+              <div style={{
+                flex: 1,
+              }}>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#666',
+                  marginBottom: '8px',
+                  fontFamily: "'Roboto Mono', monospace",
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                }}>
+                  Item
+                </div>
+                <div style={{
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: '#000',
+                  fontFamily: "'Roboto Mono', monospace",
+                }}>
+                  {recognitionResult.item}
+                </div>
+              </div>
+              
+              <div style={{
+                flex: 1,
+              }}>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#666',
+                  marginBottom: '8px',
+                  fontFamily: "'Roboto Mono', monospace",
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                }}>
+                  Type
+                </div>
+                <div style={{
+                  fontSize: '24px',
+                  fontWeight: 'bold',
+                  color: '#f89303',
+                  fontFamily: "'Roboto Mono', monospace",
+                }}>
+                  {recognitionResult.type}
+                </div>
+              </div>
+            </div>
+            
+            {/* Action Buttons */}
+            <div style={{
+              display: 'flex',
+              gap: '15px',
+            }}>
               <button
                 style={{
-                  background: 'none',
-                  border: 'none',
-                  fontSize: '24px',
-                  color: '#999',
+                  flex: 1,
+                  padding: '16px',
+                  background: '#fff',
+                  border: '2px solid #f89303',
+                  borderRadius: '12px',
+                  color: '#f89303',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
                   cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontFamily: "'Roboto', sans-serif",
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
                 }}
-                onClick={handleCloseRecognitionCard}
+                onClick={handleDownloadCard}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#FFF5E6'
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(248, 147, 3, 0.3)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#fff'
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
               >
-                ✕
+                <img 
+                  src="/desert/icon/download.svg" 
+                  alt="Download" 
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                  }}
+                />
+                Download
+              </button>
+              
+              <button
+                style={{
+                  flex: 1,
+                  padding: '16px',
+                  background: '#f89303',
+                  border: '2px solid #f89303',
+                  borderRadius: '12px',
+                  color: '#fff',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  fontFamily: "'Roboto', sans-serif",
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                }}
+                onClick={handleSaveToJournal}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#E58302'
+                  e.currentTarget.style.transform = 'translateY(-2px)'
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(248, 147, 3, 0.4)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#f89303'
+                  e.currentTarget.style.transform = 'translateY(0)'
+                  e.currentTarget.style.boxShadow = 'none'
+                }}
+              >
+                <img 
+                  src="/desert/icon/save.svg" 
+                  alt="Save" 
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    filter: 'brightness(0) invert(1)',
+                  }}
+                />
+                Save to Journal
               </button>
             </div>
             
-            {/* Photo */}
-            <div style={{
-              padding: '20px',
-            }}>
-              <img 
-                src={recognitionResult.photo}
-                alt="Captured"
-                style={{
-                  width: '100%',
-                  borderRadius: '10px',
-                  marginBottom: '20px',
-                }}
-              />
-              
-              {/* Recognition Info */}
-              <div style={{
-                background: '#f8f9fa',
-                borderRadius: '10px',
-                padding: '20px',
-                marginBottom: '20px',
-              }}>
-                <div style={{
-                  marginBottom: '15px',
-                }}>
-                  <div style={{
-                    fontSize: '14px',
-                    color: '#666',
-                    marginBottom: '5px',
-                  }}>
-                    Item
-                  </div>
-                  <div style={{
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    color: '#333',
-                  }}>
-                    {recognitionResult.item}
-                  </div>
-                </div>
-                
-                <div>
-                  <div style={{
-                    fontSize: '14px',
-                    color: '#666',
-                    marginBottom: '5px',
-                  }}>
-                    Type
-                  </div>
-                  <div style={{
-                    fontSize: '18px',
-                    fontWeight: 'bold',
-                    color: '#FABA14',
-                  }}>
-                    {recognitionResult.type}
-                  </div>
-                </div>
-              </div>
-              
-              {/* Action Buttons */}
-              <div style={{
+            {/* Close button */}
+            <button
+              style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                background: 'rgba(0, 0, 0, 0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                fontSize: '20px',
+                color: '#666',
+                cursor: 'pointer',
                 display: 'flex',
-                gap: '10px',
-              }}>
-                <button
-                  style={{
-                    flex: 1,
-                    padding: '15px',
-                    background: '#fff',
-                    border: '2px solid #FABA14',
-                    borderRadius: '10px',
-                    color: '#FABA14',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                  }}
-                  onClick={handleDownloadCard}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#FFF9E6'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = '#fff'
-                  }}
-                >
-                  📥 Download
-                </button>
-                
-                <button
-                  style={{
-                    flex: 1,
-                    padding: '15px',
-                    background: '#FABA14',
-                    border: '2px solid #FABA14',
-                    borderRadius: '10px',
-                    color: '#fff',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                  }}
-                  onClick={handleSaveToJournal}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#E5A812'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = '#FABA14'
-                  }}
-                >
-                  💾 Save to Journal
-                </button>
-              </div>
-            </div>
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+              }}
+              onClick={handleCloseRecognitionCard}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.2)'
+                e.currentTarget.style.color = '#000'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.1)'
+                e.currentTarget.style.color = '#666'
+              }}
+            >
+              ✕
+            </button>
           </div>
         </div>
       )}
