@@ -833,6 +833,58 @@ const MapView = ({ onRegionClick }) => {
       {/* Settings Panel */}
       {!isZooming && <SettingsPanel position="topLeft" />}
       
+      {/* Explorer's Journal Button in bottom-left */}
+      {!isZooming && (
+        <button
+          style={{
+            position: 'absolute',
+            bottom: '5%',
+            left: '5%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '10px 20px',
+            borderRadius: '8px',
+            border: '2px solid rgba(255, 255, 255, 0.8)',
+            background: 'rgba(0, 0, 0, 0.3)',
+            color: '#fff',
+            fontFamily: "'Roboto', sans-serif",
+            fontSize: '14px',
+            fontWeight: 500,
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            backdropFilter: 'blur(5px)',
+            zIndex: 100,
+            opacity: (isCardShowing || isZooming) ? 0 : 1,
+            pointerEvents: (isCardShowing || isZooming) ? 'none' : 'auto',
+          }}
+          onClick={() => {
+            playSelectSound()
+            // TODO: Open journal panel
+            console.log('Open Explorer\'s Journal')
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(0, 0, 0, 0.5)'
+            e.currentTarget.style.transform = 'scale(1.05)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(0, 0, 0, 0.3)'
+            e.currentTarget.style.transform = 'scale(1)'
+          }}
+        >
+          <img 
+            src="/icon/journal.svg" 
+            alt="Journal" 
+            style={{
+              width: '18px',
+              height: '18px',
+              objectFit: 'contain',
+            }}
+          />
+          <span>Explorer's Journal</span>
+        </button>
+      )}
+      
       {/* About Me Button in bottom-right */}
       {!isZooming && (
         <a

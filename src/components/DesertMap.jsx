@@ -122,16 +122,19 @@ const npcDialogues = {
   ],
   // Post-Mission 3 NPCs (Color mode)
   npc5: {
-    text: "Enjoy the colors, human. I will keep watch—quietly this time.",
-    speaker: 'NPC 5'
+    text: "Say, if it's possible, could you show me something cool or interesting from your side?",
+    speaker: 'NPC 5',
+    showCameraIcon: true
   },
   npc6: {
-    text: "Alert... just kidding. No alerts today.",
-    speaker: 'NPC 6'
+    text: "Say, if it's possible, could you show me something cool or interesting from your side?",
+    speaker: 'NPC 6',
+    showCameraIcon: true
   },
   npc7: {
-    text: "Happiness, Safety, and... Acupuncture?",
-    speaker: 'NPC 7'
+    text: "Say, if it's possible, could you show me something cool or interesting from your side?",
+    speaker: 'NPC 7',
+    showCameraIcon: true
   },
   alphaFinal: {
     text: "System Status: Normal. Defense protocols deactivated. The castle is safe. Thank you, Engineer. I am now processing data with context.",
@@ -398,6 +401,15 @@ const DesertMap = ({ onExit }) => {
   const [colorMode, setColorMode] = useState(false) // New color mode after Mission 3
   const [loadingText, setLoadingText] = useState('') // For typing effect
   const [loadingTyping, setLoadingTyping] = useState(false)
+  
+  // Camera states for NPC photo feature (color mode)
+  const [showNpcCamera, setShowNpcCamera] = useState(false)
+  const [npcCameraStream, setNpcCameraStream] = useState(null)
+  const [npcCapturedPhoto, setNpcCapturedPhoto] = useState(null)
+  const [showRecognitionCard, setShowRecognitionCard] = useState(false)
+  const [recognitionResult, setRecognitionResult] = useState(null)
+  const [isRecognizing, setIsRecognizing] = useState(false)
+  const [currentPhotoNpc, setCurrentPhotoNpc] = useState(null) // Track which NPC requested photo
 
   // Mission 3 data
   const mission3Data = {
@@ -2013,6 +2025,219 @@ const DesertMap = ({ onExit }) => {
         console.log('Force saved colorMode = true')
       }
     }, 4000)
+  }
+  
+  // Camera functions for NPC photo feature
+  const handleCameraIconClick = (npcId) => {
+    playSelectSound()
+    setCurrentPhotoNpc(npcId)
+    setShowDialogue(false)
+    setShowNpcCamera(true)
+    
+    // Request camera access
+    navigator.mediaDevices.getUserMedia({ 
+      video: { facingMode: 'environment' } // Use back camera on mobile
+    })
+    .then(stream => {
+      setNpcCameraStream(stream)
+    })
+    .catch(err => {
+      console.error('Camera access error:', err)
+      alert('Unable to access camera. Please grant camera permissions.')
+      setShowNpcCamera(false)
+    })
+  }
+  
+  const handleCapturePhoto = () => {
+    playCameraSound()
+    
+    // Create canvas to capture photo from video stream
+    const video = document.getElementById('npcCameraVideo')
+    const canvas = document.createElement('canvas')
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(video, 0, 0)
+    
+    // Convert to base64
+    const photoData = canvas.toDataURL('image/jpeg', 0.9)
+    setNpcCapturedPhoto(photoData)
+    
+    // Stop camera stream
+    if (npcCameraStream) {
+      npcCameraStream.getTracks().forEach(track => track.stop())
+      setNpcCameraStream(null)
+    }
+    
+    // Start AI recognition
+    recognizePhoto(photoData)
+  }
+  
+  const recognizePhoto = async (photoBase64) => {
+    setIsRecognizing(true)
+    
+    try {
+      // Remove data:image/jpeg;base64, prefix
+      const base64Data = photoBase64.split(',')[1]
+      
+      const response = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                {
+                  text: 'Identify the main object in this image. Respond in this exact format: "Object Name (English) - Category". For example: "Coffee Mug - Kitchenware" or "Laptop - Electronics". Be concise and specific.'
+                },
+                {
+                  inline_data: {
+                    mime_type: 'image/jpeg',
+                    data: base64Data
+                  }
+                }
+              ]
+            }]
+          })
+        }
+      )
+      
+      const data = await response.json()
+      console.log('Gemini API response:', data)
+      
+      if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+        const resultText = data.candidates[0].content.parts[0].text.trim()
+        
+        // Parse the result (format: "Object Name - Category")
+        const parts = resultText.split(' - ')
+        const itemName = parts[0] || resultText
+        const itemType = parts[1] || 'Unknown'
+        
+        setRecognitionResult({
+          item: itemName,
+          type: itemType,
+          photo: photoBase64,
+          timestamp: new Date().toISOString(),
+          npc: currentPhotoNpc
+        })
+        
+        setIsRecognizing(false)
+        setShowNpcCamera(false)
+        setShowRecognitionCard(true)
+      } else {
+        throw new Error('Invalid API response')
+      }
+    } catch (error) {
+      console.error('Recognition error:', error)
+      setIsRecognizing(false)
+      alert('Failed to recognize the object. Please try again.')
+      setShowNpcCamera(false)
+    }
+  }
+  
+  const handleCloseCamera = () => {
+    playSelectSound()
+    
+    // Stop camera stream
+    if (npcCameraStream) {
+      npcCameraStream.getTracks().forEach(track => track.stop())
+      setNpcCameraStream(null)
+    }
+    
+    setShowNpcCamera(false)
+    setNpcCapturedPhoto(null)
+  }
+  
+  const handleDownloadCard = () => {
+    playSelectSound()
+    
+    if (!recognitionResult) return
+    
+    // Create a canvas to draw the card
+    const canvas = document.createElement('canvas')
+    canvas.width = 800
+    canvas.height = 1000
+    const ctx = canvas.getContext('2d')
+    
+    // Background
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    
+    // Load and draw photo
+    const img = new Image()
+    img.onload = () => {
+      // Draw photo
+      const photoHeight = 600
+      const photoWidth = canvas.width
+      ctx.drawImage(img, 0, 0, photoWidth, photoHeight)
+      
+      // Draw text info
+      ctx.fillStyle = '#333333'
+      ctx.font = 'bold 32px Arial'
+      ctx.fillText('AI Recognition Result', 40, photoHeight + 60)
+      
+      ctx.font = '28px Arial'
+      ctx.fillText(`Item: ${recognitionResult.item}`, 40, photoHeight + 120)
+      ctx.fillText(`Type: ${recognitionResult.type}`, 40, photoHeight + 170)
+      
+      ctx.font = '20px Arial'
+      ctx.fillStyle = '#666666'
+      const date = new Date(recognitionResult.timestamp).toLocaleString()
+      ctx.fillText(`Captured: ${date}`, 40, photoHeight + 220)
+      
+      // Download
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `ai-recognition-${Date.now()}.jpg`
+        a.click()
+        URL.revokeObjectURL(url)
+      }, 'image/jpeg', 0.9)
+    }
+    img.src = recognitionResult.photo
+  }
+  
+  const handleSaveToJournal = () => {
+    playSelectSound()
+    
+    if (!recognitionResult) return
+    
+    // Get existing journal entries
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (savedUser) {
+      const userData = JSON.parse(savedUser)
+      if (!userData.explorerJournal) {
+        userData.explorerJournal = []
+      }
+      
+      // Add new entry
+      userData.explorerJournal.push({
+        ...recognitionResult,
+        id: Date.now(),
+        region: 'desert'
+      })
+      
+      localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+      
+      // Show success message
+      alert('Saved to Explorer\'s Journal!')
+      
+      // Close card
+      setShowRecognitionCard(false)
+      setRecognitionResult(null)
+      setNpcCapturedPhoto(null)
+    }
+  }
+  
+  const handleCloseRecognitionCard = () => {
+    playSelectSound()
+    setShowRecognitionCard(false)
+    setRecognitionResult(null)
+    setNpcCapturedPhoto(null)
   }
 
   const getBackgroundImage = () => {
@@ -4180,13 +4405,59 @@ const DesertMap = ({ onExit }) => {
               ...(currentNpcType === 'glitch' ? styles.glitchSpeaker : {})
             }}>{currentDialogue.speaker}</div>
             {!currentDialogue.showMission2Interface && !currentDialogue.showMission3Interface && (
-              <p style={{
-                ...styles.dialogueText,
-                ...(currentNpcType === 'glitch' ? styles.glitchDialogueText : {})
-              }}>
-                {currentNpcType === 'glitch' ? formatGlitchText(displayedText) : formatDialogueText(displayedText)}
-                {isTyping && <span style={styles.cursor}></span>}
-              </p>
+              <>
+                <p style={{
+                  ...styles.dialogueText,
+                  ...(currentNpcType === 'glitch' ? styles.glitchDialogueText : {})
+                }}>
+                  {currentNpcType === 'glitch' ? formatGlitchText(displayedText) : formatDialogueText(displayedText)}
+                  {isTyping && <span style={styles.cursor}></span>}
+                </p>
+                
+                {/* Camera Icon for NPC5/6/7 in color mode */}
+                {currentDialogue.showCameraIcon && !isTyping && (
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    marginTop: '15px'
+                  }}>
+                    <button
+                      style={{
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        border: '2px solid #FABA14',
+                        borderRadius: '50%',
+                        width: '60px',
+                        height: '60px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+                      }}
+                      onClick={() => handleCameraIconClick(currentNpcType)}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'scale(1.1)'
+                        e.currentTarget.style.boxShadow = '0 6px 16px rgba(250, 186, 20, 0.4)'
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'scale(1)'
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)'
+                      }}
+                    >
+                      <img 
+                        src="/desert/icon/photo.svg" 
+                        alt="Camera" 
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          objectFit: 'contain'
+                        }}
+                      />
+                    </button>
+                  </div>
+                )}
+              </>
             )}
             
             {/* Mission 2 Interface - Inside Dialogue Box */}
@@ -5298,6 +5569,369 @@ const DesertMap = ({ onExit }) => {
           <div style={styles.mission3LoadingText}>
             {loadingText}
             {loadingTyping && <span style={styles.loadingCursor}></span>}
+          </div>
+        </div>
+      )}
+      
+      {/* Camera Interface - Mobile UI Style */}
+      {showNpcCamera && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: '#000',
+          zIndex: 10000,
+          display: 'flex',
+          flexDirection: 'column',
+        }}>
+          {/* Camera Video */}
+          <div style={{
+            flex: 1,
+            position: 'relative',
+            overflow: 'hidden',
+          }}>
+            <video
+              id="npcCameraVideo"
+              autoPlay
+              playsInline
+              ref={(video) => {
+                if (video && npcCameraStream) {
+                  video.srcObject = npcCameraStream
+                }
+              }}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+            
+            {/* Scanning Lines Effect */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 255, 255, 0.03) 2px, rgba(255, 255, 255, 0.03) 4px)',
+              pointerEvents: 'none',
+            }} />
+            
+            {/* Focus Frame - Top Left */}
+            <div style={{
+              position: 'absolute',
+              top: '10%',
+              left: '10%',
+              width: '60px',
+              height: '60px',
+              borderTop: '3px solid #FABA14',
+              borderLeft: '3px solid #FABA14',
+            }} />
+            
+            {/* Focus Frame - Top Right */}
+            <div style={{
+              position: 'absolute',
+              top: '10%',
+              right: '10%',
+              width: '60px',
+              height: '60px',
+              borderTop: '3px solid #FABA14',
+              borderRight: '3px solid #FABA14',
+            }} />
+            
+            {/* Focus Frame - Bottom Left */}
+            <div style={{
+              position: 'absolute',
+              bottom: '20%',
+              left: '10%',
+              width: '60px',
+              height: '60px',
+              borderBottom: '3px solid #FABA14',
+              borderLeft: '3px solid #FABA14',
+            }} />
+            
+            {/* Focus Frame - Bottom Right */}
+            <div style={{
+              position: 'absolute',
+              bottom: '20%',
+              right: '10%',
+              width: '60px',
+              height: '60px',
+              borderBottom: '3px solid #FABA14',
+              borderRight: '3px solid #FABA14',
+            }} />
+            
+            {/* Center Guide */}
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '200px',
+              height: '200px',
+              border: '2px dashed rgba(250, 186, 20, 0.5)',
+              borderRadius: '10px',
+            }} />
+            
+            {/* Close Button */}
+            <button
+              style={{
+                position: 'absolute',
+                top: '20px',
+                left: '20px',
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                background: 'rgba(0, 0, 0, 0.5)',
+                border: '2px solid #fff',
+                color: '#fff',
+                fontSize: '24px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              onClick={handleCloseCamera}
+            >
+              ✕
+            </button>
+          </div>
+          
+          {/* Camera Controls */}
+          <div style={{
+            height: '120px',
+            background: '#000',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderTop: '1px solid #333',
+          }}>
+            {/* Shutter Button */}
+            <button
+              style={{
+                width: '70px',
+                height: '70px',
+                borderRadius: '50%',
+                background: '#fff',
+                border: '4px solid #FABA14',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: '0 0 20px rgba(250, 186, 20, 0.5)',
+              }}
+              onClick={handleCapturePhoto}
+              onMouseDown={(e) => {
+                e.currentTarget.style.transform = 'scale(0.9)'
+              }}
+              onMouseUp={(e) => {
+                e.currentTarget.style.transform = 'scale(1)'
+              }}
+            />
+          </div>
+          
+          {/* Recognizing Overlay */}
+          {isRecognizing && (
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              background: 'rgba(0, 0, 0, 0.8)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1,
+            }}>
+              <div style={{
+                width: '60px',
+                height: '60px',
+                border: '4px solid #FABA14',
+                borderTop: '4px solid transparent',
+                borderRadius: '50%',
+                animation: 'spin 1s linear infinite',
+                marginBottom: '20px',
+              }} />
+              <div style={{
+                color: '#fff',
+                fontSize: '18px',
+                fontWeight: 'bold',
+              }}>
+                AI Recognizing...
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      
+      {/* Recognition Card */}
+      {showRecognitionCard && recognitionResult && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0, 0, 0, 0.8)',
+          zIndex: 10000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px',
+        }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: '20px',
+            maxWidth: '500px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
+          }}>
+            {/* Card Header */}
+            <div style={{
+              padding: '20px',
+              borderBottom: '2px solid #f0f0f0',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}>
+              <h3 style={{
+                margin: 0,
+                fontSize: '20px',
+                fontWeight: 'bold',
+                color: '#333',
+              }}>
+                AI Recognition Result
+              </h3>
+              <button
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  color: '#999',
+                  cursor: 'pointer',
+                }}
+                onClick={handleCloseRecognitionCard}
+              >
+                ✕
+              </button>
+            </div>
+            
+            {/* Photo */}
+            <div style={{
+              padding: '20px',
+            }}>
+              <img 
+                src={recognitionResult.photo}
+                alt="Captured"
+                style={{
+                  width: '100%',
+                  borderRadius: '10px',
+                  marginBottom: '20px',
+                }}
+              />
+              
+              {/* Recognition Info */}
+              <div style={{
+                background: '#f8f9fa',
+                borderRadius: '10px',
+                padding: '20px',
+                marginBottom: '20px',
+              }}>
+                <div style={{
+                  marginBottom: '15px',
+                }}>
+                  <div style={{
+                    fontSize: '14px',
+                    color: '#666',
+                    marginBottom: '5px',
+                  }}>
+                    Item
+                  </div>
+                  <div style={{
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    color: '#333',
+                  }}>
+                    {recognitionResult.item}
+                  </div>
+                </div>
+                
+                <div>
+                  <div style={{
+                    fontSize: '14px',
+                    color: '#666',
+                    marginBottom: '5px',
+                  }}>
+                    Type
+                  </div>
+                  <div style={{
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    color: '#FABA14',
+                  }}>
+                    {recognitionResult.type}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Action Buttons */}
+              <div style={{
+                display: 'flex',
+                gap: '10px',
+              }}>
+                <button
+                  style={{
+                    flex: 1,
+                    padding: '15px',
+                    background: '#fff',
+                    border: '2px solid #FABA14',
+                    borderRadius: '10px',
+                    color: '#FABA14',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                  onClick={handleDownloadCard}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#FFF9E6'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#fff'
+                  }}
+                >
+                  📥 Download
+                </button>
+                
+                <button
+                  style={{
+                    flex: 1,
+                    padding: '15px',
+                    background: '#FABA14',
+                    border: '2px solid #FABA14',
+                    borderRadius: '10px',
+                    color: '#fff',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                  onClick={handleSaveToJournal}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#E5A812'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = '#FABA14'
+                  }}
+                >
+                  💾 Save to Journal
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
