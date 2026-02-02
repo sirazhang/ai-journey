@@ -1181,7 +1181,7 @@ const IslandMap = ({ onExit }) => {
 
   // Sound effects and music
   useBackgroundMusic('/sound/island.mp3')
-  const { playClickSound, playCorrectSound, playWrongSound } = useSoundEffects()
+  const { playClickSound, playCorrectSound, playWrongSound, playSelectSound } = useSoundEffects()
   const { startTypingSound, stopTypingSound } = useTypingSound('/sound/island_typing.wav')
   
   // Save progress to localStorage
@@ -1537,7 +1537,7 @@ const IslandMap = ({ onExit }) => {
   const handleImageJudgment = (judgment) => {
     if (!currentImageNpc) return
     
-    playClickSound()
+    playSelectSound()
     
     const isCorrect = judgment === currentImageNpc.correctAnswer
     
@@ -1611,7 +1611,7 @@ const IslandMap = ({ onExit }) => {
   const handleQAJudgment = (judgment) => {
     if (!currentQANpc) return
     
-    playClickSound()
+    playSelectSound()
     
     const isCorrect = judgment === currentQANpc.correctAnswer
     
@@ -1769,7 +1769,7 @@ const IslandMap = ({ onExit }) => {
   const handleMissionJudgment = (judgment) => {
     if (!currentMissionNpc) return
     
-    playClickSound()
+    playSelectSound()
     
     const isCorrect = judgment === currentMissionNpc.correctAnswer
     
@@ -2166,7 +2166,7 @@ const IslandMap = ({ onExit }) => {
   }
 
   const handleSparkyChoice = (choiceText, choiceId) => {
-    playClickSound()
+    playSelectSound()
     
     // Add user choice to messages
     setSparkyMessages(prev => [...prev, { type: 'user_choice', text: choiceText }])
@@ -2287,7 +2287,7 @@ const IslandMap = ({ onExit }) => {
   }
 
   const handleNavigation = (direction) => {
-    playClickSound()
+    playSelectSound()
     
     switch (currentIsland) {
       case ISLANDS.ISLAND_1:

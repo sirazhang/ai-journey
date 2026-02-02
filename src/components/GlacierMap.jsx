@@ -849,7 +849,7 @@ const getDialogueSequences = (t) => ({
 const GlacierMap = ({ onExit }) => {
   const { t, language } = useLanguage()
   const { startTypingSound, stopTypingSound } = useTypingSound('/sound/glacier_typing.wav')
-  const { playCorrectSound, playWrongSound, playClickSound, playMarkSound } = useSoundEffects()
+  const { playCorrectSound, playWrongSound, playClickSound, playMarkSound, playSelectSound } = useSoundEffects()
   
   // Helper function to get current timestamp
   const getCurrentTimestamp = () => {
@@ -1847,6 +1847,9 @@ const GlacierMap = ({ onExit }) => {
   }
   
   const handleRooftopQuizAnswer = (option) => {
+    // Play select sound for quiz selection
+    playSelectSound()
+    
     const newAnswers = [...quizAnswers, { 
       questionId: rooftopQuizData.questions[currentQuizQuestion].id, 
       score: option.score, 

@@ -370,7 +370,7 @@ const DesertMap = ({ onExit }) => {
   const [showFinalQuiz, setShowFinalQuiz] = useState(false)
 
   // Sound effects
-  const { playClickSound, playCameraSound, playStampSound, playSafeSound, playAlertSound, playCorrectSound, playWrongSound } = useSoundEffects()
+  const { playClickSound, playCameraSound, playStampSound, playSafeSound, playAlertSound, playCorrectSound, playWrongSound, playSelectSound } = useSoundEffects()
   const { startTypingSound, stopTypingSound } = useTypingSound('/sound/desert_typing.wav')
 
   // Mission 3 states
@@ -1349,32 +1349,39 @@ const DesertMap = ({ onExit }) => {
     // Play sound based on answer correctness
     if (selectedOption.correct) {
       playCorrectSound()
-    } else {
-      playWrongSound()
-    }
-    
-    // Add user's answer
-    setPhase2Messages(prev => [...prev, { 
-      type: 'choice', 
-      text: selectedOption.text, 
-      isUser: true,
-      isCorrect: selectedOption.correct
-    }])
-    
-    // Show correct answer and continue
-    setTimeout(() => {
-      setShowQuiz(false)
-      const nextStep = currentPhase2Step + 1
-      setCurrentPhase2Step(nextStep)
       
-      if (nextStep < alphaPhase2DialogueFlow.length) {
-        addPhase2Message(alphaPhase2DialogueFlow[nextStep], nextStep)
-      }
-    }, 1000)
+      // Add user's answer
+      setPhase2Messages(prev => [...prev, { 
+        type: 'choice', 
+        text: selectedOption.text, 
+        isUser: true,
+        isCorrect: selectedOption.correct
+      }])
+      
+      // Show correct answer and continue
+      setTimeout(() => {
+        setShowQuiz(false)
+        setSelectedAnswer(null)
+        const nextStep = currentPhase2Step + 1
+        setCurrentPhase2Step(nextStep)
+        
+        if (nextStep < alphaPhase2DialogueFlow.length) {
+          addPhase2Message(alphaPhase2DialogueFlow[nextStep], nextStep)
+        }
+      }, 1000)
+    } else {
+      // Wrong answer - play wrong sound and allow re-selection
+      playWrongSound()
+      
+      // Reset selected answer after a delay to allow re-selection
+      setTimeout(() => {
+        setSelectedAnswer(null)
+      }, 500)
+    }
   }
 
   const handleStartLabeling = () => {
-    playClickSound() // Add click sound effect
+    playSelectSound() // User selection sound
     console.log('=== handleStartLabeling - Starting Mission 2 ===')
     console.log('Closing Alpha dialogue...')
     setShowAlphaDialogue(false)
@@ -1601,28 +1608,37 @@ const DesertMap = ({ onExit }) => {
     const quiz = mission2CompletionFlow[currentMission2CompletionStep]
     const selectedOption = quiz.options[answerIndex]
     
-    // Add user's answer
-    setMission2CompletionMessages(prev => [...prev, { 
-      type: 'choice', 
-      text: selectedOption.text, 
-      isUser: true,
-      isCorrect: selectedOption.correct
-    }])
-    
-    // Show correct answer and continue
-    setTimeout(() => {
-      setShowMission2CompletionQuiz(false)
-      const nextStep = currentMission2CompletionStep + 1
-      setCurrentMission2CompletionStep(nextStep)
+    // Play sound based on answer correctness
+    if (selectedOption.correct) {
+      playCorrectSound()
       
-      if (nextStep < mission2CompletionFlow.length) {
-        addMission2CompletionMessage(mission2CompletionFlow[nextStep], nextStep)
-      }
-    }, 1000)
+      // Add user's answer
+      setMission2CompletionMessages(prev => [...prev, { 
+        type: 'choice', 
+        text: selectedOption.text, 
+        isUser: true,
+        isCorrect: selectedOption.correct
+      }])
+      
+      // Show correct answer and continue
+      setTimeout(() => {
+        setShowMission2CompletionQuiz(false)
+        const nextStep = currentMission2CompletionStep + 1
+        setCurrentMission2CompletionStep(nextStep)
+        
+        if (nextStep < mission2CompletionFlow.length) {
+          addMission2CompletionMessage(mission2CompletionFlow[nextStep], nextStep)
+        }
+      }, 1000)
+    } else {
+      // Wrong answer - play wrong sound and allow re-selection
+      playWrongSound()
+      // Don't add to messages, don't advance - just allow re-selection
+    }
   }
 
   const handleStartMission3 = () => {
-    playClickSound()
+    playSelectSound()
     console.log('Starting Mission 3: Environmental Context Analysis')
     setShowAlphaDialogue(false)
     setIsMission2Completion(false)
@@ -1671,7 +1687,7 @@ const DesertMap = ({ onExit }) => {
   }
 
   const handleNextMission = () => {
-    playClickSound() // Add click sound effect
+    playSelectSound() // User selection sound
     console.log('Starting Mission 3: Environmental Context Analysis')
     setShowAlphaDialogue(false)
     setShowDialogue(false) // Close any existing dialogue first
@@ -1688,7 +1704,7 @@ const DesertMap = ({ onExit }) => {
   }
 
   const handleMission3Continue = () => {
-    playClickSound()
+    playSelectSound()
     
     if (mission3Phase === 'intro') {
       setCurrentDialogue({
@@ -1760,7 +1776,7 @@ const DesertMap = ({ onExit }) => {
   }
 
   const handleMission3TagClick = (tag) => {
-    playClickSound()
+    playSelectSound()
     setSelectedTag(tag)
     
     // Track clicked tags in sample phase
@@ -1790,7 +1806,7 @@ const DesertMap = ({ onExit }) => {
   }
 
   const handleMission3Complete = () => {
-    playClickSound()
+    playSelectSound()
     console.log('Mission 3 completed!')
     setShowDialogue(false)
     
@@ -1837,7 +1853,7 @@ const DesertMap = ({ onExit }) => {
   }
 
   const handleMission3QuizContinue = () => {
-    playClickSound()
+    playSelectSound()
     
     // Clear wrong answer state when continuing
     setWrongAnswerIndex(null)
@@ -1856,7 +1872,7 @@ const DesertMap = ({ onExit }) => {
   
   // Mission 4 handlers
   const handleMission4Discussion = () => {
-    playClickSound()
+    playSelectSound()
     const currentLeaf = mission4Leaves[mission4LeafIndex]
     
     if (!currentLeaf.needsDiscussion) {
@@ -1885,7 +1901,7 @@ const DesertMap = ({ onExit }) => {
   }
   
   const handleMission4Vote = (vote) => {
-    playClickSound()
+    playSelectSound()
     const currentLeaf = mission4Leaves[mission4LeafIndex]
     
     // Check if discussion is needed but not used yet
@@ -1944,7 +1960,7 @@ const DesertMap = ({ onExit }) => {
   }
   
   const handleMission4Complete = () => {
-    playClickSound()
+    playSelectSound()
     console.log('Mission 4 completed!')
     
     // Mark Mission 4 as complete and show NPC7 dialogue
@@ -1973,7 +1989,7 @@ const DesertMap = ({ onExit }) => {
   }
   
   const handleMission4RebootAccept = () => {
-    playClickSound()
+    playSelectSound()
     setShowDialogue(false)
     
     // Show loading screen with desert icon and transition to color mode
@@ -5088,7 +5104,7 @@ const DesertMap = ({ onExit }) => {
                   <button 
                     style={styles.modernActionButton}
                     onClick={() => {
-                      playClickSound()
+                      playSelectSound()
                       setAlphaDialogueStep('mission4_part1')
                       setAlphaDialogueHistory(prev => [...prev, { type: 'alpha', text: "Exactly.\n\nI process data—but you bring the common sense and context I'll never have on my own." }])
                     }}
@@ -5143,7 +5159,7 @@ const DesertMap = ({ onExit }) => {
                   <button 
                     style={styles.modernActionButton}
                     onClick={() => {
-                      playClickSound()
+                      playSelectSound()
                       setShowAlphaDialogue(false)
                       setIsMission3Completion(false)
                       setCurrentView('gate') // Change to gate view
