@@ -535,10 +535,13 @@ const DesertMap = ({ onExit }) => {
 
   // Load saved progress on mount
   useEffect(() => {
+    console.log('=== DesertMap: Loading saved progress ===')
     const savedUser = localStorage.getItem('aiJourneyUser')
     if (savedUser) {
       const userData = JSON.parse(savedUser)
+      console.log('Full userData:', userData)
       const desertProgress = userData.desertProgress
+      console.log('desertProgress:', desertProgress)
       if (desertProgress) {
         // Restore basic states
         setCurrentSegment(desertProgress.currentSegment || SEGMENTS.SEGMENT_1)
@@ -570,7 +573,10 @@ const DesertMap = ({ onExit }) => {
         }
         
         if (desertProgress.colorMode) {
+          console.log('Loading colorMode from localStorage: true')
           setColorMode(true)
+        } else {
+          console.log('colorMode not found in localStorage or is false')
         }
         
         if (desertProgress.mission4Started) {
