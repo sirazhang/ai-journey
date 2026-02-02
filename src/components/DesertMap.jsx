@@ -2082,9 +2082,9 @@ const DesertMap = ({ onExit }) => {
       
       console.log('Calling Gemini API...')
       
-      // Try with gemini-1.5-flash first (more stable)
+      // Use gemini-2.5-flash model
       const response = await fetch(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4',
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4',
         {
           method: 'POST',
           headers: {
