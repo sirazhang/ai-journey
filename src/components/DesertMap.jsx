@@ -2080,8 +2080,11 @@ const DesertMap = ({ onExit }) => {
       // Remove data:image/jpeg;base64, prefix
       const base64Data = photoBase64.split(',')[1]
       
+      console.log('Calling Gemini API...')
+      
+      // Try with gemini-1.5-flash first (more stable)
       const response = await fetch(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4',
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4',
         {
           method: 'POST',
           headers: {
@@ -2105,16 +2108,37 @@ const DesertMap = ({ onExit }) => {
         }
       )
       
+      console.log('API Response status:', response.status)
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('API Error response:', errorText)
+        throw new Error(`API request failed: ${response.status} - ${errorText}`)
+      }
+      
       const data = await response.json()
-      console.log('Gemini API response:', data)
+      console.log('Gemini API full response:', JSON.stringify(data, null, 2))
+      
+      // Check for different possible response structures
+      let resultText = null
       
       if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
-        const resultText = data.candidates[0].content.parts[0].text.trim()
-        
+        resultText = data.candidates[0].content.parts[0].text.trim()
+      } else if (data.candidates && data.candidates[0]?.output) {
+        resultText = data.candidates[0].output.trim()
+      } else if (data.text) {
+        resultText = data.text.trim()
+      }
+      
+      console.log('Extracted result text:', resultText)
+      
+      if (resultText) {
         // Parse the result (format: "Object Name - Category")
         const parts = resultText.split(' - ')
         const itemName = parts[0] || resultText
         const itemType = parts[1] || 'Unknown'
+        
+        console.log('Parsed result:', { itemName, itemType })
         
         setRecognitionResult({
           item: itemName,
@@ -2128,12 +2152,14 @@ const DesertMap = ({ onExit }) => {
         setShowNpcCamera(false)
         setShowRecognitionCard(true)
       } else {
-        throw new Error('Invalid API response')
+        console.error('No valid text found in response:', data)
+        throw new Error('Invalid API response structure: ' + JSON.stringify(data))
       }
     } catch (error) {
       console.error('Recognition error:', error)
+      console.error('Error details:', error.message)
       setIsRecognizing(false)
-      alert('Failed to recognize the object. Please try again.')
+      alert(`Failed to recognize the object: ${error.message}\n\nPlease check the console for details.`)
       setShowNpcCamera(false)
     }
   }
