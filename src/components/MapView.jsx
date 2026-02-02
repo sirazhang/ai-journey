@@ -855,8 +855,6 @@ const MapView = ({ onRegionClick }) => {
             transition: 'all 0.2s',
             backdropFilter: 'blur(5px)',
             zIndex: 100,
-            opacity: (isCardShowing || isZooming) ? 0 : 1,
-            pointerEvents: (isCardShowing || isZooming) ? 'none' : 'auto',
           }}
           onClick={() => {
             playSelectSound()
