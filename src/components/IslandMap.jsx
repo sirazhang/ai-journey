@@ -3816,7 +3816,7 @@ const IslandMap = ({ onExit }) => {
       top: '10%',
       left: '20%',
       width: '60%',
-      height: '80%',
+      height: 'calc(80% + 50px)', // 增加50px高度
       zIndex: 100,
       background: 'white',
       borderRadius: '15px',
@@ -3971,6 +3971,7 @@ const IslandMap = ({ onExit }) => {
       flexDirection: 'column',
       gap: '15px',
       padding: '0 20px 20px 20px',
+      marginTop: '-20px', // 向上移动按钮
     },
     conversationTestButtonWorker: {
       display: 'flex',
