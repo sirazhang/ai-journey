@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import useSoundEffects from '../hooks/useSoundEffects'
 import useTypingSound from '../hooks/useTypingSound'
 import { useLanguage } from '../contexts/LanguageContext'
+import { getGeminiUrl } from '../config/api'
 
 // Add CSS animations
 const missionStyles = `
@@ -937,7 +938,7 @@ const DesertMap = ({ onExit }) => {
       
       try {
         // Call Gemini API
-        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4', {
+        const response = await fetch(getGeminiUrl('gemini-2.0-flash-exp'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -2220,7 +2221,7 @@ const DesertMap = ({ onExit }) => {
       
       // Use gemini-2.5-flash model
       const response = await fetch(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4',
+        getGeminiUrl('gemini-2.5-flash'),
         {
           method: 'POST',
           headers: {

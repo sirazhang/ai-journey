@@ -3,6 +3,7 @@ import useBackgroundMusic from '../hooks/useBackgroundMusic'
 import useSoundEffects from '../hooks/useSoundEffects'
 import useTypingSound from '../hooks/useTypingSound'
 import { useLanguage } from '../contexts/LanguageContext'
+import { getGeminiUrl } from '../config/api'
 
 // Island positions
 const ISLANDS = {
@@ -1299,7 +1300,7 @@ const IslandMap = ({ onExit }) => {
       
       try {
         // Call Gemini API
-        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4', {
+        const response = await fetch(getGeminiUrl('gemini-2.0-flash-exp'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

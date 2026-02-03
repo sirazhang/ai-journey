@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import useTypingSound from '../hooks/useTypingSound'
 import useSoundEffects from '../hooks/useSoundEffects'
 import { useLanguage } from '../contexts/LanguageContext'
+import { getGeminiUrl } from '../config/api'
 
 // Summary dialogue sequence
 const summaryDialogueSequence = [
@@ -1866,7 +1867,7 @@ const GlacierMap = ({ onExit }) => {
       
       try {
         // Call Gemini API
-        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4', {
+        const response = await fetch(getGeminiUrl('gemini-2.0-flash-exp'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

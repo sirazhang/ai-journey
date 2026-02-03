@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
 import useTypingSound from '../hooks/useTypingSound'
+import { getGeminiUrl } from '../config/api'
 
 // Map positions: bottom-left (0), bottom-right (1), top-left (2), top-right (3)
 const POSITIONS = {
@@ -268,7 +269,7 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
       
       try {
         // Call Gemini API
-        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4', {
+        const response = await fetch(getGeminiUrl('gemini-2.0-flash-exp'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
