@@ -122,7 +122,7 @@ const npcDialogues = {
   ],
   // Post-Mission 3 NPCs (Color mode)
   npc5: {
-    text: "Say, if it's possible, could you show me something cool or interesting from your side?",
+    text: "Show me a moment from your world",
     speaker: 'NPC 5',
     showCameraIcon: true
   },
@@ -132,7 +132,7 @@ const npcDialogues = {
     showCameraIcon: true
   },
   npc7: {
-    text: "Say, if it's possible, could you show me something cool or interesting from your side?",
+    text: "Could you share an interesting story with me?",
     speaker: 'NPC 7',
     showCameraIcon: true
   },
@@ -410,6 +410,8 @@ const DesertMap = ({ onExit }) => {
   const [recognitionResult, setRecognitionResult] = useState(null)
   const [isRecognizing, setIsRecognizing] = useState(false)
   const [currentPhotoNpc, setCurrentPhotoNpc] = useState(null) // Track which NPC requested photo
+  const [userStory, setUserStory] = useState('') // User's input story
+  const [showFinalCard, setShowFinalCard] = useState(false) // Show final Instagram-style card
   
   // Glitch chat states
   const [glitchChatHistory, setGlitchChatHistory] = useState([]) // Store chat history
@@ -2213,7 +2215,7 @@ const DesertMap = ({ onExit }) => {
       // Remove data:image/jpeg;base64, prefix
       const base64Data = photoBase64.split(',')[1]
       
-      console.log('Calling Gemini API...')
+      console.log('Calling Gemini API for image description...')
       
       // Use gemini-2.5-flash model
       const response = await fetch(
@@ -2227,7 +2229,7 @@ const DesertMap = ({ onExit }) => {
             contents: [{
               parts: [
                 {
-                  text: 'Identify the main object in this image. Respond in this exact format: "Object Name (English) - Category". For example: "Coffee Mug - Kitchenware" or "Laptop - Electronics". Be concise and specific.'
+                  text: 'Describe this image in one simple sentence. Focus on the main subject and action. For example: "A woman holding a patterned mug in front of a bookshelf." Keep it concise and factual.'
                 },
                 {
                   inline_data: {
@@ -2263,19 +2265,11 @@ const DesertMap = ({ onExit }) => {
         resultText = data.text.trim()
       }
       
-      console.log('Extracted result text:', resultText)
+      console.log('Extracted AI description:', resultText)
       
       if (resultText) {
-        // Parse the result (format: "Object Name - Category")
-        const parts = resultText.split(' - ')
-        const itemName = parts[0] || resultText
-        const itemType = parts[1] || 'Unknown'
-        
-        console.log('Parsed result:', { itemName, itemType })
-        
         setRecognitionResult({
-          item: itemName,
-          type: itemType,
+          aiDescription: resultText,
           photo: photoBase64,
           timestamp: new Date().toISOString(),
           npc: currentPhotoNpc
@@ -2292,7 +2286,7 @@ const DesertMap = ({ onExit }) => {
       console.error('Recognition error:', error)
       console.error('Error details:', error.message)
       setIsRecognizing(false)
-      alert(`Failed to recognize the object: ${error.message}\n\nPlease check the console for details.`)
+      alert(`Failed to recognize the image: ${error.message}\n\nPlease check the console for details.`)
       setShowNpcCamera(false)
     }
   }
@@ -2310,19 +2304,59 @@ const DesertMap = ({ onExit }) => {
     setNpcCapturedPhoto(null)
   }
   
+  // Handle user story submission
+  const handleSubmitStory = () => {
+    playSelectSound()
+    
+    if (!userStory.trim()) {
+      alert('Please add your story before continuing.')
+      return
+    }
+    
+    // Extract keywords from AI description and user story for hashtags
+    const generateHashtags = (aiDesc, userStory) => {
+      // Simple keyword extraction - take important words
+      const allText = `${aiDesc} ${userStory}`.toLowerCase()
+      const words = allText.split(/\s+/)
+      const stopWords = ['a', 'an', 'the', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'is', 'was', 'are', 'were', 'this', 'that', 'but', 'and', 'or']
+      const keywords = words
+        .filter(w => w.length > 3 && !stopWords.includes(w))
+        .filter((w, i, arr) => arr.indexOf(w) === i) // unique
+        .slice(0, 3) // take first 3
+      return keywords.map(k => `#${k.replace(/[^a-z0-9]/g, '')}`)
+    }
+    
+    const hashtags = generateHashtags(recognitionResult.aiDescription, userStory)
+    
+    // Get first 6 words of user story
+    const storyPreview = userStory.split(' ').slice(0, 6).join(' ')
+    
+    // Update recognition result with user story and hashtags
+    setRecognitionResult({
+      ...recognitionResult,
+      userStory,
+      storyPreview,
+      hashtags
+    })
+    
+    // Close input card and show final card
+    setShowRecognitionCard(false)
+    setShowFinalCard(true)
+  }
+  
   const handleDownloadCard = () => {
     playSelectSound()
     
     if (!recognitionResult) return
     
-    // Create a canvas to draw the card
+    // Create a canvas to draw the Instagram-style card
     const canvas = document.createElement('canvas')
     canvas.width = 800
-    canvas.height = 1000
+    canvas.height = 1100
     const ctx = canvas.getContext('2d')
     
     // Background
-    ctx.fillStyle = '#ffffff'
+    ctx.fillStyle = '#FFF9F0'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     
     // Load and draw photo
@@ -2333,31 +2367,60 @@ const DesertMap = ({ onExit }) => {
       const photoWidth = canvas.width
       ctx.drawImage(img, 0, 0, photoWidth, photoHeight)
       
-      // Draw text info
-      ctx.fillStyle = '#333333'
-      ctx.font = 'bold 32px Arial'
-      ctx.fillText('AI Recognition Result', 40, photoHeight + 60)
-      
-      ctx.font = '28px Arial'
-      ctx.fillText(`Item: ${recognitionResult.item}`, 40, photoHeight + 120)
-      ctx.fillText(`Type: ${recognitionResult.type}`, 40, photoHeight + 170)
-      
-      ctx.font = '20px Arial'
-      ctx.fillStyle = '#666666'
+      // Draw timestamp on photo
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
+      ctx.fillRect(canvas.width - 250, photoHeight - 50, 230, 35)
+      ctx.fillStyle = '#fff'
+      ctx.font = '14px "Roboto Mono"'
       const date = new Date(recognitionResult.timestamp).toLocaleString()
-      ctx.fillText(`Captured: ${date}`, 40, photoHeight + 220)
+      ctx.fillText(`Captured: ${date}`, canvas.width - 240, photoHeight - 25)
+      
+      // Draw icons and description
+      const startY = photoHeight + 40
+      
+      // Description text
+      ctx.fillStyle = '#333'
+      ctx.font = '18px "Roboto"'
+      const descText = `Together, we see: Not just ${recognitionResult.aiDescription}, but ${recognitionResult.storyPreview}...`
+      wrapText(ctx, descText, 40, startY, canvas.width - 80, 28)
+      
+      // Hashtags
+      ctx.fillStyle = '#f89303'
+      ctx.font = 'bold 16px "Roboto Mono"'
+      const hashtagText = recognitionResult.hashtags.join(' ')
+      ctx.fillText(hashtagText, 40, startY + 120)
       
       // Download
       canvas.toBlob(blob => {
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `ai-recognition-${Date.now()}.jpg`
+        a.download = `desert-moment-${Date.now()}.jpg`
         a.click()
         URL.revokeObjectURL(url)
       }, 'image/jpeg', 0.9)
     }
     img.src = recognitionResult.photo
+  }
+  
+  // Helper function to wrap text
+  const wrapText = (ctx, text, x, y, maxWidth, lineHeight) => {
+    const words = text.split(' ')
+    let line = ''
+    let currentY = y
+    
+    for (let i = 0; i < words.length; i++) {
+      const testLine = line + words[i] + ' '
+      const metrics = ctx.measureText(testLine)
+      if (metrics.width > maxWidth && i > 0) {
+        ctx.fillText(line, x, currentY)
+        line = words[i] + ' '
+        currentY += lineHeight
+      } else {
+        line = testLine
+      }
+    }
+    ctx.fillText(line, x, currentY)
   }
   
   const handleSaveToJournal = () => {
@@ -2375,9 +2438,15 @@ const DesertMap = ({ onExit }) => {
       
       // Add new entry
       userData.explorerJournal.push({
-        ...recognitionResult,
+        photo: recognitionResult.photo,
+        timestamp: recognitionResult.timestamp,
+        aiDescription: recognitionResult.aiDescription,
+        userStory: recognitionResult.userStory,
+        storyPreview: recognitionResult.storyPreview,
+        hashtags: recognitionResult.hashtags,
         id: Date.now(),
-        region: 'desert'
+        region: 'desert',
+        type: 'moment' // Mark as moment type for different display
       })
       
       localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
@@ -2386,9 +2455,10 @@ const DesertMap = ({ onExit }) => {
       alert('Saved to Explorer\'s Journal!')
       
       // Close card
-      setShowRecognitionCard(false)
+      setShowFinalCard(false)
       setRecognitionResult(null)
       setNpcCapturedPhoto(null)
+      setUserStory('')
     }
   }
   
@@ -2397,6 +2467,15 @@ const DesertMap = ({ onExit }) => {
     setShowRecognitionCard(false)
     setRecognitionResult(null)
     setNpcCapturedPhoto(null)
+    setUserStory('')
+  }
+  
+  const handleCloseFinalCard = () => {
+    playSelectSound()
+    setShowFinalCard(false)
+    setRecognitionResult(null)
+    setNpcCapturedPhoto(null)
+    setUserStory('')
   }
 
   const getBackgroundImage = () => {
@@ -6129,7 +6208,7 @@ const DesertMap = ({ onExit }) => {
         </div>
       )}
       
-      {/* Recognition Card */}
+      {/* Recognition Card - With AI Description and User Input */}
       {showRecognitionCard && recognitionResult && (
         <div style={{
           position: 'fixed',
@@ -6147,67 +6226,99 @@ const DesertMap = ({ onExit }) => {
           <div style={{
             background: '#FFF9F0',
             borderRadius: '24px',
-            maxWidth: '600px',
+            maxWidth: '650px',
             width: '100%',
-            border: '3px solid #FFD166',
-            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 209, 102, 0.5)',
-            padding: '30px',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)',
+            padding: '35px',
+            position: 'relative',
           }}>
+            {/* Close button */}
+            <button
+              style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                background: 'rgba(0, 0, 0, 0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                fontSize: '20px',
+                color: '#666',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+              }}
+              onClick={handleCloseRecognitionCard}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.2)'
+                e.currentTarget.style.color = '#000'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.1)'
+                e.currentTarget.style.color = '#666'
+              }}
+            >
+              ✕
+            </button>
+            
             {/* Card Header */}
             <div style={{
               marginBottom: '20px',
             }}>
               <h3 style={{
                 margin: 0,
-                fontSize: '28px',
-                fontWeight: 'bold',
-                color: '#000',
-                fontFamily: "'Roboto', sans-serif",
+                fontSize: '20px',
+                fontWeight: '600',
+                color: '#333',
+                fontFamily: "'Poppins', sans-serif",
                 marginBottom: '5px',
               }}>
-                #Object detected
+                AI noticed:
               </h3>
               <p style={{
                 margin: 0,
-                fontSize: '14px',
-                color: '#666',
+                fontSize: '24px',
+                fontWeight: 'bold',
+                color: '#000',
                 fontFamily: "'Roboto', sans-serif",
+                lineHeight: 1.4,
               }}>
-                Look what I spotted!
+                {recognitionResult.aiDescription}
               </p>
             </div>
             
-            {/* Photo with dashed border and timestamp */}
+            {/* Photo with solid border and timestamp */}
             <div style={{
               position: 'relative',
               marginBottom: '25px',
             }}>
               <div style={{
-                border: '3px dashed #fff',
+                border: '3px solid #333',
                 borderRadius: '12px',
-                padding: '8px',
-                background: '#fff',
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                overflow: 'hidden',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
               }}>
                 <img 
                   src={recognitionResult.photo}
                   alt="Captured"
                   style={{
                     width: '100%',
-                    borderRadius: '8px',
                     display: 'block',
                   }}
                 />
                 {/* Timestamp overlay */}
                 <div style={{
                   position: 'absolute',
-                  bottom: '20px',
-                  right: '20px',
-                  background: 'rgba(0, 0, 0, 0.7)',
+                  bottom: '12px',
+                  right: '12px',
+                  background: 'rgba(0, 0, 0, 0.75)',
                   color: '#fff',
                   padding: '6px 12px',
                   borderRadius: '6px',
-                  fontSize: '12px',
+                  fontSize: '11px',
                   fontFamily: "'Roboto Mono', monospace",
                   backdropFilter: 'blur(4px)',
                 }}>
@@ -6218,77 +6329,267 @@ const DesertMap = ({ onExit }) => {
                     hour: '2-digit',
                     minute: '2-digit',
                     second: '2-digit',
-                    hour12: false
-                  }).replace(',', ',')}
+                    hour12: true
+                  })}
                 </div>
               </div>
-              
-              {/* Object highlight overlay */}
-              <div style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: '60%',
-                height: '60%',
-                border: '3px solid rgba(248, 147, 3, 0.6)',
-                borderRadius: '12px',
-                pointerEvents: 'none',
-                boxShadow: '0 0 20px rgba(248, 147, 3, 0.4), inset 0 0 20px rgba(248, 147, 3, 0.2)',
-              }} />
             </div>
             
-            {/* Recognition Info - Side by side */}
+            {/* User Input Section */}
             <div style={{
-              display: 'flex',
-              gap: '20px',
               marginBottom: '25px',
             }}>
-              <div style={{
-                flex: 1,
+              <h4 style={{
+                margin: 0,
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#333',
+                fontFamily: "'Poppins', sans-serif",
+                marginBottom: '12px',
               }}>
-                <div style={{
-                  fontSize: '14px',
-                  color: '#666',
-                  marginBottom: '8px',
-                  fontFamily: "'Roboto Mono', monospace",
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px',
-                }}>
-                  Item
-                </div>
-                <div style={{
-                  fontSize: '24px',
-                  fontWeight: 'bold',
-                  color: '#000',
-                  fontFamily: "'Roboto Mono', monospace",
-                }}>
-                  {recognitionResult.item}
-                </div>
-              </div>
+                You added:
+              </h4>
               
+              {/* Input Box with Pen Icon */}
               <div style={{
-                flex: 1,
+                position: 'relative',
+                background: '#f7eedd',
+                borderRadius: '12px',
+                padding: '15px',
+                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.05)',
               }}>
-                <div style={{
-                  fontSize: '14px',
-                  color: '#666',
-                  marginBottom: '8px',
-                  fontFamily: "'Roboto Mono', monospace",
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px',
-                }}>
-                  Type
-                </div>
-                <div style={{
-                  fontSize: '24px',
-                  fontWeight: 'bold',
-                  color: '#f89303',
-                  fontFamily: "'Roboto Mono', monospace",
-                }}>
-                  {recognitionResult.type}
-                </div>
+                <textarea
+                  value={userStory}
+                  onChange={(e) => setUserStory(e.target.value)}
+                  placeholder="Share your story about this moment..."
+                  style={{
+                    width: '100%',
+                    minHeight: '100px',
+                    border: 'none',
+                    background: 'transparent',
+                    fontSize: '16px',
+                    fontFamily: "'Roboto', sans-serif",
+                    color: '#333',
+                    resize: 'vertical',
+                    outline: 'none',
+                    paddingRight: '50px',
+                  }}
+                />
+                
+                {/* Pen Icon */}
+                <img 
+                  src="/desert/icon/pen-cursor.png"
+                  alt="Pen"
+                  style={{
+                    position: 'absolute',
+                    bottom: '15px',
+                    right: '15px',
+                    width: '32px',
+                    height: '32px',
+                    opacity: 0.4,
+                    pointerEvents: 'none',
+                  }}
+                />
               </div>
+            </div>
+            
+            {/* Send Button */}
+            <button
+              style={{
+                width: '100%',
+                padding: '16px',
+                background: '#f89303',
+                border: 'none',
+                borderRadius: '12px',
+                color: '#fff',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                fontFamily: "'Roboto', sans-serif",
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                boxShadow: '0 4px 12px rgba(248, 147, 3, 0.3)',
+              }}
+              onClick={handleSubmitStory}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#E58302'
+                e.currentTarget.style.transform = 'translateY(-2px)'
+                e.currentTarget.style.boxShadow = '0 6px 16px rgba(248, 147, 3, 0.4)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#f89303'
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(248, 147, 3, 0.3)'
+              }}
+            >
+              <img 
+                src="/desert/icon/send.png"
+                alt="Send"
+                style={{
+                  width: '24px',
+                  height: '24px',
+                  filter: 'brightness(0) invert(1)',
+                }}
+              />
+              Continue
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Final Instagram-Style Card */}
+      {showFinalCard && recognitionResult && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0, 0, 0, 0.85)',
+          zIndex: 10000,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px',
+        }}>
+          <div style={{
+            background: '#FFF9F0',
+            borderRadius: '24px',
+            maxWidth: '600px',
+            width: '100%',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+            padding: '35px',
+            position: 'relative',
+          }}>
+            {/* Close button */}
+            <button
+              style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                background: 'rgba(0, 0, 0, 0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                fontSize: '20px',
+                color: '#666',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+                zIndex: 1,
+              }}
+              onClick={handleCloseFinalCard}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.2)'
+                e.currentTarget.style.color = '#000'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.1)'
+                e.currentTarget.style.color = '#666'
+              }}
+            >
+              ✕
+            </button>
+            
+            {/* Photo with timestamp */}
+            <div style={{
+              position: 'relative',
+              marginBottom: '20px',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.15)',
+            }}>
+              <img 
+                src={recognitionResult.photo}
+                alt="Captured moment"
+                style={{
+                  width: '100%',
+                  display: 'block',
+                }}
+              />
+              {/* Timestamp overlay */}
+              <div style={{
+                position: 'absolute',
+                bottom: '12px',
+                right: '12px',
+                background: 'rgba(0, 0, 0, 0.75)',
+                color: '#fff',
+                padding: '6px 12px',
+                borderRadius: '6px',
+                fontSize: '11px',
+                fontFamily: "'Roboto Mono', monospace",
+                backdropFilter: 'blur(4px)',
+              }}>
+                Captured: {new Date(recognitionResult.timestamp).toLocaleString('en-US', {
+                  month: '2-digit',
+                  day: '2-digit',
+                  year: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  second: '2-digit',
+                  hour12: true
+                })}
+              </div>
+            </div>
+            
+            {/* Social Icons */}
+            <div style={{
+              display: 'flex',
+              gap: '15px',
+              marginBottom: '15px',
+            }}>
+              <img 
+                src="/desert/icon/like.png"
+                alt="Like"
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              />
+              <img 
+                src="/desert/icon/comment.png"
+                alt="Comment"
+                style={{
+                  width: '28px',
+                  height: '28px',
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s',
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              />
+            </div>
+            
+            {/* Description */}
+            <div style={{
+              marginBottom: '15px',
+              fontSize: '15px',
+              lineHeight: 1.6,
+              color: '#333',
+              fontFamily: "'Roboto', sans-serif",
+            }}>
+              <strong>Together, we see:</strong> Not just {recognitionResult.aiDescription}, but {recognitionResult.storyPreview}...
+            </div>
+            
+            {/* Hashtags */}
+            <div style={{
+              marginBottom: '25px',
+              fontSize: '14px',
+              color: '#f89303',
+              fontFamily: "'Roboto Mono', monospace",
+              fontWeight: 'bold',
+            }}>
+              {recognitionResult.hashtags && recognitionResult.hashtags.join(' ')}
             </div>
             
             {/* Action Buttons */}
@@ -6379,38 +6680,6 @@ const DesertMap = ({ onExit }) => {
                 Save to Journal
               </button>
             </div>
-            
-            {/* Close button */}
-            <button
-              style={{
-                position: 'absolute',
-                top: '20px',
-                right: '20px',
-                background: 'rgba(0, 0, 0, 0.1)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '36px',
-                height: '36px',
-                fontSize: '20px',
-                color: '#666',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.2s',
-              }}
-              onClick={handleCloseRecognitionCard}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.2)'
-                e.currentTarget.style.color = '#000'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.1)'
-                e.currentTarget.style.color = '#666'
-              }}
-            >
-              ✕
-            </button>
           </div>
         </div>
       )}
