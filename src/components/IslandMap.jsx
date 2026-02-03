@@ -4549,12 +4549,24 @@ const IslandMap = ({ onExit }) => {
                 }
                 
                 if (message.type === 'animation' || message.type === 'image') {
+                  // 检查是否是standard或cake图片，如果是则缩小高度
+                  const isSmallImage = message.src.includes('standard.png') || message.src.includes('cake.png')
+                  
                   return (
-                    <div key={index} style={{...styles.modernNpcMessage, textAlign: 'center'}}>
+                    <div key={index} style={{
+                      ...styles.modernNpcMessage, 
+                      textAlign: 'center',
+                      padding: isSmallImage ? '10px 0' : '20px 0', // 减少上下padding
+                    }}>
                       <img 
                         src={message.src} 
                         alt={message.alt}
-                        style={{maxWidth: '100%', height: 'auto', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)'}}
+                        style={{
+                          maxWidth: isSmallImage ? '60%' : '100%', // standard和cake缩小到60%
+                          height: 'auto', 
+                          borderRadius: '12px', 
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                        }}
                       />
                     </div>
                   )
