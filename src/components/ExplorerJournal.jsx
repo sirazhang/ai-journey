@@ -200,9 +200,9 @@ const styles = {
     width: '33.33%',
     minWidth: '400px',
     height: '50%',
-    minHeight: '400px',
+    minHeight: '450px', // 增加 50px
     background: '#8b78bb',
-    margin: '40px 40px 80px 40px', // 增加底部和右侧边距
+    margin: '40px 40px 80px 80px', // 增加左侧边距以向右移动
     borderRadius: '15px',
     boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)',
     padding: '25px',
@@ -263,17 +263,18 @@ const styles = {
   },
   leftSide: {
     width: '30%',
+    height: '100%', // 明确设置高度为 100%
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     borderRight: '2px solid #e0e0e0',
-    padding: '10px',
+    padding: '5px', // 减少 padding 让图标更大
   },
   ringIcon: {
     width: '100%',
     height: '100%',
     objectFit: 'contain',
-    opacity: 0.8,
+    opacity: 0.9, // 增加不透明度
   },
   rightSide: {
     flex: 1,
@@ -308,24 +309,27 @@ const styles = {
     justifyContent: 'center',
     overflow: 'hidden',
     borderRadius: '8px',
+    background: '#f5f5f5', // 添加浅色背景以便看到 grid
   },
   gridBackground: {
     position: 'absolute',
+    top: 0,
+    left: 0,
     width: '100%',
     height: '100%',
     objectFit: 'cover',
-    opacity: 0.4,
+    opacity: 0.8, // 进一步增加不透明度
     pointerEvents: 'none',
-    zIndex: 0,
+    zIndex: 1, // 确保在背景之上
   },
   photo: {
     position: 'relative',
-    maxWidth: '100%',
-    maxHeight: '100%',
+    maxWidth: '90%', // 稍微缩小照片以便看到 grid
+    maxHeight: '90%',
     objectFit: 'contain',
     borderRadius: '6px',
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-    zIndex: 1,
+    zIndex: 2, // 确保照片在 grid 之上
   },
   timestamp: {
     position: 'absolute',
@@ -390,22 +394,21 @@ const styles = {
     transform: 'translateY(-50%)',
     width: '50px',
     height: '50px',
-    background: 'rgba(255, 255, 255, 0.95)',
-    border: '2px solid #8b78bb',
+    background: 'transparent', // 移除白色背景
+    border: 'none', // 移除边框
     borderRadius: '50%',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.3)',
     transition: 'all 0.2s',
     zIndex: 10,
   },
   navButtonLeft: {
-    left: '-25px', // 更靠近容器
+    left: '-60px', // 增加间距
   },
   navButtonRight: {
-    right: '-25px', // 更靠近容器
+    right: '-60px', // 增加间距
   },
   navIcon: {
     width: '30px',
