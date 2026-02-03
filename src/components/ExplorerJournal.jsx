@@ -140,14 +140,6 @@ const ExplorerJournal = ({ isOpen, onClose }) => {
           }}
           onClick={handlePrevPage}
           disabled={totalPhotos === 0 || currentPage === 0}
-          onMouseOver={(e) => {
-            if (totalPhotos > 0 && currentPage !== 0) {
-              e.currentTarget.style.transform = 'scale(1.1)'
-            }
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.transform = 'scale(1)'
-          }}
         >
           <img src="/icon/forward.png" alt="Previous" style={styles.navIcon} />
         </button>
@@ -161,14 +153,6 @@ const ExplorerJournal = ({ isOpen, onClose }) => {
           }}
           onClick={handleNextPage}
           disabled={totalPhotos === 0 || currentPage === totalPhotos - 1}
-          onMouseOver={(e) => {
-            if (totalPhotos > 0 && currentPage !== totalPhotos - 1) {
-              e.currentTarget.style.transform = 'scale(1.1)'
-            }
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.transform = 'scale(1)'
-          }}
         >
           <img src="/icon/backward.png" alt="Next" style={styles.navIcon} />
         </button>
@@ -390,29 +374,29 @@ const styles = {
   },
   navButton: {
     position: 'absolute',
-    top: '55%', // 调整到卡片中心位置
+    top: '55%',
     transform: 'translateY(-50%)',
-    width: '50px',
-    height: '50px',
-    background: 'transparent', // 移除白色背景
-    border: 'none', // 移除边框
+    width: '80px', // 从 50px 增加到 80px
+    height: '80px', // 从 50px 增加到 80px
+    background: 'transparent',
+    border: 'none',
     borderRadius: '50%',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    transition: 'all 0.2s',
+    transition: 'opacity 0.2s', // 只过渡 opacity，不过渡 transform
     zIndex: 10,
   },
   navButtonLeft: {
-    left: '-60px', // 增加间距
+    left: '-90px', // 调整位置以适应更大的按钮
   },
   navButtonRight: {
-    right: '-60px', // 增加间距
+    right: '-90px', // 调整位置以适应更大的按钮
   },
   navIcon: {
-    width: '30px',
-    height: '30px',
+    width: '80px', // 从 30px 增加到 80px
+    height: '80px', // 从 30px 增加到 80px
     objectFit: 'contain',
   },
   pageCounter: {
