@@ -436,6 +436,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
   const [clickedMushroom, setClickedMushroom] = useState(null) // Track which mushroom is clicked
   const [currentDialogueSet, setCurrentDialogueSet] = useState(0) // Track which dialogue set (first click, second click, etc.)
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0) // Track current sentence in dialogue set
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false) // Show save success notification
   
   // Color Map NPC typing effect states
   const [colorMapNpcDisplayedText, setColorMapNpcDisplayedText] = useState('')
@@ -2295,7 +2296,13 @@ const DataCleaning = ({ onComplete, onExit }) => {
       localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
       console.log('Saved to Explorer Journal:', recognitionResult)
       
-      alert('Photo saved to Explorer\'s Journal!')
+      // Show success notification
+      setShowSaveSuccess(true)
+      
+      // Auto-hide after 3 seconds
+      setTimeout(() => {
+        setShowSaveSuccess(false)
+      }, 3000)
     }
     
     setShowRecognitionCard(false)
@@ -7400,6 +7407,89 @@ const DataCleaning = ({ onComplete, onExit }) => {
         <div style={styles.glitchHintInline}>
           <button style={styles.glitchHintCloseBtn} onClick={() => setShowGlitchHint(false)}>×</button>
           <p style={styles.glitchHintInlineText}>💡 {glitchHintText}</p>
+        </div>
+      )}
+      
+      {/* Save Success Notification */}
+      {showSaveSuccess && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0, 0, 0, 0.6)',
+          zIndex: 10001,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px',
+        }}>
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '20px',
+            padding: '40px',
+            maxWidth: '400px',
+            width: '100%',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            textAlign: 'center',
+            position: 'relative',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+          }}>
+            {/* Close button */}
+            <button
+              style={{
+                position: 'absolute',
+                top: '15px',
+                right: '15px',
+                background: 'rgba(0, 0, 0, 0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                fontSize: '18px',
+                color: '#666',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+              }}
+              onClick={() => setShowSaveSuccess(false)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.2)'
+                e.currentTarget.style.color = '#000'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.1)'
+                e.currentTarget.style.color = '#666'
+              }}
+            >
+              ✕
+            </button>
+            
+            {/* Save icon */}
+            <img 
+              src="/icon/save.png"
+              alt="Saved"
+              style={{
+                width: '60px',
+                height: '60px',
+                marginBottom: '20px',
+              }}
+            />
+            
+            {/* Message */}
+            <div style={{
+              fontSize: '18px',
+              color: '#333',
+              fontFamily: "'Roboto', sans-serif",
+              lineHeight: 1.6,
+            }}>
+              Photo saved to <strong style={{ fontWeight: 'bold' }}>Explorer's Journal!</strong>
+            </div>
+          </div>
         </div>
       )}
 

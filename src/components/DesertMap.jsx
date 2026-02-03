@@ -412,6 +412,7 @@ const DesertMap = ({ onExit }) => {
   const [currentPhotoNpc, setCurrentPhotoNpc] = useState(null) // Track which NPC requested photo
   const [userStory, setUserStory] = useState('') // User's input story
   const [showFinalCard, setShowFinalCard] = useState(false) // Show final Instagram-style card
+  const [showSaveSuccess, setShowSaveSuccess] = useState(false) // Show save success notification
   
   // Glitch chat states
   const [glitchChatHistory, setGlitchChatHistory] = useState([]) // Store chat history
@@ -2452,13 +2453,18 @@ const DesertMap = ({ onExit }) => {
       localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
       
       // Show success message
-      alert('Saved to Explorer\'s Journal!')
+      setShowSaveSuccess(true)
       
       // Close card
       setShowFinalCard(false)
       setRecognitionResult(null)
       setNpcCapturedPhoto(null)
       setUserStory('')
+      
+      // Auto-hide success message after 3 seconds
+      setTimeout(() => {
+        setShowSaveSuccess(false)
+      }, 3000)
     }
   }
   
@@ -6227,10 +6233,12 @@ const DesertMap = ({ onExit }) => {
             background: '#FFF9F0',
             borderRadius: '24px',
             maxWidth: '650px',
+            maxHeight: '85vh', // 限制最大高度为85%视口高度
             width: '100%',
             boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)',
             padding: '35px',
             position: 'relative',
+            overflow: 'auto', // 允许滚动如果内容过多
           }}>
             {/* Close button */}
             <button
@@ -6280,10 +6288,10 @@ const DesertMap = ({ onExit }) => {
               </h3>
               <p style={{
                 margin: 0,
-                fontSize: '24px',
+                fontSize: '20px',
                 fontWeight: 'bold',
                 color: '#000',
-                fontFamily: "'Roboto', sans-serif",
+                fontFamily: "'Roboto Mono', monospace",
                 lineHeight: 1.4,
               }}>
                 {recognitionResult.aiDescription}
@@ -6434,7 +6442,7 @@ const DesertMap = ({ onExit }) => {
                   filter: 'brightness(0) invert(1)',
                 }}
               />
-              Continue
+              Done
             </button>
           </div>
         </div>
@@ -6679,6 +6687,89 @@ const DesertMap = ({ onExit }) => {
                 />
                 Save to Journal
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Save Success Notification */}
+      {showSaveSuccess && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0, 0, 0, 0.6)',
+          zIndex: 10001,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px',
+        }}>
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '20px',
+            padding: '40px',
+            maxWidth: '400px',
+            width: '100%',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            textAlign: 'center',
+            position: 'relative',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+          }}>
+            {/* Close button */}
+            <button
+              style={{
+                position: 'absolute',
+                top: '15px',
+                right: '15px',
+                background: 'rgba(0, 0, 0, 0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                fontSize: '18px',
+                color: '#666',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+              }}
+              onClick={() => setShowSaveSuccess(false)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.2)'
+                e.currentTarget.style.color = '#000'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 0, 0, 0.1)'
+                e.currentTarget.style.color = '#666'
+              }}
+            >
+              ✕
+            </button>
+            
+            {/* Save icon */}
+            <img 
+              src="/icon/save.png"
+              alt="Saved"
+              style={{
+                width: '60px',
+                height: '60px',
+                marginBottom: '20px',
+              }}
+            />
+            
+            {/* Message */}
+            <div style={{
+              fontSize: '18px',
+              color: '#333',
+              fontFamily: "'Roboto', sans-serif",
+              lineHeight: 1.6,
+            }}>
+              Photo saved to <strong style={{ fontWeight: 'bold' }}>Explorer's Journal!</strong>
             </div>
           </div>
         </div>
