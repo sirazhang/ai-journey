@@ -49,7 +49,7 @@ const ExplorerJournal = ({ isOpen, onClose }) => {
   
   return (
     <div style={styles.overlay}>
-      {/* Main Container - Bottom Left */}
+      {/* Main Container - Bottom Left with Purple Background */}
       <div style={styles.container}>
         {/* Close Button - Top Right */}
         <button
@@ -71,57 +71,63 @@ const ExplorerJournal = ({ isOpen, onClose }) => {
           <h1 style={styles.title}>Explorer's Journal</h1>
         </div>
         
-        {/* Card Container with Ring Background */}
-        <div style={styles.cardContainer}>
-          {/* Ring Background */}
-          <img src="/icon/ring.png" alt="Ring" style={styles.ringBackground} />
-          
-          {/* Photo Card */}
-          {currentPhoto ? (
-            <div style={styles.photoCard}>
-              {/* Card Header */}
-              <div style={styles.cardHeader}>
-                <span style={styles.cardTitle}>#Object detected</span>
-                <span style={styles.cardSubtitle}>Look what I spotted!</span>
-              </div>
-              
-              {/* Photo with Grid Background */}
-              <div style={styles.photoWrapper}>
-                <img src="/icon/grid.png" alt="Grid" style={styles.gridBackground} />
-                <img 
-                  src={currentPhoto.photo} 
-                  alt="Captured object"
-                  style={styles.photo}
-                />
-                <div style={styles.timestamp}>
-                  {new Date(currentPhoto.timestamp).toLocaleString('en-US', { 
-                    month: 'short',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true 
-                  })}
-                </div>
-              </div>
-              
-              {/* Item and Type Info */}
-              <div style={styles.infoContainer}>
-                <div style={styles.infoRow}>
-                  <span style={styles.infoLabel}>Item</span>
-                  <span style={styles.infoLabel}>Type</span>
-                </div>
-                <div style={styles.infoRow}>
-                  <span style={styles.itemValue}>{currentPhoto.item}</span>
-                  <span style={styles.typeValue}>{currentPhoto.type}</span>
-                </div>
-              </div>
+        {/* Inner Card with Shadow Effect */}
+        <div style={styles.shadowCard}>
+          <div style={styles.innerCard}>
+            {/* Left Side - Ring Icon */}
+            <div style={styles.leftSide}>
+              <img src="/icon/ring.png" alt="Ring" style={styles.ringIcon} />
             </div>
-          ) : (
-            <div style={styles.emptyCard}>
-              <p style={styles.emptyText}>No photos yet</p>
-              <p style={styles.emptySubtext}>Start exploring!</p>
+            
+            {/* Right Side - Photo and Info */}
+            <div style={styles.rightSide}>
+              {currentPhoto ? (
+                <>
+                  {/* Card Header */}
+                  <div style={styles.cardHeader}>
+                    <span style={styles.cardTitle}>#Object detected</span>
+                    <span style={styles.cardSubtitle}>Look what I spotted!</span>
+                  </div>
+                  
+                  {/* Photo with Grid Background */}
+                  <div style={styles.photoWrapper}>
+                    <img src="/icon/grid.png" alt="Grid" style={styles.gridBackground} />
+                    <img 
+                      src={currentPhoto.photo} 
+                      alt="Captured object"
+                      style={styles.photo}
+                    />
+                    <div style={styles.timestamp}>
+                      {new Date(currentPhoto.timestamp).toLocaleString('en-US', { 
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true 
+                      })}
+                    </div>
+                  </div>
+                  
+                  {/* Item and Type Info */}
+                  <div style={styles.infoContainer}>
+                    <div style={styles.infoRow}>
+                      <span style={styles.infoLabel}>Item</span>
+                      <span style={styles.infoLabel}>Type</span>
+                    </div>
+                    <div style={styles.infoRow}>
+                      <span style={styles.itemValue}>{currentPhoto.item}</span>
+                      <span style={styles.typeValue}>{currentPhoto.type}</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div style={styles.emptyState}>
+                  <p style={styles.emptyText}>No photos yet</p>
+                  <p style={styles.emptySubtext}>Start exploring!</p>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
         
         {/* Navigation Arrows */}
@@ -196,12 +202,14 @@ const styles = {
   container: {
     position: 'relative',
     width: '33.33%',
+    minWidth: '400px',
     height: '50%',
-    background: '#8B7355',
+    minHeight: '400px',
+    background: '#8b78bb',
     margin: '20px',
     borderRadius: '15px',
     boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)',
-    padding: '30px',
+    padding: '25px',
     display: 'flex',
     flexDirection: 'column',
   },
@@ -227,78 +235,89 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    marginBottom: '20px',
+    marginBottom: '15px',
   },
   titleIcon: {
-    width: '40px',
-    height: '40px',
+    width: '35px',
+    height: '35px',
+    filter: 'brightness(0) invert(1)',
   },
   title: {
     fontFamily: "'Kaushan Script', cursive",
-    fontSize: '32px',
-    color: '#FFF9F0',
+    fontSize: '28px',
+    color: '#fff',
     margin: 0,
-    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',
   },
-  cardContainer: {
+  shadowCard: {
     position: 'relative',
     flex: 1,
+    marginBottom: '10px',
+  },
+  innerCard: {
+    position: 'relative',
+    width: '100%',
+    height: '100%',
     background: '#FFF9F0',
     borderRadius: '12px',
-    boxShadow: '0 6px 20px rgba(0, 0, 0, 0.4)',
-    padding: '20px',
+    boxShadow: '6px 6px 0px rgba(0, 0, 0, 0.3)',
+    padding: '15px',
+    display: 'flex',
+    gap: '15px',
+  },
+  leftSide: {
+    width: '30%',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
+    borderRight: '2px solid #e0e0e0',
   },
-  ringBackground: {
-    position: 'absolute',
+  ringIcon: {
     width: '80%',
-    height: '80%',
+    height: 'auto',
     objectFit: 'contain',
-    opacity: 0.15,
-    pointerEvents: 'none',
-    zIndex: 0,
+    opacity: 0.8,
   },
-  photoCard: {
-    position: 'relative',
-    width: '90%',
-    height: '90%',
+  rightSide: {
+    flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    zIndex: 1,
+    overflow: 'hidden',
   },
   cardHeader: {
-    marginBottom: '10px',
+    marginBottom: '8px',
   },
   cardTitle: {
     fontFamily: "'Poppins', sans-serif",
-    fontSize: '16px',
+    fontSize: '14px',
     fontWeight: 600,
     color: '#333',
     display: 'block',
+    lineHeight: 1.2,
   },
   cardSubtitle: {
     fontFamily: "'Poppins', sans-serif",
-    fontSize: '12px',
+    fontSize: '11px',
     color: '#666',
     display: 'block',
+    lineHeight: 1.2,
   },
   photoWrapper: {
     position: 'relative',
     flex: 1,
-    marginBottom: '15px',
+    marginBottom: '10px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+    borderRadius: '8px',
   },
   gridBackground: {
     position: 'absolute',
     width: '100%',
     height: '100%',
     objectFit: 'cover',
-    opacity: 0.3,
+    opacity: 0.2,
     pointerEvents: 'none',
     zIndex: 0,
   },
@@ -307,20 +326,20 @@ const styles = {
     maxWidth: '100%',
     maxHeight: '100%',
     objectFit: 'contain',
-    borderRadius: '8px',
-    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.2)',
+    borderRadius: '6px',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
     zIndex: 1,
   },
   timestamp: {
     position: 'absolute',
-    bottom: '10px',
-    right: '10px',
+    bottom: '8px',
+    right: '8px',
     fontFamily: "'Roboto Mono', monospace",
-    fontSize: '10px',
+    fontSize: '9px',
     color: '#fff',
     background: 'rgba(0, 0, 0, 0.7)',
-    padding: '3px 8px',
-    borderRadius: '4px',
+    padding: '2px 6px',
+    borderRadius: '3px',
     zIndex: 2,
   },
   infoContainer: {
@@ -329,45 +348,43 @@ const styles = {
   infoRow: {
     display: 'flex',
     justifyContent: 'space-between',
-    marginBottom: '5px',
+    marginBottom: '3px',
   },
   infoLabel: {
     fontFamily: "'Roboto Mono', monospace",
-    fontSize: '11px',
+    fontSize: '10px',
     color: '#666',
     fontWeight: 600,
   },
   itemValue: {
     fontFamily: "'Roboto Mono', monospace",
-    fontSize: '13px',
+    fontSize: '12px',
     fontWeight: 700,
     color: '#333',
   },
   typeValue: {
     fontFamily: "'Roboto Mono', monospace",
-    fontSize: '13px',
+    fontSize: '12px',
     fontWeight: 700,
     color: '#f89303',
   },
-  emptyCard: {
-    position: 'relative',
-    width: '90%',
-    height: '90%',
+  emptyState: {
+    width: '100%',
+    height: '100%',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1,
   },
   emptyText: {
     fontFamily: "'Poppins', sans-serif",
-    fontSize: '18px',
+    fontSize: '16px',
     color: '#999',
-    marginBottom: '10px',
+    marginBottom: '8px',
   },
   emptySubtext: {
     fontFamily: "'Poppins', sans-serif",
-    fontSize: '14px',
+    fontSize: '12px',
     color: '#bbb',
   },
   navButton: {
@@ -399,14 +416,12 @@ const styles = {
     objectFit: 'contain',
   },
   pageCounter: {
-    position: 'absolute',
-    bottom: '-40px',
-    left: '50%',
-    transform: 'translateX(-50%)',
+    textAlign: 'center',
     fontFamily: "'Kaushan Script', cursive",
     fontSize: '20px',
-    color: '#FFF9F0',
-    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+    color: '#fff',
+    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',
+    marginTop: '5px',
   },
 }
 
