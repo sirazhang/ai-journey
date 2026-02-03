@@ -130,52 +130,48 @@ const ExplorerJournal = ({ isOpen, onClose }) => {
           </div>
         </div>
         
-        {/* Navigation Arrows */}
-        {totalPhotos > 0 && (
-          <>
-            <button
-              style={{
-                ...styles.navButton,
-                ...styles.navButtonLeft,
-                opacity: currentPage === 0 ? 0.3 : 1,
-                cursor: currentPage === 0 ? 'not-allowed' : 'pointer',
-              }}
-              onClick={handlePrevPage}
-              disabled={currentPage === 0}
-              onMouseOver={(e) => {
-                if (currentPage !== 0) {
-                  e.currentTarget.style.transform = 'scale(1.1)'
-                }
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'scale(1)'
-              }}
-            >
-              <img src="/icon/forward.png" alt="Previous" style={styles.navIcon} />
-            </button>
-            
-            <button
-              style={{
-                ...styles.navButton,
-                ...styles.navButtonRight,
-                opacity: currentPage === totalPhotos - 1 ? 0.3 : 1,
-                cursor: currentPage === totalPhotos - 1 ? 'not-allowed' : 'pointer',
-              }}
-              onClick={handleNextPage}
-              disabled={currentPage === totalPhotos - 1}
-              onMouseOver={(e) => {
-                if (currentPage !== totalPhotos - 1) {
-                  e.currentTarget.style.transform = 'scale(1.1)'
-                }
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'scale(1)'
-              }}
-            >
-              <img src="/icon/backward.png" alt="Next" style={styles.navIcon} />
-            </button>
-          </>
-        )}
+        {/* Navigation Arrows - Always show */}
+        <button
+          style={{
+            ...styles.navButton,
+            ...styles.navButtonLeft,
+            opacity: totalPhotos === 0 || currentPage === 0 ? 0.3 : 1,
+            cursor: totalPhotos === 0 || currentPage === 0 ? 'not-allowed' : 'pointer',
+          }}
+          onClick={handlePrevPage}
+          disabled={totalPhotos === 0 || currentPage === 0}
+          onMouseOver={(e) => {
+            if (totalPhotos > 0 && currentPage !== 0) {
+              e.currentTarget.style.transform = 'scale(1.1)'
+            }
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+          }}
+        >
+          <img src="/icon/forward.png" alt="Previous" style={styles.navIcon} />
+        </button>
+        
+        <button
+          style={{
+            ...styles.navButton,
+            ...styles.navButtonRight,
+            opacity: totalPhotos === 0 || currentPage === totalPhotos - 1 ? 0.3 : 1,
+            cursor: totalPhotos === 0 || currentPage === totalPhotos - 1 ? 'not-allowed' : 'pointer',
+          }}
+          onClick={handleNextPage}
+          disabled={totalPhotos === 0 || currentPage === totalPhotos - 1}
+          onMouseOver={(e) => {
+            if (totalPhotos > 0 && currentPage !== totalPhotos - 1) {
+              e.currentTarget.style.transform = 'scale(1.1)'
+            }
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.transform = 'scale(1)'
+          }}
+        >
+          <img src="/icon/backward.png" alt="Next" style={styles.navIcon} />
+        </button>
         
         {/* Page Counter */}
         <div style={styles.pageCounter}>
@@ -206,7 +202,7 @@ const styles = {
     height: '50%',
     minHeight: '400px',
     background: '#8b78bb',
-    margin: '20px',
+    margin: '40px 40px 80px 40px', // 增加底部和右侧边距
     borderRadius: '15px',
     boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)',
     padding: '25px',
@@ -271,10 +267,11 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     borderRight: '2px solid #e0e0e0',
+    padding: '10px',
   },
   ringIcon: {
-    width: '80%',
-    height: 'auto',
+    width: '100%',
+    height: '100%',
     objectFit: 'contain',
     opacity: 0.8,
   },
@@ -317,7 +314,7 @@ const styles = {
     width: '100%',
     height: '100%',
     objectFit: 'cover',
-    opacity: 0.2,
+    opacity: 0.4,
     pointerEvents: 'none',
     zIndex: 0,
   },
@@ -389,12 +386,12 @@ const styles = {
   },
   navButton: {
     position: 'absolute',
-    top: '50%',
+    top: '55%', // 调整到卡片中心位置
     transform: 'translateY(-50%)',
     width: '50px',
     height: '50px',
-    background: 'rgba(255, 255, 255, 0.9)',
-    border: 'none',
+    background: 'rgba(255, 255, 255, 0.95)',
+    border: '2px solid #8b78bb',
     borderRadius: '50%',
     cursor: 'pointer',
     display: 'flex',
@@ -405,10 +402,10 @@ const styles = {
     zIndex: 10,
   },
   navButtonLeft: {
-    left: '-70px',
+    left: '-25px', // 更靠近容器
   },
   navButtonRight: {
-    right: '-70px',
+    right: '-25px', // 更靠近容器
   },
   navIcon: {
     width: '30px',
@@ -418,10 +415,10 @@ const styles = {
   pageCounter: {
     textAlign: 'center',
     fontFamily: "'Kaushan Script', cursive",
-    fontSize: '20px',
+    fontSize: '24px',
     color: '#fff',
-    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.3)',
-    marginTop: '5px',
+    textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+    marginTop: '10px',
   },
 }
 
