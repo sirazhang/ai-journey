@@ -2284,10 +2284,12 @@ const DataCleaning = ({ onComplete, onExit }) => {
         userData.explorerJournal = []
       }
       
+      const timestamp = Date.now()
       userData.explorerJournal.push({
         ...recognitionResult,
+        id: timestamp,
         region: 'jungle',
-        savedAt: Date.now()
+        savedAt: timestamp
       })
       
       localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
