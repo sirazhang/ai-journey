@@ -430,6 +430,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
   const [recognitionResult, setRecognitionResult] = useState(null)
   const [isRecognizing, setIsRecognizing] = useState(false)
   const [showValidationCard, setShowValidationCard] = useState(true) // Show validation card by default
+  const [cameraZoom, setCameraZoom] = useState(1) // Camera zoom level (1x, 2x, 3x)
   const [npcClickCount, setNpcClickCount] = useState({ npc_c: 0 })
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [clickedMushroom, setClickedMushroom] = useState(null) // Track which mushroom is clicked
@@ -2211,6 +2212,19 @@ const DataCleaning = ({ onComplete, onExit }) => {
     
     setShowNpcCamera(false)
     setNpcCapturedPhoto(null)
+    setCameraZoom(1) // Reset zoom
+  }
+  
+  const handleZoomToggle = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
+    // Cycle through zoom levels: 1x -> 2x -> 3x -> 1x
+    setCameraZoom(prev => {
+      if (prev === 1) return 2
+      if (prev === 2) return 3
+      return 1
+    })
   }
   
   const handleLabelCorrect = () => {
@@ -4681,6 +4695,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  overflow: 'hidden',
                 }}>
                   <video
                     id="jungleCameraVideo"
@@ -4695,6 +4710,8 @@ const DataCleaning = ({ onComplete, onExit }) => {
                       width: '100%',
                       height: '100%',
                       objectFit: 'cover',
+                      transform: `scale(${cameraZoom})`,
+                      transition: 'transform 0.3s ease',
                     }}
                   />
                   
@@ -4711,12 +4728,12 @@ const DataCleaning = ({ onComplete, onExit }) => {
                     pointerEvents: 'none',
                   }} />
                   
-                  {/* Screen corner frames */}
+                  {/* Screen corner frames - moved closer to center */}
                   {/* Top-left corner */}
                   <div style={{
                     position: 'absolute',
-                    top: '20px',
-                    left: '20px',
+                    top: '80px',
+                    left: '80px',
                     width: '60px',
                     height: '60px',
                     borderTop: '6px solid #fff',
@@ -4726,8 +4743,8 @@ const DataCleaning = ({ onComplete, onExit }) => {
                   {/* Top-right corner */}
                   <div style={{
                     position: 'absolute',
-                    top: '20px',
-                    right: '20px',
+                    top: '80px',
+                    right: '80px',
                     width: '60px',
                     height: '60px',
                     borderTop: '6px solid #fff',
@@ -4737,8 +4754,8 @@ const DataCleaning = ({ onComplete, onExit }) => {
                   {/* Bottom-left corner */}
                   <div style={{
                     position: 'absolute',
-                    bottom: '20px',
-                    left: '20px',
+                    bottom: '80px',
+                    left: '80px',
                     width: '60px',
                     height: '60px',
                     borderBottom: '6px solid #fff',
@@ -4748,8 +4765,8 @@ const DataCleaning = ({ onComplete, onExit }) => {
                   {/* Bottom-right corner */}
                   <div style={{
                     position: 'absolute',
-                    bottom: '20px',
-                    right: '20px',
+                    bottom: '80px',
+                    right: '80px',
                     width: '60px',
                     height: '60px',
                     borderBottom: '6px solid #fff',
@@ -4757,6 +4774,45 @@ const DataCleaning = ({ onComplete, onExit }) => {
                     pointerEvents: 'none',
                   }} />
                 </div>
+                
+                {/* Zoom toggle button (above capture button) */}
+                <button
+                  style={{
+                    position: 'absolute',
+                    bottom: '140px',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    border: '2px solid rgba(255, 255, 255, 0.4)',
+                    borderRadius: '25px',
+                    padding: '10px 20px',
+                    color: '#fff',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    fontFamily: "'Roboto Mono', monospace",
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.3)',
+                    transition: 'all 0.2s',
+                    zIndex: 201,
+                  }}
+                  onClick={handleZoomToggle}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.05)'
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)'
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'
+                  }}
+                >
+                  <span style={{ fontSize: '20px' }}>⚬</span>
+                  <span>{cameraZoom}x</span>
+                  <span style={{ fontSize: '20px' }}>⚬</span>
+                </button>
                 
                 {/* Capture button */}
                 <button
