@@ -2022,7 +2022,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
       
       try {
         // Call Gemini API
-        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4', {
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -2126,9 +2126,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
       
       console.log('Calling Gemini API for photo recognition...')
       
-      // Use gemini-3-pro-preview model
+      // Use gemini-2.0-flash-exp model (experimental, free tier)
       const response = await fetch(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4',
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4',
         {
           method: 'POST',
           headers: {
