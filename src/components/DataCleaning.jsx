@@ -4885,7 +4885,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
                   {isRecognizing ? (
                     <div style={{ textAlign: 'center' }}>
                       <h2 style={{
-                        fontFamily: "'Roboto', sans-serif",
+                        fontFamily: "'Poppins', sans-serif",
                         fontSize: '24px',
                         color: '#009b01',
                         marginBottom: '20px',
@@ -4904,17 +4904,30 @@ const DataCleaning = ({ onComplete, onExit }) => {
                     </div>
                   ) : (
                     <>
-                      <h2 style={{
-                        fontFamily: "'Roboto', sans-serif",
-                        fontSize: '24px',
-                        color: '#009b01',
-                        marginBottom: '20px',
-                        textAlign: 'center',
-                      }}>
-                        Recognition Result
-                      </h2>
+                      {/* Header */}
+                      <div style={{ marginBottom: '15px' }}>
+                        <h2 style={{
+                          fontFamily: "'Poppins', sans-serif",
+                          fontSize: '24px',
+                          fontWeight: 600,
+                          color: '#009b01',
+                          marginBottom: '5px',
+                          textAlign: 'left',
+                        }}>
+                          #Object detected
+                        </h2>
+                        <p style={{
+                          fontFamily: "'Poppins', sans-serif",
+                          fontSize: '14px',
+                          color: '#666',
+                          margin: 0,
+                          textAlign: 'left',
+                        }}>
+                          Look what I spotted!
+                        </p>
+                      </div>
                       
-                      {/* Photo with green border and white dashed inner frame */}
+                      {/* Photo with green border and smaller white dashed inner frame */}
                       <div style={{
                         position: 'relative',
                         marginBottom: '20px',
@@ -4930,56 +4943,73 @@ const DataCleaning = ({ onComplete, onExit }) => {
                             boxShadow: '0 4px 15px rgba(0, 155, 1, 0.4), 0 0 10px rgba(0, 155, 1, 0.2)',
                           }}
                         />
-                        {/* White dashed inner frame */}
+                        {/* Smaller white dashed inner frame */}
                         <div style={{
                           position: 'absolute',
-                          top: '15px',
-                          left: '15px',
-                          right: '15px',
-                          bottom: '15px',
-                          border: '2px dashed #fff',
+                          top: '25px',
+                          left: '25px',
+                          right: '25px',
+                          bottom: '25px',
+                          border: '2px dashed rgba(255, 255, 255, 0.8)',
                           borderRadius: '6px',
                           pointerEvents: 'none',
                         }} />
+                        {/* Timestamp in bottom right corner */}
+                        <div style={{
+                          position: 'absolute',
+                          bottom: '12px',
+                          right: '12px',
+                          background: 'rgba(0, 0, 0, 0.6)',
+                          backdropFilter: 'blur(5px)',
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          fontFamily: "'Roboto Mono', monospace",
+                          fontSize: '11px',
+                          color: '#fff',
+                          fontWeight: 500,
+                        }}>
+                          {new Date(recognitionResult.timestamp).toLocaleTimeString('en-US', { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: true 
+                          })}
+                        </div>
                       </div>
                       
-                      {/* Result info */}
+                      {/* Result info - Item and Type in one line */}
                       <div style={{
-                        background: 'rgba(0, 155, 1, 0.1)',
-                        padding: '20px',
-                        borderRadius: '10px',
                         marginBottom: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        flexWrap: 'wrap',
                       }}>
-                        <p style={{
-                          fontFamily: "'Roboto', sans-serif",
-                          fontSize: '18px',
-                          fontWeight: 'bold',
-                          color: '#333',
-                          marginBottom: '10px',
-                        }}>
-                          Item: {recognitionResult.item}
-                        </p>
-                        <p style={{
-                          fontFamily: "'Roboto', sans-serif",
+                        <span style={{
+                          fontFamily: "'Roboto Mono', monospace",
                           fontSize: '16px',
-                          color: '#666',
+                          fontWeight: 700,
+                          color: '#333',
                         }}>
-                          Type: {recognitionResult.type}
-                        </p>
+                          {recognitionResult.item}
+                        </span>
+                        <span style={{
+                          fontFamily: "'Roboto Mono', monospace",
+                          fontSize: '16px',
+                          fontWeight: 700,
+                          color: '#009b01',
+                        }}>
+                          {recognitionResult.type}
+                        </span>
                       </div>
                       
-                      {/* Validation Card */}
+                      {/* Validation question and buttons */}
                       {showValidationCard && (
                         <div style={{
-                          background: '#fff',
-                          border: '2px solid #ccc',
-                          borderRadius: '10px',
-                          padding: '20px',
                           marginBottom: '20px',
                         }}>
                           <p style={{
-                            fontFamily: "'Roboto', sans-serif",
-                            fontSize: '16px',
+                            fontFamily: "'Roboto Mono', monospace",
+                            fontSize: '14px',
                             color: '#333',
                             marginBottom: '15px',
                             textAlign: 'center',
