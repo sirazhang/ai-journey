@@ -74,13 +74,14 @@ const ExplorerJournal = ({ isOpen, onClose }) => {
         {/* Inner Card with Shadow Effect */}
         <div style={styles.shadowCard}>
           <div style={styles.innerCard}>
-            {/* Left Side - Ring Icon */}
-            <div style={styles.leftSide}>
-              <img src="/icon/ring.png" alt="Ring" style={styles.ringIcon} />
-            </div>
+            {/* Grid background covering entire card */}
+            <img src="/icon/grid.png" alt="Grid" style={styles.gridBackgroundFull} />
             
-            {/* Right Side - Photo and Info */}
-            <div style={styles.rightSide}>
+            {/* Ring binding on the left edge */}
+            <img src="/icon/ring.png" alt="Ring" style={styles.ringBinding} />
+            
+            {/* Content Area */}
+            <div style={styles.contentArea}>
               {currentPhoto ? (
                 <>
                   {/* Card Header */}
@@ -89,9 +90,8 @@ const ExplorerJournal = ({ isOpen, onClose }) => {
                     <span style={styles.cardSubtitle}>Look what I spotted!</span>
                   </div>
                   
-                  {/* Photo with Grid Background */}
+                  {/* Photo */}
                   <div style={styles.photoWrapper}>
-                    <img src="/icon/grid.png" alt="Grid" style={styles.gridBackground} />
                     <img 
                       src={currentPhoto.photo} 
                       alt="Captured object"
@@ -101,8 +101,10 @@ const ExplorerJournal = ({ isOpen, onClose }) => {
                       {new Date(currentPhoto.timestamp).toLocaleString('en-US', { 
                         month: 'short',
                         day: 'numeric',
+                        year: 'numeric',
                         hour: '2-digit',
                         minute: '2-digit',
+                        second: '2-digit',
                         hour12: true 
                       })}
                     </div>
@@ -184,9 +186,9 @@ const styles = {
     width: '33.33%',
     minWidth: '400px',
     height: '50%',
-    minHeight: '450px', // 增加 50px
+    minHeight: '520px', // 从500px增加到520px
     background: '#8b78bb',
-    margin: '40px 40px 80px 80px', // 增加左侧边距以向右移动
+    margin: '40px 40px 40px 80px',
     borderRadius: '15px',
     boxShadow: '0 10px 30px rgba(0, 0, 0, 0.5)',
     padding: '25px',
@@ -241,30 +243,39 @@ const styles = {
     background: '#FFF9F0',
     borderRadius: '12px',
     boxShadow: '6px 6px 0px rgba(0, 0, 0, 0.3)',
-    padding: '15px',
-    display: 'flex',
-    gap: '15px',
-  },
-  leftSide: {
-    width: '30%',
-    height: '100%', // 明确设置高度为 100%
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRight: '2px solid #e0e0e0',
-    padding: '5px', // 减少 padding 让图标更大
-  },
-  ringIcon: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'contain',
-    opacity: 0.9, // 增加不透明度
-  },
-  rightSide: {
-    flex: 1,
+    padding: '20px',
+    paddingLeft: '80px', // 为 ring 留出空间
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
+  },
+  gridBackgroundFull: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    opacity: 0.15, // 降低透明度以获得更微妙的复古效果
+    pointerEvents: 'none',
+    zIndex: 0,
+  },
+  ringBinding: {
+    position: 'absolute',
+    left: '-200px', // 向右移动20px (从-220px到-200px)
+    top: '0',
+    height: '100%',
+    width: 'auto',
+    objectFit: 'cover',
+    opacity: 0.8,
+    zIndex: 1,
+  },
+  contentArea: {
+    position: 'relative',
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    zIndex: 1,
   },
   cardHeader: {
     marginBottom: '8px',
@@ -287,33 +298,21 @@ const styles = {
   photoWrapper: {
     position: 'relative',
     flex: 1,
-    marginBottom: '10px',
+    marginBottom: '15px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
     borderRadius: '8px',
-    background: '#f5f5f5', // 添加浅色背景以便看到 grid
-  },
-  gridBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    opacity: 0.8, // 进一步增加不透明度
-    pointerEvents: 'none',
-    zIndex: 1, // 确保在背景之上
   },
   photo: {
     position: 'relative',
-    maxWidth: '90%', // 稍微缩小照片以便看到 grid
-    maxHeight: '90%',
+    maxWidth: '100%',
+    maxHeight: '100%',
     objectFit: 'contain',
     borderRadius: '6px',
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-    zIndex: 2, // 确保照片在 grid 之上
+    zIndex: 2,
   },
   timestamp: {
     position: 'absolute',
@@ -405,7 +404,7 @@ const styles = {
     fontSize: '24px',
     color: '#fff',
     textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
-    marginTop: '10px',
+    marginTop: '5px', // 从10px减少到5px，使其上移
   },
 }
 
