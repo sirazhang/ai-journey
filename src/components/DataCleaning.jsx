@@ -275,7 +275,7 @@ const colorMapNpcs = {
     image: '/jungle/npc_b.gif',
     left: '5%',
     bottom: '0%',
-    height: '540px',
+    height: '450px',
     width: 'auto',
     dialogues: [
       [
@@ -3424,22 +3424,28 @@ const DataCleaning = ({ onComplete, onExit }) => {
       top: '-10px',
       left: '50%',
       transform: 'translateX(-50%)',
-      padding: '8px 16px',
+      padding: '6px 12px',
       borderRadius: '20px',
-      fontFamily: "'Roboto', sans-serif",
-      fontSize: '14px',
-      fontWeight: 700,
+      fontFamily: "'Roboto Mono', monospace",
+      fontSize: '11px',
+      fontWeight: 600,
       textTransform: 'uppercase',
-      letterSpacing: '1px',
-      boxShadow: '0 3px 10px rgba(0,0,0,0.3)',
+      letterSpacing: '0.5px',
+      whiteSpace: 'nowrap',
+      background: 'rgba(255, 255, 255, 0.15)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      border: '1px solid rgba(255, 255, 255, 0.3)',
+      boxShadow: '0 4px 15px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.3)',
       zIndex: 30,
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
     },
     dangerBadge: {
-      background: 'linear-gradient(135deg, #FF4444, #CC0000)',
       color: '#fff',
     },
     edibleBadge: {
-      background: 'linear-gradient(135deg, #44FF44, #00CC00)',
       color: '#fff',
     },
     // Color Map Dialogue - Irregular bubble design (like FungiJungleMap)
@@ -4507,7 +4513,12 @@ const DataCleaning = ({ onComplete, onExit }) => {
                       ...(mushroom.status === 'DANGER' ? styles.dangerBadge : styles.edibleBadge),
                     }}
                   >
-                    {mushroom.status === 'DANGER' ? '❌' : '✅'} {mushroom.status} ({mushroom.toxicity})
+                    <img 
+                      src={mushroom.status === 'DANGER' ? '/jungle/icon/wrong.png' : '/jungle/icon/correct.png'}
+                      alt={mushroom.status}
+                      style={{ width: '16px', height: '16px' }}
+                    />
+                    <span>{mushroom.status} ({mushroom.toxicity})</span>
                   </div>
                 )}
               </div>
