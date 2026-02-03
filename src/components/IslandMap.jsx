@@ -812,7 +812,17 @@ const getFinalSparkyDialogueFlow = (t) => [
       {
         type: 'message',
         speaker: 'Sparky',
-        text: "You did it! You can now see through the illusions! Thank you! You've taught me so much about the characteristics of GenAI, too. I think I can use this data to detect the 'AI rate' among the island's workers and finally restore the power!"
+        text: "You did it! You can now see through the illusions!"
+      },
+      {
+        type: 'message',
+        speaker: 'Sparky',
+        text: "Thank you! You've taught me so much about the characteristics of GenAI, too."
+      },
+      {
+        type: 'message',
+        speaker: 'Sparky',
+        text: "I think I can use this data to detect the 'AI rate' among the island's workers and finally restore the power!"
       }
     ],
     nextChoice: {
