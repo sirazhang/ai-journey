@@ -1249,6 +1249,74 @@ const IslandMap = ({ onExit }) => {
           setDebriefStep(progress.debriefStep || 0)
           setShowFinalSparkyDialogue(progress.showFinalSparkyDialogue || false)
           setFinalDialogueStep(progress.finalDialogueStep || 0)
+          
+          // Rebuild Sparky messages if dialogue is active
+          if (progress.showFinalSparkyDialogue && progress.finalDialogueStep >= 0) {
+            // Rebuild final dialogue messages up to current step
+            const finalDialogueFlow = getFinalSparkyDialogueFlow(t)
+            const messages = []
+            for (let i = 0; i <= progress.finalDialogueStep; i++) {
+              const item = finalDialogueFlow[i]
+              if (item) {
+                if (item.type === 'message') {
+                  messages.push(item)
+                } else if (item.type === 'response') {
+                  messages.push(...item.messages)
+                }
+              }
+            }
+            setSparkyMessages(messages)
+            
+            // Check if waiting for choice
+            const currentItem = finalDialogueFlow[progress.finalDialogueStep]
+            if (currentItem && currentItem.nextChoice) {
+              setWaitingForChoice(true)
+            } else if (currentItem && currentItem.quiz) {
+              setShowQuizChoice(true)
+            }
+          } else if (progress.showSparkyDialogue && !progress.showSparkyDebrief) {
+            // Rebuild initial Sparky dialogue
+            const sparkyDialogueFlow = getSparkyDialogueFlow(t)
+            const messages = []
+            for (let i = 0; i <= progress.currentSparkyStep; i++) {
+              const item = sparkyDialogueFlow[i]
+              if (item) {
+                if (item.type === 'message') {
+                  messages.push(item)
+                } else if (item.type === 'response') {
+                  messages.push(...item.messages)
+                }
+              }
+            }
+            setSparkyMessages(messages)
+            
+            const currentItem = sparkyDialogueFlow[progress.currentSparkyStep]
+            if (currentItem && currentItem.nextChoice) {
+              setWaitingForChoice(true)
+            }
+          } else if (progress.showSparkyDebrief) {
+            // Rebuild debrief dialogue
+            const debriefFlow = getSparkyDebriefFlow(t)
+            const messages = []
+            for (let i = 0; i <= progress.debriefStep; i++) {
+              const item = debriefFlow[i]
+              if (item) {
+                if (item.type === 'message') {
+                  messages.push(item)
+                } else if (item.type === 'response') {
+                  messages.push(...item.messages)
+                }
+              }
+            }
+            setSparkyMessages(messages)
+            
+            const currentItem = debriefFlow[progress.debriefStep]
+            if (currentItem && currentItem.nextChoice) {
+              setWaitingForChoice(true)
+            } else if (currentItem && currentItem.quiz) {
+              setShowQuizChoice(true)
+            }
+          }
         }
       } catch (e) {
         console.log('Failed to load island progress:', e)

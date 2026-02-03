@@ -161,34 +161,38 @@ const MapView = ({ onRegionClick }) => {
       const islandProgress = localStorage.getItem('islandProgress')
       if (islandProgress) {
         const data = JSON.parse(islandProgress)
-        // Calculate based on island's completion logic with more granular stages
-        // Stage 1: Phase 1 in progress (0-40%) - 9 GenAI NPCs
-        // Stage 2: Phase 1 completed, Phase 2 in progress (40-80%) - 5 GenAI NPCs
-        // Stage 3: Phase 2 completed, final dialogue in progress (80-100%)
-        // Stage 4: Island restored (100%)
+        // Calculate based on island's completion logic with 5 stages
+        // Stage 1: Initial Sparky dialogue (0-20%)
+        // Stage 2: Phase 1 in progress (20-50%) - 9 GenAI NPCs
+        // Stage 3: Phase 2 in progress (50-75%) - 5 GenAI NPCs
+        // Stage 4: Final dialogue in progress (75-95%)
+        // Stage 5: Island restored (100%)
         let islandPercent = 0
         
         if (data.islandRestored) {
-          // Fully complete
+          // Stage 5: Fully complete
           islandPercent = 100
         } else if (data.phase2Completed) {
-          // Phase 2 completed, working on final dialogue (80-100%)
-          // Check final dialogue progress
+          // Stage 4: Phase 2 completed, working on final dialogue (75-95%)
           if (data.showFinalSparkyDialogue || data.finalDialogueStep > 0) {
-            // Final dialogue in progress: 80% + (dialogueStep/5 * 20%)
+            // Final dialogue in progress: 75% + (dialogueStep/5 * 20%)
             const dialogueProgress = (data.finalDialogueStep || 0) / 5
-            islandPercent = 80 + (dialogueProgress * 20)
+            islandPercent = 75 + (dialogueProgress * 20)
           } else {
-            islandPercent = 80
+            islandPercent = 75
           }
         } else if (data.missionCompleted && data.phase2Active) {
-          // Phase 1 completed, Phase 2 in progress (40-80%)
+          // Stage 3: Phase 1 completed, Phase 2 in progress (50-75%)
           const phase2Progress = (data.phase2CompletedMissions?.length || 0) / 5
-          islandPercent = 40 + (phase2Progress * 40)
+          islandPercent = 50 + (phase2Progress * 25)
         } else if (data.missionActive) {
-          // Phase 1 in progress (0-40%)
+          // Stage 2: Phase 1 in progress (20-50%)
           const phase1Progress = (data.completedMissions?.length || 0) / 9
-          islandPercent = phase1Progress * 40
+          islandPercent = 20 + (phase1Progress * 30)
+        } else if (data.showSparkyDialogue && !data.missionActive) {
+          // Stage 1: Initial Sparky dialogue in progress (0-20%)
+          const dialogueProgress = (data.currentSparkyStep || 0) / 6 // 6 steps in initial dialogue
+          islandPercent = dialogueProgress * 20
         }
         
         progress.island = Math.round(islandPercent)
