@@ -113,6 +113,8 @@ const DataCollection = ({ onComplete, onExit }) => {
   const [hoveredNpc, setHoveredNpc] = useState(null) // Track which NPC is hovered ('npc_a', 'npc_b', 'npc_c', 'glitch')
   const [showGlitchDialogue, setShowGlitchDialogue] = useState(false) // Modern Glitch dialogue
   const [glitchInput, setGlitchInput] = useState('') // Glitch input field
+  const [glitchChatHistory, setGlitchChatHistory] = useState([]) // Glitch chat history
+  const [isGlitchTyping, setIsGlitchTyping] = useState(false) // Glitch typing indicator
   
   // Custom cursor position
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
@@ -245,11 +247,52 @@ const DataCollection = ({ onComplete, onExit }) => {
     setShowGlitchDialogue(true)
   }
   
-  const handleGlitchSend = () => {
+  const handleGlitchSend = async () => {
     if (glitchInput.trim()) {
-      // Handle Glitch input (can be extended later)
-      console.log('Glitch input:', glitchInput)
-      setGlitchInput('')
+      const userMessage = glitchInput.trim()
+      console.log('User message to Glitch:', userMessage)
+      
+      // Add user message to chat history
+      setGlitchChatHistory(prev => [...prev, { role: 'user', text: userMessage }])
+      setGlitchInput('') // Clear input after sending
+      setIsGlitchTyping(true) // Show typing indicator
+      
+      try {
+        // Call Gemini API
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `You are Glitch, a helpful AI guide in the Fungi Jungle region of an educational game about AI and machine learning. In this region, players are collecting data samples of mushrooms to train an AI model. You help them understand concepts like gathering diverse data samples, the importance of clean data, and how models learn from data. You're friendly, encouraging, and explain concepts in simple terms. Keep responses concise (2-3 sentences max).\n\nUser question: ${userMessage}`
+              }]
+            }]
+          })
+        })
+        
+        const data = await response.json()
+        
+        if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+          const glitchReply = data.candidates[0].content.parts[0].text
+          
+          // Add Glitch's response to chat history
+          setGlitchChatHistory(prev => [...prev, { role: 'glitch', text: glitchReply }])
+        } else {
+          throw new Error('Invalid API response')
+        }
+      } catch (error) {
+        console.error('Glitch chat error:', error)
+        // Add error message
+        setGlitchChatHistory(prev => [...prev, { 
+          role: 'glitch', 
+          text: "Oops! My circuits are a bit scrambled right now. Try asking me again?" 
+        }])
+      } finally {
+        setIsGlitchTyping(false)
+      }
     }
   }
   
@@ -698,6 +741,14 @@ const DataCollection = ({ onComplete, onExit }) => {
 
   return (
     <div style={styles.container}>
+      <style>
+        {`
+          @keyframes blink {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+          }
+        `}
+      </style>
       {/* Custom Pencil Cursor */}
       {showCursor && (
         <img 
@@ -750,7 +801,10 @@ const DataCollection = ({ onComplete, onExit }) => {
           {/* Close button */}
           <button
             style={styles.glitchDialogueCloseButton}
-            onClick={() => setShowGlitchDialogue(false)}
+            onClick={() => {
+              setShowGlitchDialogue(false)
+              setGlitchChatHistory([]) // Clear chat history when closing
+            }}
             onMouseOver={(e) => {
               e.target.style.color = '#333'
             }}
@@ -769,12 +823,93 @@ const DataCollection = ({ onComplete, onExit }) => {
             <h4 style={styles.glitchDialogueName}>Glitch</h4>
           </div>
           
-          {/* Message content */}
-          <p style={styles.glitchDialogueText}>
-            {collectedIds.length < 12 
-              ? "Not finished yet! You're still missing some data!"
-              : "Give ALL these to Ranger Moss!"}
-          </p>
+          {/* Chat history */}
+          <div style={{
+            maxHeight: '300px',
+            overflowY: 'auto',
+            marginBottom: '15px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+          }}>
+            {/* Initial greeting if no chat history */}
+            {glitchChatHistory.length === 0 && (
+              <p style={styles.glitchDialogueText}>
+                {collectedIds.length < 12 
+                  ? "Not finished yet! You're still missing some data!"
+                  : "Give ALL these to Ranger Moss!"}
+              </p>
+            )}
+            
+            {/* Chat messages */}
+            {glitchChatHistory.map((message, index) => (
+              <div
+                key={index}
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: '12px',
+                  background: message.role === 'user' 
+                    ? 'rgba(143, 204, 174, 0.2)' 
+                    : 'rgba(143, 204, 174, 0.1)',
+                  border: message.role === 'user'
+                    ? '1px solid rgba(143, 204, 174, 0.4)'
+                    : '1px solid rgba(143, 204, 174, 0.2)',
+                  alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
+                  maxWidth: '85%',
+                }}
+              >
+                <div style={{
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: '#8FCCAE',
+                  marginBottom: '4px',
+                  fontFamily: "'Roboto', sans-serif",
+                }}>
+                  {message.role === 'user' ? 'YOU' : 'GLITCH'}
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#333',
+                  lineHeight: 1.5,
+                  fontFamily: "'Roboto', sans-serif",
+                  whiteSpace: 'pre-wrap',
+                }}>
+                  {message.text}
+                </div>
+              </div>
+            ))}
+            
+            {/* Typing indicator */}
+            {isGlitchTyping && (
+              <div style={{
+                padding: '10px 12px',
+                borderRadius: '12px',
+                background: 'rgba(143, 204, 174, 0.1)',
+                border: '1px solid rgba(143, 204, 174, 0.2)',
+                alignSelf: 'flex-start',
+                maxWidth: '85%',
+              }}>
+                <div style={{
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: '#8FCCAE',
+                  marginBottom: '4px',
+                  fontFamily: "'Roboto', sans-serif",
+                }}>
+                  GLITCH
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#999',
+                  fontFamily: "'Roboto', sans-serif",
+                }}>
+                  <span style={{ animation: 'blink 1.4s infinite' }}>●</span>
+                  <span style={{ animation: 'blink 1.4s infinite 0.2s' }}>●</span>
+                  <span style={{ animation: 'blink 1.4s infinite 0.4s' }}>●</span>
+                </div>
+              </div>
+            )}
+          </div>
           
           {/* Input container */}
           <div 
@@ -792,14 +927,20 @@ const DataCollection = ({ onComplete, onExit }) => {
               value={glitchInput}
               onChange={(e) => setGlitchInput(e.target.value)}
               onKeyPress={handleGlitchInputKeyPress}
+              disabled={isGlitchTyping}
               style={styles.glitchDialogueInput}
             />
             <div style={styles.glitchDialogueDivider}></div>
             <button
               onClick={handleGlitchSend}
-              style={styles.glitchDialogueSendButton}
+              style={{
+                ...styles.glitchDialogueSendButton,
+                opacity: isGlitchTyping ? 0.5 : 1,
+                cursor: isGlitchTyping ? 'not-allowed' : 'pointer',
+              }}
+              disabled={isGlitchTyping}
               onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'scale(1.1)'
+                if (!isGlitchTyping) e.currentTarget.style.transform = 'scale(1.1)'
               }}
               onMouseOut={(e) => {
                 e.currentTarget.style.transform = 'scale(1)'

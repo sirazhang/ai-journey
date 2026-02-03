@@ -192,8 +192,18 @@ function App() {
         const savedUser = localStorage.getItem('aiJourneyUser')
         if (savedUser) {
           const userData = JSON.parse(savedUser)
+          const rangerMossPhase = userData.rangerMossPhase || 1
           const dataCleaningProgress = userData.dataCleaningProgress
           const dataCollectionProgress = userData.dataCollectionProgress
+          
+          // If Jungle is 100% complete (rangerMossPhase = 5), go to Jungle color map
+          if (rangerMossPhase === 5) {
+            console.log('Jungle 100% complete, entering Jungle color map exploration')
+            // Go to DataCleaning with COLOR_MAP_EXPLORATION phase
+            saveProgress('dataCleaning')
+            setCurrentScreen('dataCleaning')
+            return
+          }
           
           // If there's data cleaning progress, go to data cleaning
           if (dataCleaningProgress && dataCleaningProgress.phase) {
@@ -293,6 +303,10 @@ function App() {
 
   const handleDataCleaningComplete = () => {
     console.log('Data cleaning complete!')
+    
+    // Don't clear dataCleaningProgress - keep it at COLOR_MAP_EXPLORATION phase
+    // so users can return to the color map
+    
     saveProgress('map')
     setCurrentScreen('map')
   }

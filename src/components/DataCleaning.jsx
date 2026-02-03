@@ -263,16 +263,26 @@ const colorMapNpcs = {
     bottom: '5%',
     height: '540px',
     width: 'auto',
-    hoverText: "Yay! No stomach ache today."
+    dialogues: [
+      [
+        "Yay! No stomach ache today.",
+        "I'd love to see the world through your eyes—would you show me?"
+      ]
+    ]
   },
   [MAP_POSITIONS.BOTTOM_RIGHT]: {
     npc: 'npc_b',
-    image: '/jungle/npc_b2.gif',
+    image: '/jungle/npc_b.gif',
     left: '5%',
     bottom: '0%',
     height: '540px',
     width: 'auto',
-    hoverText: "This new scanner is like magic. It knows everything!"
+    dialogues: [
+      [
+        "This new scanner is like magic. It knows everything!",
+        "I'd love to see the world through your eyes—would you show me?"
+      ]
+    ]
   },
 }
 
@@ -281,6 +291,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
   const [phase, setPhase] = useState('INTRO') // INTRO, NOISE_REMOVAL, LABEL_CORRECTION, FILL_MISSING_INTRO, FILL_MISSING, QUIZ, TRAINING, VALIDATION_INTRO, VALIDATION_DATA, ADJUST_MODEL_INTRO, ADJUST_MODEL_DATA, ADJUST_MODEL_TRAINING, LOADING, COLOR_MAP_EXPLORATION, COMPLETE
   const [noiseBatch, setNoiseBatch] = useState(0)
   const [removedItems, setRemovedItems] = useState([])
+  const [progressLoaded, setProgressLoaded] = useState(false) // Flag to prevent saving before loading
   const [wrongSelections, setWrongSelections] = useState([]) // Track wrong selections with red border
   
   // Modern Ranger Moss dialogue states
@@ -298,17 +309,31 @@ const DataCleaning = ({ onComplete, onExit }) => {
     if (savedUser) {
       const userData = JSON.parse(savedUser)
       const dataCleaningProgress = userData.dataCleaningProgress
+      const rangerMossPhase = userData.rangerMossPhase || 1
+      
+      console.log('=== DataCleaning Loading ===')
+      console.log('rangerMossPhase:', rangerMossPhase)
+      console.log('dataCleaningProgress:', dataCleaningProgress)
+      
       if (dataCleaningProgress) {
-        setPhase(dataCleaningProgress.phase || 'INTRO')
+        const loadedPhase = dataCleaningProgress.phase || 'INTRO'
+        console.log('Loading phase:', loadedPhase)
+        setPhase(loadedPhase)
         setNoiseBatch(dataCleaningProgress.noiseBatch || 0)
         setRemovedItems(dataCleaningProgress.removedItems || [])
         console.log('Loaded Data Cleaning progress:', dataCleaningProgress)
+      } else {
+        console.log('No dataCleaningProgress found, starting from INTRO')
       }
     }
+    // Mark progress as loaded
+    setProgressLoaded(true)
   }, [])
 
-  // Save progress when phase changes
+  // Save progress when phase changes (only after initial load)
   useEffect(() => {
+    if (!progressLoaded) return // Don't save until progress is loaded
+    
     const savedUser = localStorage.getItem('aiJourneyUser')
     if (savedUser) {
       const userData = JSON.parse(savedUser)
@@ -321,7 +346,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
       localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
       console.log('Saved Data Cleaning progress:', userData.dataCleaningProgress)
     }
-  }, [phase, noiseBatch, removedItems])
+  }, [phase, noiseBatch, removedItems, progressLoaded])
   const [labelBatch, setLabelBatch] = useState(1)
   const [selectedCells, setSelectedCells] = useState([]) // Cells user clicked as errors
   const [wrongCells, setWrongCells] = useState([]) // Cells user clicked incorrectly
@@ -389,6 +414,22 @@ const DataCleaning = ({ onComplete, onExit }) => {
   const [showNpcDialogue, setShowNpcDialogue] = useState(false)
   const [npcDialogueText, setNpcDialogueText] = useState('')
   const [currentNpc, setCurrentNpc] = useState(null)
+  
+  // Glitch chat states for COLOR_MAP_EXPLORATION
+  const [showGlitchChatDialogue, setShowGlitchChatDialogue] = useState(false)
+  const [glitchChatInput, setGlitchChatInput] = useState('')
+  const [glitchChatHistory, setGlitchChatHistory] = useState([])
+  const [isGlitchChatTyping, setIsGlitchChatTyping] = useState(false)
+  
+  // Camera states for NPC photo feature in color map
+  const [showNpcCamera, setShowNpcCamera] = useState(false)
+  const [npcCameraStream, setNpcCameraStream] = useState(null)
+  const [npcCapturedPhoto, setNpcCapturedPhoto] = useState(null)
+  const [currentPhotoNpc, setCurrentPhotoNpc] = useState(null)
+  const [showRecognitionCard, setShowRecognitionCard] = useState(false)
+  const [recognitionResult, setRecognitionResult] = useState(null)
+  const [isRecognizing, setIsRecognizing] = useState(false)
+  const [showValidationCard, setShowValidationCard] = useState(true) // Show validation card by default
   const [npcClickCount, setNpcClickCount] = useState({ npc_c: 0 })
   const [loadingProgress, setLoadingProgress] = useState(0)
   const [clickedMushroom, setClickedMushroom] = useState(null) // Track which mushroom is clicked
@@ -599,8 +640,13 @@ const DataCleaning = ({ onComplete, onExit }) => {
     if (stepIndex >= rangerDialogues.length) return
     
     const text = rangerDialogues[stepIndex]
+    console.log(`Adding Ranger message ${stepIndex}:`, text.substring(0, 50))
+    
     const newMessage = { type: 'message', text }
-    setRangerMessages(prev => [...prev, newMessage])
+    setRangerMessages(prev => {
+      console.log('Current rangerMessages length:', prev.length)
+      return [...prev, newMessage]
+    })
     setCurrentTypingMessage(newMessage)
     
     // Start typing effect and sound
@@ -1886,6 +1932,13 @@ const DataCleaning = ({ onComplete, onExit }) => {
           setCurrentDialogueIndex(0)
           startColorMapNpcDialogue(npcType, npc.dialogues[clickCount][0])
         }
+      } else if (npcType === 'npc_a' || npcType === 'npc_b') {
+        // For NPC A and B, show their dialogues
+        if (npc.dialogues && npc.dialogues[0]) {
+          setCurrentDialogueSet(0)
+          setCurrentDialogueIndex(0)
+          startColorMapNpcDialogue(npcType, npc.dialogues[0][0])
+        }
       } else if (npc.hoverText) {
         // For other NPCs, show hover text with typing effect
         startColorMapNpcDialogue(npcType, npc.hoverText)
@@ -1907,7 +1960,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
     }
     
     const npc = colorMapNpcs[mapPosition]
-    if (npc && currentNpc === 'npc_c') {
+    if (npc && (currentNpc === 'npc_c' || currentNpc === 'npc_a' || currentNpc === 'npc_b')) {
       const currentDialogueArray = npc.dialogues[currentDialogueSet]
       if (currentDialogueIndex < currentDialogueArray.length - 1) {
         // Show next sentence in current dialogue set with typing effect
@@ -1915,8 +1968,16 @@ const DataCleaning = ({ onComplete, onExit }) => {
         startColorMapNpcDialogue(currentNpc, currentDialogueArray[currentDialogueIndex + 1])
       } else {
         // End of current dialogue set
+        // For NPC A and B, don't close dialogue on last message (show camera icon)
+        if (currentNpc === 'npc_a' || currentNpc === 'npc_b') {
+          // Keep dialogue open to show camera icon
+          return
+        }
+        
         setShowNpcDialogue(false)
-        setNpcClickCount(prev => ({ ...prev, npc_c: prev.npc_c + 1 }))
+        if (currentNpc === 'npc_c') {
+          setNpcClickCount(prev => ({ ...prev, npc_c: prev.npc_c + 1 }))
+        }
         setCurrentNpc(null)
         typingSound.pause()
         typingSound.currentTime = 0
@@ -1945,9 +2006,287 @@ const DataCleaning = ({ onComplete, onExit }) => {
   }
 
   const handleGlitchClickColorMap = () => {
-    setNpcDialogueText("You know, technology didn't save the day—YOU did. An AI is just a tool. It was your careful choices as a 'Data Detective' that taught it to see the truth.")
-    setShowNpcDialogue(true)
-    setCurrentNpc('glitch')
+    setShowGlitchChatDialogue(true)
+  }
+  
+  const handleGlitchChatSend = async () => {
+    if (glitchChatInput.trim()) {
+      const userMessage = glitchChatInput.trim()
+      console.log('User message to Glitch:', userMessage)
+      
+      // Add user message to chat history
+      setGlitchChatHistory(prev => [...prev, { role: 'user', text: userMessage }])
+      setGlitchChatInput('') // Clear input after sending
+      setIsGlitchChatTyping(true) // Show typing indicator
+      
+      try {
+        // Call Gemini API
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `You are Glitch, a helpful AI guide in the Fungi Jungle color map exploration. The player has completed all training phases and is now exploring the colorful jungle. You help them reflect on what they learned about data collection, cleaning, labeling, and model training. Emphasize that AI is just a tool - it was their careful choices as a 'Data Detective' that taught the AI to see the truth. You're friendly, encouraging, and explain concepts in simple terms. Keep responses concise (2-3 sentences max).\n\nUser question: ${userMessage}`
+              }]
+            }]
+          })
+        })
+        
+        const data = await response.json()
+        
+        if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+          const glitchReply = data.candidates[0].content.parts[0].text
+          
+          // Add Glitch's response to chat history
+          setGlitchChatHistory(prev => [...prev, { role: 'glitch', text: glitchReply }])
+        } else {
+          throw new Error('Invalid API response')
+        }
+      } catch (error) {
+        console.error('Glitch chat error:', error)
+        // Add error message
+        setGlitchChatHistory(prev => [...prev, { 
+          role: 'glitch', 
+          text: "Oops! My circuits are a bit scrambled right now. Try asking me again?" 
+        }])
+      } finally {
+        setIsGlitchChatTyping(false)
+      }
+    }
+  }
+  
+  const handleGlitchChatInputKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleGlitchChatSend()
+    }
+  }
+  
+  // Camera functions for NPC photo feature in color map
+  const handleCameraIconClick = (npcId) => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
+    setCurrentPhotoNpc(npcId)
+    setShowNpcDialogue(false)
+    setShowNpcCamera(true)
+    
+    // Request camera access
+    navigator.mediaDevices.getUserMedia({ 
+      video: { facingMode: 'environment' } // Use back camera on mobile
+    })
+    .then(stream => {
+      setNpcCameraStream(stream)
+    })
+    .catch(err => {
+      console.error('Camera access error:', err)
+      alert('Unable to access camera. Please grant camera permissions.')
+      setShowNpcCamera(false)
+    })
+  }
+  
+  const handleCapturePhoto = () => {
+    // Play camera sound if available
+    const cameraSound = new Audio('/sound/camera.wav')
+    cameraSound.volume = 0.5
+    cameraSound.play().catch(err => console.log('Camera sound error:', err))
+    
+    // Create canvas to capture photo from video stream
+    const video = document.getElementById('jungleCameraVideo')
+    const canvas = document.createElement('canvas')
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(video, 0, 0)
+    
+    // Convert to base64
+    const photoData = canvas.toDataURL('image/jpeg', 0.9)
+    setNpcCapturedPhoto(photoData)
+    
+    // Stop camera stream
+    if (npcCameraStream) {
+      npcCameraStream.getTracks().forEach(track => track.stop())
+      setNpcCameraStream(null)
+    }
+    
+    // Start AI recognition
+    recognizePhoto(photoData)
+  }
+  
+  const recognizePhoto = async (photoBase64) => {
+    setIsRecognizing(true)
+    setShowValidationCard(true) // Reset validation card for new recognition
+    
+    try {
+      // Remove data:image/jpeg;base64, prefix
+      const base64Data = photoBase64.split(',')[1]
+      
+      console.log('Calling Gemini API for photo recognition...')
+      
+      // Use gemini-2.0-flash-exp model
+      const response = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                {
+                  text: 'Identify the main object in this image. Respond in this exact format: "Object Name (English) - Category". For example: "Coffee Mug - Kitchenware" or "Laptop - Electronics". Be concise and specific.'
+                },
+                {
+                  inline_data: {
+                    mime_type: 'image/jpeg',
+                    data: base64Data
+                  }
+                }
+              ]
+            }]
+          })
+        }
+      )
+      
+      console.log('API Response status:', response.status)
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('API Error response:', errorText)
+        throw new Error(`API request failed: ${response.status}`)
+      }
+      
+      const data = await response.json()
+      console.log('Gemini API response received')
+      
+      // Extract result text
+      let resultText = null
+      
+      if (data.candidates && data.candidates[0]?.content?.parts[0]?.text) {
+        resultText = data.candidates[0].content.parts[0].text.trim()
+      }
+      
+      console.log('Recognition result:', resultText)
+      
+      if (resultText) {
+        // Parse the result (format: "Object Name - Category")
+        const parts = resultText.split(' - ')
+        const itemName = parts[0] || resultText
+        const itemType = parts[1] || 'Unknown'
+        
+        setRecognitionResult({
+          item: itemName,
+          type: itemType,
+          photo: photoBase64,
+          timestamp: new Date().toISOString(),
+          npc: currentPhotoNpc
+        })
+        
+        setIsRecognizing(false)
+        setShowNpcCamera(false)
+        setShowRecognitionCard(true)
+      } else {
+        throw new Error('Invalid API response')
+      }
+    } catch (error) {
+      console.error('Recognition error:', error)
+      setIsRecognizing(false)
+      alert(`Failed to recognize the object: ${error.message}`)
+      setShowNpcCamera(false)
+    }
+  }
+  
+  const handleCloseCamera = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
+    // Stop camera stream
+    if (npcCameraStream) {
+      npcCameraStream.getTracks().forEach(track => track.stop())
+      setNpcCameraStream(null)
+    }
+    
+    setShowNpcCamera(false)
+    setNpcCapturedPhoto(null)
+  }
+  
+  const handleLabelCorrect = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
+    // Hide validation card, show download/save buttons
+    setShowValidationCard(false)
+  }
+  
+  const handleLabelIncorrect = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
+    // Re-call API for new recognition
+    if (npcCapturedPhoto) {
+      recognizePhoto(npcCapturedPhoto)
+    }
+  }
+  
+  const handleDownloadPhoto = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
+    if (!recognitionResult) return
+    
+    // Create download link
+    const link = document.createElement('a')
+    link.href = recognitionResult.photo
+    link.download = `jungle_${recognitionResult.item}_${Date.now()}.jpg`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    console.log('Photo downloaded:', recognitionResult.item)
+  }
+  
+  const handleSaveToJournal = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
+    if (!recognitionResult) return
+    
+    // Save to Explorer's Journal in localStorage
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (savedUser) {
+      const userData = JSON.parse(savedUser)
+      if (!userData.explorerJournal) {
+        userData.explorerJournal = []
+      }
+      
+      userData.explorerJournal.push({
+        ...recognitionResult,
+        region: 'jungle',
+        savedAt: Date.now()
+      })
+      
+      localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+      console.log('Saved to Explorer Journal:', recognitionResult)
+      
+      alert('Photo saved to Explorer\'s Journal!')
+    }
+    
+    setShowRecognitionCard(false)
+    setRecognitionResult(null)
+    setNpcCapturedPhoto(null)
+    setShowValidationCard(true) // Reset for next time
+  }
+  
+  const handleDiscardPhoto = () => {
+    selectSound.currentTime = 0
+    selectSound.play().catch(err => console.log('Select sound error:', err))
+    
+    setShowRecognitionCard(false)
+    setRecognitionResult(null)
+    setNpcCapturedPhoto(null)
   }
 
   const handleMushroomClick = (mushroomId) => {
@@ -3717,6 +4056,16 @@ const DataCleaning = ({ onComplete, onExit }) => {
               transform: translateX(-80vw) translateY(0);
             }
           }
+          
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          
+          @keyframes blink {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+          }
         `}
       </style>
       
@@ -3821,6 +4170,254 @@ const DataCleaning = ({ onComplete, onExit }) => {
             >
               <img src="/npc/npc_jungle.png" alt="Glitch" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
+            
+            {/* Glitch Chat Dialogue */}
+            {showGlitchChatDialogue && (
+              <div style={{
+                position: 'absolute',
+                top: '20px',
+                right: '150px',
+                width: '350px',
+                background: 'rgba(255, 255, 255, 0.98)',
+                borderRadius: '15px',
+                padding: '20px',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+                zIndex: 150,
+                border: '3px solid #8B4513',
+              }}>
+                {/* Close button */}
+                <button
+                  style={{
+                    position: 'absolute',
+                    top: '15px',
+                    right: '15px',
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '20px',
+                    color: '#999',
+                    cursor: 'pointer',
+                    padding: '5px',
+                    width: '30px',
+                    height: '30px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s',
+                  }}
+                  onClick={() => {
+                    setShowGlitchChatDialogue(false)
+                    setGlitchChatHistory([]) // Clear chat history when closing
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.color = '#333'
+                    e.target.style.transform = 'scale(1.1)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.color = '#999'
+                    e.target.style.transform = 'scale(1)'
+                  }}
+                >
+                  ✕
+                </button>
+                
+                {/* Header with avatar and name */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '15px',
+                }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #8B4513, #A0522D)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
+                    <span style={{ fontSize: '24px' }}>👾</span>
+                  </div>
+                  <h4 style={{
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '16px',
+                    fontWeight: 600,
+                    color: '#333',
+                    margin: 0,
+                  }}>Glitch</h4>
+                </div>
+                
+                {/* Chat history */}
+                <div style={{
+                  maxHeight: '300px',
+                  overflowY: 'auto',
+                  marginBottom: '15px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                }}>
+                  {/* Initial greeting if no chat history */}
+                  {glitchChatHistory.length === 0 && (
+                    <p style={{
+                      fontFamily: "'Roboto', sans-serif",
+                      fontSize: '14px',
+                      color: '#666',
+                      lineHeight: 1.6,
+                      margin: 0,
+                    }}>
+                      You know, technology didn't save the day—YOU did. An AI is just a tool. It was your careful choices as a 'Data Detective' that taught it to see the truth.
+                    </p>
+                  )}
+                  
+                  {/* Chat messages */}
+                  {glitchChatHistory.map((message, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        padding: '10px 12px',
+                        borderRadius: '12px',
+                        background: message.role === 'user' 
+                          ? 'rgba(139, 69, 19, 0.1)' 
+                          : 'rgba(139, 69, 19, 0.05)',
+                        border: message.role === 'user'
+                          ? '1px solid rgba(139, 69, 19, 0.3)'
+                          : '1px solid rgba(139, 69, 19, 0.1)',
+                        alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
+                        maxWidth: '85%',
+                      }}
+                    >
+                      <div style={{
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        color: '#8B4513',
+                        marginBottom: '4px',
+                        fontFamily: "'Roboto', sans-serif",
+                      }}>
+                        {message.role === 'user' ? 'YOU' : 'GLITCH'}
+                      </div>
+                      <div style={{
+                        fontSize: '14px',
+                        color: '#333',
+                        lineHeight: 1.5,
+                        fontFamily: "'Roboto', sans-serif",
+                        whiteSpace: 'pre-wrap',
+                      }}>
+                        {message.text}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Typing indicator */}
+                  {isGlitchChatTyping && (
+                    <div style={{
+                      padding: '10px 12px',
+                      borderRadius: '12px',
+                      background: 'rgba(139, 69, 19, 0.05)',
+                      border: '1px solid rgba(139, 69, 19, 0.1)',
+                      alignSelf: 'flex-start',
+                      maxWidth: '85%',
+                    }}>
+                      <div style={{
+                        fontSize: '10px',
+                        fontWeight: 'bold',
+                        color: '#8B4513',
+                        marginBottom: '4px',
+                        fontFamily: "'Roboto', sans-serif",
+                      }}>
+                        GLITCH
+                      </div>
+                      <div style={{
+                        fontSize: '14px',
+                        color: '#999',
+                        fontFamily: "'Roboto', sans-serif",
+                      }}>
+                        <span style={{ animation: 'blink 1.4s infinite' }}>●</span>
+                        <span style={{ animation: 'blink 1.4s infinite 0.2s' }}>●</span>
+                        <span style={{ animation: 'blink 1.4s infinite 0.4s' }}>●</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Input container */}
+                <div 
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '8px 12px',
+                    border: '2px solid #e0e0e0',
+                    borderRadius: '25px',
+                    transition: 'border-color 0.2s',
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = '#8B4513'
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = '#e0e0e0'
+                  }}
+                >
+                  <input
+                    type="text"
+                    placeholder="Ask Glitch anything..."
+                    value={glitchChatInput}
+                    onChange={(e) => setGlitchChatInput(e.target.value)}
+                    onKeyPress={handleGlitchChatInputKeyPress}
+                    disabled={isGlitchChatTyping}
+                    style={{
+                      flex: 1,
+                      padding: '10px 15px',
+                      border: 'none',
+                      background: 'transparent',
+                      fontFamily: "'Roboto', sans-serif",
+                      fontSize: '14px',
+                      color: '#333',
+                      outline: 'none',
+                    }}
+                  />
+                  <div style={{
+                    width: '2px',
+                    height: '24px',
+                    background: '#e0e0e0',
+                    borderRadius: '1px',
+                    flexShrink: 0,
+                  }}></div>
+                  <button
+                    onClick={handleGlitchChatSend}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: '0',
+                      cursor: isGlitchChatTyping ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'transform 0.2s',
+                      flexShrink: 0,
+                      opacity: isGlitchChatTyping ? 0.5 : 1,
+                    }}
+                    disabled={isGlitchChatTyping}
+                    onMouseOver={(e) => {
+                      if (!isGlitchChatTyping) e.currentTarget.style.transform = 'scale(1.1)'
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)'
+                    }}
+                  >
+                    <img 
+                      src="/icon/send.png" 
+                      alt="Send" 
+                      style={{
+                        width: '24px',
+                        height: '24px',
+                        objectFit: 'contain',
+                      }}
+                    />
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Navigation Arrows */}
             {colorMapNavigation[mapPosition]?.up !== undefined && (
@@ -3966,9 +4563,41 @@ const DataCleaning = ({ onComplete, onExit }) => {
                       npcDialogueText
                     )}
                   </p>
+                  
+                  {/* Camera Icon for NPC A and B on last dialogue */}
+                  {(currentNpc === 'npc_a' || currentNpc === 'npc_b') && 
+                   !colorMapNpcIsTyping &&
+                   colorMapNpcs[mapPosition]?.dialogues[currentDialogueSet] &&
+                   currentDialogueIndex === colorMapNpcs[mapPosition].dialogues[currentDialogueSet].length - 1 && (
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      marginTop: '15px',
+                    }}>
+                      <img 
+                        src="/jungle/icon/photo.svg" 
+                        alt="Camera" 
+                        style={{
+                          width: '60px',
+                          height: '60px',
+                          objectFit: 'contain',
+                          cursor: 'pointer',
+                          transition: 'transform 0.3s',
+                        }}
+                        onClick={() => handleCameraIconClick(currentNpc)}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'scale(1.15)'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'scale(1)'
+                        }}
+                      />
+                    </div>
+                  )}
+                  
                   <button
                     style={styles.colorMapContinueButton}
-                    onClick={currentNpc === 'npc_c' ? handleDialogueContinue : () => {
+                    onClick={(currentNpc === 'npc_c' || currentNpc === 'npc_a' || currentNpc === 'npc_b') ? handleDialogueContinue : () => {
                       setShowNpcDialogue(false)
                       setCurrentNpc(null)
                       typingSound.pause()
@@ -3985,10 +4614,457 @@ const DataCleaning = ({ onComplete, onExit }) => {
                       e.target.style.transform = 'scale(1)'
                     }}
                   >
-                    {currentNpc === 'npc_c' && colorMapNpcs[mapPosition]?.dialogues[currentDialogueSet] && 
-                     currentDialogueIndex < colorMapNpcs[mapPosition].dialogues[currentDialogueSet].length - 1 
+                    {((currentNpc === 'npc_c' || currentNpc === 'npc_a' || currentNpc === 'npc_b') && 
+                      colorMapNpcs[mapPosition]?.dialogues[currentDialogueSet] && 
+                      currentDialogueIndex < colorMapNpcs[mapPosition].dialogues[currentDialogueSet].length - 1)
                      ? 'Continue →' : 'OK'}
                   </button>
+                </div>
+              </div>
+            )}
+            
+            {/* Camera Interface for NPC Photo */}
+            {showNpcCamera && (
+              <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: '#000',
+                zIndex: 200,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                {/* Close button */}
+                <button
+                  style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '20px',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    border: '2px solid #fff',
+                    borderRadius: '50%',
+                    width: '50px',
+                    height: '50px',
+                    color: '#fff',
+                    fontSize: '24px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 201,
+                  }}
+                  onClick={handleCloseCamera}
+                >
+                  ✕
+                </button>
+                
+                {/* Video stream with frame overlay */}
+                <div style={{
+                  position: 'relative',
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <video
+                    id="jungleCameraVideo"
+                    autoPlay
+                    playsInline
+                    ref={(video) => {
+                      if (video && npcCameraStream) {
+                        video.srcObject = npcCameraStream
+                      }
+                    }}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                    }}
+                  />
+                  
+                  {/* Center square frame with thick dashed border */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: '70%',
+                    maxWidth: '500px',
+                    aspectRatio: '1/1',
+                    border: '5px dashed #fff',
+                    pointerEvents: 'none',
+                  }} />
+                  
+                  {/* Screen corner frames */}
+                  {/* Top-left corner */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '20px',
+                    left: '20px',
+                    width: '60px',
+                    height: '60px',
+                    borderTop: '6px solid #fff',
+                    borderLeft: '6px solid #fff',
+                    pointerEvents: 'none',
+                  }} />
+                  {/* Top-right corner */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '20px',
+                    right: '20px',
+                    width: '60px',
+                    height: '60px',
+                    borderTop: '6px solid #fff',
+                    borderRight: '6px solid #fff',
+                    pointerEvents: 'none',
+                  }} />
+                  {/* Bottom-left corner */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '20px',
+                    left: '20px',
+                    width: '60px',
+                    height: '60px',
+                    borderBottom: '6px solid #fff',
+                    borderLeft: '6px solid #fff',
+                    pointerEvents: 'none',
+                  }} />
+                  {/* Bottom-right corner */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '20px',
+                    right: '20px',
+                    width: '60px',
+                    height: '60px',
+                    borderBottom: '6px solid #fff',
+                    borderRight: '6px solid #fff',
+                    pointerEvents: 'none',
+                  }} />
+                </div>
+                
+                {/* Capture button */}
+                <button
+                  style={{
+                    position: 'absolute',
+                    bottom: '40px',
+                    background: '#009b01',
+                    border: '4px solid #fff',
+                    borderRadius: '50%',
+                    width: '80px',
+                    height: '80px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 6px 25px rgba(0, 155, 1, 0.7), 0 0 15px rgba(0, 155, 1, 0.5)',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                  }}
+                  onClick={handleCapturePhoto}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.1)'
+                    e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 155, 1, 0.8), 0 0 20px rgba(0, 155, 1, 0.6)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)'
+                    e.currentTarget.style.boxShadow = '0 6px 25px rgba(0, 155, 1, 0.7), 0 0 15px rgba(0, 155, 1, 0.5)'
+                  }}
+                >
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    background: '#fff',
+                    borderRadius: '50%',
+                  }} />
+                </button>
+              </div>
+            )}
+            
+            {/* Recognition Result Card */}
+            {showRecognitionCard && recognitionResult && (
+              <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: 'rgba(0, 0, 0, 0.8)',
+                zIndex: 200,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <div style={{
+                  background: '#fff',
+                  borderRadius: '20px',
+                  padding: '30px',
+                  maxWidth: '500px',
+                  width: '90%',
+                  border: '4px solid #009b01',
+                  boxShadow: '0 10px 40px rgba(0, 155, 1, 0.5), 0 0 20px rgba(0, 155, 1, 0.3)',
+                }}>
+                  {isRecognizing ? (
+                    <div style={{ textAlign: 'center' }}>
+                      <h2 style={{
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: '24px',
+                        color: '#009b01',
+                        marginBottom: '20px',
+                      }}>
+                        Analyzing...
+                      </h2>
+                      <div style={{
+                        width: '50px',
+                        height: '50px',
+                        border: '4px solid #f3f3f3',
+                        borderTop: '4px solid #009b01',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite',
+                        margin: '0 auto',
+                      }} />
+                    </div>
+                  ) : (
+                    <>
+                      <h2 style={{
+                        fontFamily: "'Roboto', sans-serif",
+                        fontSize: '24px',
+                        color: '#009b01',
+                        marginBottom: '20px',
+                        textAlign: 'center',
+                      }}>
+                        Recognition Result
+                      </h2>
+                      
+                      {/* Photo with green border and white dashed inner frame */}
+                      <div style={{
+                        position: 'relative',
+                        marginBottom: '20px',
+                      }}>
+                        <img
+                          src={recognitionResult.photo}
+                          alt="Captured"
+                          style={{
+                            width: '100%',
+                            height: 'auto',
+                            borderRadius: '10px',
+                            border: '4px solid #009b01',
+                            boxShadow: '0 4px 15px rgba(0, 155, 1, 0.4), 0 0 10px rgba(0, 155, 1, 0.2)',
+                          }}
+                        />
+                        {/* White dashed inner frame */}
+                        <div style={{
+                          position: 'absolute',
+                          top: '15px',
+                          left: '15px',
+                          right: '15px',
+                          bottom: '15px',
+                          border: '2px dashed #fff',
+                          borderRadius: '6px',
+                          pointerEvents: 'none',
+                        }} />
+                      </div>
+                      
+                      {/* Result info */}
+                      <div style={{
+                        background: 'rgba(0, 155, 1, 0.1)',
+                        padding: '20px',
+                        borderRadius: '10px',
+                        marginBottom: '20px',
+                      }}>
+                        <p style={{
+                          fontFamily: "'Roboto', sans-serif",
+                          fontSize: '18px',
+                          fontWeight: 'bold',
+                          color: '#333',
+                          marginBottom: '10px',
+                        }}>
+                          Item: {recognitionResult.item}
+                        </p>
+                        <p style={{
+                          fontFamily: "'Roboto', sans-serif",
+                          fontSize: '16px',
+                          color: '#666',
+                        }}>
+                          Type: {recognitionResult.type}
+                        </p>
+                      </div>
+                      
+                      {/* Validation Card */}
+                      {showValidationCard && (
+                        <div style={{
+                          background: '#fff',
+                          border: '2px solid #ccc',
+                          borderRadius: '10px',
+                          padding: '20px',
+                          marginBottom: '20px',
+                        }}>
+                          <p style={{
+                            fontFamily: "'Roboto', sans-serif",
+                            fontSize: '16px',
+                            color: '#333',
+                            marginBottom: '15px',
+                            textAlign: 'center',
+                          }}>
+                            Is this a correct detection?
+                          </p>
+                          
+                          {/* Validation buttons */}
+                          <div style={{
+                            display: 'flex',
+                            gap: '15px',
+                            justifyContent: 'center',
+                          }}>
+                            <button
+                              style={{
+                                flex: 1,
+                                padding: '12px',
+                                background: '#7ed957',
+                                border: 'none',
+                                borderRadius: '10px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                transition: 'all 0.2s',
+                              }}
+                              onClick={handleLabelCorrect}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.05)'
+                                e.currentTarget.style.boxShadow = '0 4px 15px rgba(126, 217, 87, 0.4)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'scale(1)'
+                                e.currentTarget.style.boxShadow = 'none'
+                              }}
+                            >
+                              <img src="/jungle/icon/correct.png" alt="Correct" style={{ width: '24px', height: '24px' }} />
+                              <span style={{
+                                fontFamily: "'Roboto', sans-serif",
+                                fontSize: '14px',
+                                fontWeight: 'bold',
+                                color: '#fff',
+                              }}>
+                                Label Correct
+                              </span>
+                            </button>
+                            
+                            <button
+                              style={{
+                                flex: 1,
+                                padding: '12px',
+                                background: '#ff3131',
+                                border: 'none',
+                                borderRadius: '10px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                transition: 'all 0.2s',
+                              }}
+                              onClick={handleLabelIncorrect}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.transform = 'scale(1.05)'
+                                e.currentTarget.style.boxShadow = '0 4px 15px rgba(255, 49, 49, 0.4)'
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.transform = 'scale(1)'
+                                e.currentTarget.style.boxShadow = 'none'
+                              }}
+                            >
+                              <img src="/jungle/icon/wrong.png" alt="Incorrect" style={{ width: '24px', height: '24px' }} />
+                              <span style={{
+                                fontFamily: "'Roboto', sans-serif",
+                                fontSize: '14px',
+                                fontWeight: 'bold',
+                                color: '#fff',
+                              }}>
+                                Label Incorrect
+                              </span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Download and Save buttons (shown after validation) */}
+                      {!showValidationCard && (
+                        <div style={{
+                          display: 'flex',
+                          gap: '15px',
+                          justifyContent: 'center',
+                        }}>
+                          <button
+                            style={{
+                              flex: 1,
+                              padding: '15px',
+                              background: '#fff',
+                              color: '#333',
+                              border: '2px solid #ccc',
+                              borderRadius: '10px',
+                              fontSize: '16px',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              fontFamily: "'Roboto', sans-serif",
+                              transition: 'all 0.2s',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '8px',
+                            }}
+                            onClick={handleDownloadPhoto}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'scale(1.05)'
+                              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'scale(1)'
+                              e.currentTarget.style.boxShadow = 'none'
+                            }}
+                          >
+                            <img src="/jungle/icon/download.png" alt="Download" style={{ width: '24px', height: '24px' }} />
+                            <span>Download</span>
+                          </button>
+                          
+                          <button
+                            style={{
+                              flex: 1,
+                              padding: '15px',
+                              background: '#006300',
+                              color: '#fff',
+                              border: 'none',
+                              borderRadius: '10px',
+                              fontSize: '16px',
+                              fontWeight: 'bold',
+                              cursor: 'pointer',
+                              fontFamily: "'Roboto', sans-serif",
+                              transition: 'all 0.2s',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '8px',
+                            }}
+                            onClick={handleSaveToJournal}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'scale(1.05)'
+                              e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 99, 0, 0.4)'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'scale(1)'
+                              e.currentTarget.style.boxShadow = 'none'
+                            }}
+                          >
+                            <img src="/jungle/icon/save.png" alt="Save" style={{ width: '24px', height: '24px' }} />
+                            <span>Save</span>
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               </div>
             )}
@@ -4006,16 +5082,263 @@ const DataCleaning = ({ onComplete, onExit }) => {
           <div 
             style={styles.glitchNpc}
             onClick={() => {
-              if (phase === 'NOISE_REMOVAL') {
-                setGlitchHintText("First, look at what you collected. Some of these aren't mushrooms at all! These are what we call 'Noise'.")
-              } else if (phase === 'LABEL_CORRECTION') {
-                setGlitchHintText(BATCH_HINTS[labelBatch])
-              }
-              setShowGlitchHint(true)
+              setShowGlitchChatDialogue(true)
             }}
           >
             <img src="/npc/npc_jungle.png" alt="Glitch" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
+          
+          {/* Glitch Chat Dialogue - Modern Design */}
+          {showGlitchChatDialogue && (
+            <div style={{
+              position: 'absolute',
+              top: '20px',
+              right: '150px',
+              width: '350px',
+              background: 'rgba(255, 255, 255, 0.98)',
+              borderRadius: '15px',
+              padding: '20px',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+              zIndex: 150,
+              border: '3px solid #8B4513',
+            }}>
+              {/* Close button */}
+              <button
+                style={{
+                  position: 'absolute',
+                  top: '15px',
+                  right: '15px',
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '20px',
+                  color: '#999',
+                  cursor: 'pointer',
+                  padding: '5px',
+                  width: '30px',
+                  height: '30px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s',
+                }}
+                onClick={() => {
+                  setShowGlitchChatDialogue(false)
+                  setGlitchChatHistory([])
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.color = '#333'
+                  e.target.style.transform = 'scale(1.1)'
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.color = '#999'
+                  e.target.style.transform = 'scale(1)'
+                }}
+              >
+                ✕
+              </button>
+              
+              {/* Header with avatar and name */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                marginBottom: '15px',
+              }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, #8B4513, #A0522D)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}>
+                  <span style={{ fontSize: '24px' }}>👾</span>
+                </div>
+                <h4 style={{
+                  fontFamily: "'Roboto', sans-serif",
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  color: '#333',
+                  margin: 0,
+                }}>Glitch</h4>
+              </div>
+              
+              {/* Chat history */}
+              <div style={{
+                maxHeight: '300px',
+                overflowY: 'auto',
+                marginBottom: '15px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+              }}>
+                {/* Initial greeting based on phase */}
+                {glitchChatHistory.length === 0 && (
+                  <p style={{
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '14px',
+                    color: '#666',
+                    lineHeight: 1.6,
+                    margin: 0,
+                  }}>
+                    {phase === 'NOISE_REMOVAL' 
+                      ? "First, look at what you collected. Some of these aren't mushrooms at all! These are what we call 'Noise'."
+                      : phase === 'LABEL_CORRECTION'
+                      ? BATCH_HINTS[labelBatch]
+                      : "I'm here to help you with data cleaning and labeling. Ask me anything!"}
+                  </p>
+                )}
+                
+                {/* Chat messages */}
+                {glitchChatHistory.map((message, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: '12px',
+                      background: message.role === 'user' 
+                        ? 'rgba(139, 69, 19, 0.1)' 
+                        : 'rgba(139, 69, 19, 0.05)',
+                      border: message.role === 'user'
+                        ? '1px solid rgba(139, 69, 19, 0.3)'
+                        : '1px solid rgba(139, 69, 19, 0.1)',
+                      alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
+                      maxWidth: '85%',
+                    }}
+                  >
+                    <div style={{
+                      fontSize: '10px',
+                      fontWeight: 'bold',
+                      color: '#8B4513',
+                      marginBottom: '4px',
+                      fontFamily: "'Roboto', sans-serif",
+                    }}>
+                      {message.role === 'user' ? 'YOU' : 'GLITCH'}
+                    </div>
+                    <div style={{
+                      fontSize: '14px',
+                      color: '#333',
+                      lineHeight: 1.5,
+                      fontFamily: "'Roboto', sans-serif",
+                      whiteSpace: 'pre-wrap',
+                    }}>
+                      {message.text}
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Typing indicator */}
+                {isGlitchChatTyping && (
+                  <div style={{
+                    padding: '10px 12px',
+                    borderRadius: '12px',
+                    background: 'rgba(139, 69, 19, 0.05)',
+                    border: '1px solid rgba(139, 69, 19, 0.1)',
+                    alignSelf: 'flex-start',
+                    maxWidth: '85%',
+                  }}>
+                    <div style={{
+                      fontSize: '10px',
+                      fontWeight: 'bold',
+                      color: '#8B4513',
+                      marginBottom: '4px',
+                      fontFamily: "'Roboto', sans-serif",
+                    }}>
+                      GLITCH
+                    </div>
+                    <div style={{
+                      fontSize: '14px',
+                      color: '#999',
+                      fontFamily: "'Roboto', sans-serif",
+                    }}>
+                      <span style={{ animation: 'blink 1.4s infinite' }}>●</span>
+                      <span style={{ animation: 'blink 1.4s infinite 0.2s' }}>●</span>
+                      <span style={{ animation: 'blink 1.4s infinite 0.4s' }}>●</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              
+              {/* Input container */}
+              <div 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '8px 12px',
+                  border: '2px solid #e0e0e0',
+                  borderRadius: '25px',
+                  transition: 'border-color 0.2s',
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#8B4513'
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#e0e0e0'
+                }}
+              >
+                <input
+                  type="text"
+                  placeholder="Ask Glitch anything..."
+                  value={glitchChatInput}
+                  onChange={(e) => setGlitchChatInput(e.target.value)}
+                  onKeyPress={handleGlitchChatInputKeyPress}
+                  disabled={isGlitchChatTyping}
+                  style={{
+                    flex: 1,
+                    padding: '10px 15px',
+                    border: 'none',
+                    background: 'transparent',
+                    fontFamily: "'Roboto', sans-serif",
+                    fontSize: '14px',
+                    color: '#333',
+                    outline: 'none',
+                  }}
+                />
+                <div style={{
+                  width: '2px',
+                  height: '24px',
+                  background: '#e0e0e0',
+                  borderRadius: '1px',
+                  flexShrink: 0,
+                }}></div>
+                <button
+                  onClick={handleGlitchChatSend}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: '0',
+                    cursor: isGlitchChatTyping ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'transform 0.2s',
+                    flexShrink: 0,
+                    opacity: isGlitchChatTyping ? 0.5 : 1,
+                  }}
+                  disabled={isGlitchChatTyping}
+                  onMouseOver={(e) => {
+                    if (!isGlitchChatTyping) e.currentTarget.style.transform = 'scale(1.1)'
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)'
+                  }}
+                >
+                  <img 
+                    src="/icon/send.png" 
+                    alt="Send" 
+                    style={{
+                      width: '24px',
+                      height: '24px',
+                      objectFit: 'contain',
+                    }}
+                  />
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Ranger Moss NPC */}
           <img src="/jungle/npc_c.png" alt="Ranger Moss" style={styles.rangerNpc} />
@@ -5947,7 +7270,9 @@ const DataCleaning = ({ onComplete, onExit }) => {
       )}
 
       {/* Dialogue History - Show until user enters card selection (exclude INTRO phases that use modern dialogue) */}
-      {!showRangerDialogue && dialogueHistory.length > 0 && phase !== 'INTRO' && phase !== 'LABEL_INTRO' && phase !== 'FILL_MISSING_INTRO' && phase !== 'NOISE_REMOVAL' && phase !== 'LABEL_CORRECTION' && phase !== 'FILL_MISSING' && phase !== 'QUIZ' && phase !== 'TRAINING' && phase !== 'VALIDATION_INTRO' && phase !== 'VALIDATION_DATA' && phase !== 'ADJUST_MODEL_INTRO' && phase !== 'ADJUST_MODEL_DATA' && phase !== 'ADJUST_MODEL_TRAINING' && phase !== 'LOADING' && phase !== 'COLOR_MAP_EXPLORATION' && phase !== 'COMPLETE' && phase !== 'PRE_TRAINING_QUIZ' && phase !== 'TRAINING_COMPLETE_QUIZ' && (
+      {!showRangerDialogue && !showModernRangerDialogue && dialogueHistory.length > 0 && (
+        phase === 'NOISE_REMOVAL' || phase === 'LABEL_CORRECTION' || phase === 'FILL_MISSING'
+      ) && (
         <div style={styles.leftDialogueContainer}>
           <div style={styles.dialogueHistoryBox}>
             <p style={styles.speakerName}>Ranger Moss:</p>

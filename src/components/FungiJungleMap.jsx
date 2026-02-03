@@ -81,6 +81,12 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
   const [rangerMossDisplayedText, setRangerMossDisplayedText] = useState('') // For typing effect
   const [rangerMossIsTyping, setRangerMossIsTyping] = useState(false) // Typing state
   const [currentTypingMessage, setCurrentTypingMessage] = useState(null) // Track which message is typing
+  
+  // Glitch NPC states
+  const [showGlitchDialogue, setShowGlitchDialogue] = useState(false)
+  const [glitchInput, setGlitchInput] = useState('')
+  const [glitchChatHistory, setGlitchChatHistory] = useState([])
+  const [isGlitchTyping, setIsGlitchTyping] = useState(false)
 
   // Load saved progress on mount
   useEffect(() => {
@@ -242,6 +248,68 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
         onStartDataCollection()
       }
     }, 500)
+  }
+  
+  // Handle Glitch NPC click
+  const handleGlitchClick = () => {
+    setShowGlitchDialogue(true)
+  }
+  
+  // Handle Glitch chat send
+  const handleGlitchSend = async () => {
+    if (glitchInput.trim()) {
+      const userMessage = glitchInput.trim()
+      console.log('User message to Glitch:', userMessage)
+      
+      // Add user message to chat history
+      setGlitchChatHistory(prev => [...prev, { role: 'user', text: userMessage }])
+      setGlitchInput('') // Clear input after sending
+      setIsGlitchTyping(true) // Show typing indicator
+      
+      try {
+        // Call Gemini API
+        const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=AIzaSyBcXQWrPV9YwtEW44u6JmkaFlmMEtaMTw4', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `You are Glitch, a helpful AI guide in the Fungi Jungle region of an educational game about AI and machine learning. In this region, players learn about data collection, data labeling, and model training. You help them understand concepts like gathering diverse data samples, the importance of clean data, labeling accuracy, and how models learn from data. You're friendly, encouraging, and explain concepts in simple terms. Keep responses concise (2-3 sentences max).\n\nUser question: ${userMessage}`
+              }]
+            }]
+          })
+        })
+        
+        const data = await response.json()
+        
+        if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+          const glitchReply = data.candidates[0].content.parts[0].text
+          
+          // Add Glitch's response to chat history
+          setGlitchChatHistory(prev => [...prev, { role: 'glitch', text: glitchReply }])
+        } else {
+          throw new Error('Invalid API response')
+        }
+      } catch (error) {
+        console.error('Glitch chat error:', error)
+        // Add error message
+        setGlitchChatHistory(prev => [...prev, { 
+          role: 'glitch', 
+          text: "Oops! My circuits are a bit scrambled right now. Try asking me again?" 
+        }])
+      } finally {
+        setIsGlitchTyping(false)
+      }
+    }
+  }
+  
+  // Handle Enter key in input
+  const handleGlitchInputKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleGlitchSend()
+    }
   }
   
   // Format text with bold keywords
@@ -561,6 +629,8 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+      cursor: 'pointer',
+      transition: 'transform 0.2s',
     },
     miniNpcImage: {
       width: '120px',
@@ -932,6 +1002,104 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
       boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
       marginTop: '8px',
     },
+    // Glitch dialogue styles
+    glitchDialogue: {
+      position: 'absolute',
+      top: '20px',
+      right: '150px',
+      width: '350px',
+      background: 'rgba(255, 255, 255, 0.98)',
+      borderRadius: '15px',
+      padding: '20px',
+      boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+      zIndex: 150,
+      border: '3px solid #8B4513',
+    },
+    glitchDialogueHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      marginBottom: '15px',
+    },
+    glitchDialogueAvatar: {
+      width: '40px',
+      height: '40px',
+      borderRadius: '50%',
+      background: 'linear-gradient(135deg, #8B4513, #A0522D)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+    },
+    glitchDialogueAvatarIcon: {
+      fontSize: '24px',
+    },
+    glitchDialogueName: {
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '16px',
+      fontWeight: 600,
+      color: '#333',
+      margin: 0,
+    },
+    glitchDialogueCloseButton: {
+      position: 'absolute',
+      top: '15px',
+      right: '15px',
+      background: 'none',
+      border: 'none',
+      fontSize: '20px',
+      color: '#999',
+      cursor: 'pointer',
+      padding: '5px',
+      width: '30px',
+      height: '30px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'all 0.2s',
+    },
+    glitchDialogueInputContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      padding: '8px 12px',
+      border: '2px solid #e0e0e0',
+      borderRadius: '25px',
+      transition: 'border-color 0.2s',
+    },
+    glitchDialogueInput: {
+      flex: 1,
+      padding: '10px 15px',
+      border: 'none',
+      background: 'transparent',
+      fontFamily: "'Roboto', sans-serif",
+      fontSize: '14px',
+      color: '#333',
+      outline: 'none',
+    },
+    glitchDialogueDivider: {
+      width: '2px',
+      height: '24px',
+      background: '#e0e0e0',
+      borderRadius: '1px',
+      flexShrink: 0,
+    },
+    glitchDialogueSendButton: {
+      background: 'none',
+      border: 'none',
+      padding: '0',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: 'transform 0.2s',
+      flexShrink: 0,
+    },
+    glitchDialogueSendIcon: {
+      width: '24px',
+      height: '24px',
+      objectFit: 'contain',
+    },
   }
 
   const renderDialogue = () => {
@@ -1079,6 +1247,14 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
 
   return (
     <div style={styles.container}>
+      <style>
+        {`
+          @keyframes blink {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+          }
+        `}
+      </style>
       <div style={styles.mapContainer}>
         <img 
           src="/jungle/map_full.png"
@@ -1105,13 +1281,185 @@ const FungiJungleMap = ({ onExit, onStartDataCollection }) => {
       </button>
 
       {/* Mini Glitch NPC */}
-      <div style={styles.miniNpc}>
+      <div 
+        style={styles.miniNpc}
+        onClick={handleGlitchClick}
+        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+      >
         <img 
           src="/npc/npc_jungle.png"
           alt="Glitch"
           style={styles.miniNpcImage}
         />
       </div>
+      
+      {/* Glitch Dialogue */}
+      {showGlitchDialogue && (
+        <div style={styles.glitchDialogue}>
+          {/* Close button */}
+          <button
+            style={styles.glitchDialogueCloseButton}
+            onClick={() => {
+              setShowGlitchDialogue(false)
+              setGlitchChatHistory([]) // Clear chat history when closing
+            }}
+            onMouseOver={(e) => {
+              e.target.style.color = '#333'
+              e.target.style.transform = 'scale(1.1)'
+            }}
+            onMouseOut={(e) => {
+              e.target.style.color = '#999'
+              e.target.style.transform = 'scale(1)'
+            }}
+          >
+            ✕
+          </button>
+          
+          {/* Header with avatar and name */}
+          <div style={styles.glitchDialogueHeader}>
+            <div style={styles.glitchDialogueAvatar}>
+              <span style={styles.glitchDialogueAvatarIcon}>👾</span>
+            </div>
+            <h4 style={styles.glitchDialogueName}>Glitch</h4>
+          </div>
+          
+          {/* Chat history */}
+          <div style={{
+            maxHeight: '300px',
+            overflowY: 'auto',
+            marginBottom: '15px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+          }}>
+            {/* Initial greeting if no chat history */}
+            {glitchChatHistory.length === 0 && (
+              <p style={{
+                fontFamily: "'Roboto', sans-serif",
+                fontSize: '14px',
+                color: '#666',
+                lineHeight: 1.6,
+                margin: 0,
+              }}>
+                Welcome to Fungi Jungle! I'm here to help you learn about data collection and model training.
+              </p>
+            )}
+            
+            {/* Chat messages */}
+            {glitchChatHistory.map((message, index) => (
+              <div
+                key={index}
+                style={{
+                  padding: '10px 12px',
+                  borderRadius: '12px',
+                  background: message.role === 'user' 
+                    ? 'rgba(139, 69, 19, 0.1)' 
+                    : 'rgba(139, 69, 19, 0.05)',
+                  border: message.role === 'user'
+                    ? '1px solid rgba(139, 69, 19, 0.3)'
+                    : '1px solid rgba(139, 69, 19, 0.1)',
+                  alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
+                  maxWidth: '85%',
+                }}
+              >
+                <div style={{
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: '#8B4513',
+                  marginBottom: '4px',
+                  fontFamily: "'Roboto', sans-serif",
+                }}>
+                  {message.role === 'user' ? 'YOU' : 'GLITCH'}
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#333',
+                  lineHeight: 1.5,
+                  fontFamily: "'Roboto', sans-serif",
+                  whiteSpace: 'pre-wrap',
+                }}>
+                  {message.text}
+                </div>
+              </div>
+            ))}
+            
+            {/* Typing indicator */}
+            {isGlitchTyping && (
+              <div style={{
+                padding: '10px 12px',
+                borderRadius: '12px',
+                background: 'rgba(139, 69, 19, 0.05)',
+                border: '1px solid rgba(139, 69, 19, 0.1)',
+                alignSelf: 'flex-start',
+                maxWidth: '85%',
+              }}>
+                <div style={{
+                  fontSize: '10px',
+                  fontWeight: 'bold',
+                  color: '#8B4513',
+                  marginBottom: '4px',
+                  fontFamily: "'Roboto', sans-serif",
+                }}>
+                  GLITCH
+                </div>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#999',
+                  fontFamily: "'Roboto', sans-serif",
+                }}>
+                  <span style={{ animation: 'blink 1.4s infinite' }}>●</span>
+                  <span style={{ animation: 'blink 1.4s infinite 0.2s' }}>●</span>
+                  <span style={{ animation: 'blink 1.4s infinite 0.4s' }}>●</span>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Input container */}
+          <div 
+            style={styles.glitchDialogueInputContainer}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = '#8B4513'
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = '#e0e0e0'
+            }}
+          >
+            <input
+              type="text"
+              placeholder="Ask Glitch anything..."
+              value={glitchInput}
+              onChange={(e) => setGlitchInput(e.target.value)}
+              onKeyPress={handleGlitchInputKeyPress}
+              disabled={isGlitchTyping}
+              style={styles.glitchDialogueInput}
+            />
+            <div style={styles.glitchDialogueDivider}></div>
+            <button
+              onClick={handleGlitchSend}
+              style={{
+                ...styles.glitchDialogueSendButton,
+                opacity: isGlitchTyping ? 0.5 : 1,
+                cursor: isGlitchTyping ? 'not-allowed' : 'pointer',
+              }}
+              disabled={isGlitchTyping}
+              onMouseOver={(e) => {
+                if (!isGlitchTyping) e.currentTarget.style.transform = 'scale(1.1)'
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'scale(1)'
+              }}
+            >
+              <img 
+                src="/icon/send.png" 
+                alt="Send" 
+                style={styles.glitchDialogueSendIcon}
+              />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Navigation Arrows */}
       {availableDirections.up !== undefined && (
