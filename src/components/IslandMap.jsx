@@ -4549,25 +4549,39 @@ const IslandMap = ({ onExit }) => {
                 }
                 
                 if (message.type === 'animation' || message.type === 'image') {
-                  // 检查是否是standard或cake图片，如果是则缩小高度
-                  const isSmallImage = message.src.includes('standard.png') || message.src.includes('cake.png')
+                  // 检查是否是standard、cake或human图片，如果是则使用长方形卡片
+                  const isRectangleCard = message.src.includes('standard.png') || 
+                                         message.src.includes('cake.png') || 
+                                         message.src.includes('human.png')
                   
                   return (
                     <div key={index} style={{
                       ...styles.modernNpcMessage, 
                       textAlign: 'center',
-                      padding: isSmallImage ? '10px 0' : '20px 0', // 减少上下padding
+                      maxWidth: isRectangleCard ? '90%' : '80%', // 长方形卡片更宽
                     }}>
-                      <img 
-                        src={message.src} 
-                        alt={message.alt}
-                        style={{
-                          maxWidth: isSmallImage ? '60%' : '100%', // standard和cake缩小到60%
-                          height: 'auto', 
-                          borderRadius: '12px', 
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                        }}
-                      />
+                      <div style={{
+                        background: 'white',
+                        borderRadius: '12px',
+                        padding: isRectangleCard ? '15px 30px' : '20px', // 长方形卡片：上下padding小，左右padding大
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minHeight: isRectangleCard ? '120px' : 'auto', // 长方形卡片固定较小高度
+                      }}>
+                        <img 
+                          src={message.src} 
+                          alt={message.alt}
+                          style={{
+                            maxWidth: '100%',
+                            maxHeight: isRectangleCard ? '90px' : 'none', // 限制长方形卡片中图片的高度
+                            height: 'auto',
+                            width: 'auto',
+                            objectFit: 'contain',
+                          }}
+                        />
+                      </div>
                     </div>
                   )
                 }
