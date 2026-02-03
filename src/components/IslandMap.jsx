@@ -1178,14 +1178,21 @@ const IslandMap = ({ onExit }) => {
   useEffect(() => {
     if (phase2CompletedMissions.length === 5 && !phase2Completed && phase2Active) {
       setPhase2Completed(true)
-      // Show Glitch completion message
+      // Automatically trigger final Sparky dialogue after a short delay
       setTimeout(() => {
-        setCurrentDialogue({
-          text: t('phase2Complete'),
-          speaker: 'Glitch'
-        })
-        setShowDialogue(true)
-      }, 1000)
+        setShowFinalSparkyDialogue(true)
+        setShowSparkyDialogue(true)
+        setSparkyMessages([])
+        setFinalDialogueStep(0)
+        setWaitingForChoice(false)
+        
+        // Start the final dialogue flow
+        const finalDialogueFlow = getFinalSparkyDialogueFlow(t)
+        const firstItem = finalDialogueFlow[0]
+        if (firstItem) {
+          addFinalSparkyMessage(firstItem)
+        }
+      }, 2000)
     }
   }, [phase2CompletedMissions, phase2Completed, phase2Active])
 
