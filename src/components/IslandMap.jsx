@@ -294,7 +294,7 @@ const getPhase2MissionNpcs = (t) => ({
     id: 'npc6_p2', 
     image: '/island/npc/npc6.png', 
     size: '170px', 
-    position: { left: '45%', top: '30%' }, // 调整位置
+    position: { left: '45%', top: 'calc(30% - 50px)' }, // 向上移动50px
     question: "Paint a wooden boat resting on the beach",
     missionImage: '/island/mission/img19.png',
     correctAnswer: 'passed', // 修改为passed
@@ -1123,6 +1123,13 @@ const IslandMap = ({ onExit }) => {
   const [shakeGenAIBtn, setShakeGenAIBtn] = useState(false) // Shake GenAI button on wrong answer
   const [showReloading, setShowReloading] = useState(false) // Show reloading screen
   const [islandRestored, setIslandRestored] = useState(false) // Track if island is restored to color
+  
+  // Generated boat images for NPC5_P2 and NPC10_P2
+  const [generatedBoatImages, setGeneratedBoatImages] = useState({
+    npc5_p2: null,
+    npc10_p2: null
+  })
+  const [isGeneratingBoat, setIsGeneratingBoat] = useState(false)
 
   // Helper function to get NPC status icon
   const getNpcStatusIcon = (npcId) => {
@@ -1241,6 +1248,69 @@ const IslandMap = ({ onExit }) => {
       }
     }
   }, [])
+
+  // Generate boat illustration using Gemini API
+  const generateBoatIllustration = async (npcId) => {
+    if (generatedBoatImages[npcId] || isGeneratingBoat) {
+      return generatedBoatImages[npcId]
+    }
+    
+    setIsGeneratingBoat(true)
+    
+    try {
+      const response = await fetch(
+        `${getGeminiUrl()}&key=${import.meta.env.VITE_GEMINI_API_KEY}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: "Generate a simple illustration of a wooden boat resting on a beach. The style should be clean, minimalist, and suitable for a game interface. No text or labels."
+              }]
+            }],
+            generationConfig: {
+              temperature: 0.9,
+              topK: 40,
+              topP: 0.95,
+              maxOutputTokens: 1024,
+            }
+          })
+        }
+      )
+      
+      if (!response.ok) {
+        throw new Error('API call failed')
+      }
+      
+      const data = await response.json()
+      
+      // Check if response contains image data
+      if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.inlineData) {
+        const imageData = data.candidates[0].content.parts[0].inlineData
+        const imageUrl = `data:${imageData.mimeType};base64,${imageData.data}`
+        
+        setGeneratedBoatImages(prev => ({
+          ...prev,
+          [npcId]: imageUrl
+        }))
+        
+        setIsGeneratingBoat(false)
+        return imageUrl
+      } else {
+        throw new Error('No image data in response')
+      }
+    } catch (error) {
+      console.error('Failed to generate boat illustration:', error)
+      setIsGeneratingBoat(false)
+      
+      // Return fallback image
+      return npcId === 'npc5_p2' ? '/island/mission/img20.png' : '/island/mission/img17.png'
+    }
+  }
+
   
   // Handle Sparky typing sound
   useEffect(() => {
@@ -1730,7 +1800,7 @@ const IslandMap = ({ onExit }) => {
     }, 3300)
   }
 
-  const handleMissionNpcClick = (npcId) => {
+  const handleMissionNpcClick = async (npcId) => {
     console.log('handleMissionNpcClick called with npcId:', npcId)
     console.log('missionActive:', missionActive)
     console.log('phase2Active:', phase2Active)
@@ -1772,10 +1842,21 @@ const IslandMap = ({ onExit }) => {
     setNpcResponseText('')
     setIsNpcTyping(false)
     
+    // Generate boat illustration for NPC5_P2 and NPC10_P2, or use existing image
+    let imageToShow = npc.missionImage
+    if ((npcId === 'npc5_p2' || npcId === 'npc10_p2') && npc.question.includes('boat')) {
+      // Try to use cached image first, or generate new one
+      if (generatedBoatImages[npcId]) {
+        imageToShow = generatedBoatImages[npcId]
+      } else {
+        imageToShow = await generateBoatIllustration(npcId)
+      }
+    }
+    
     // Start conversation flow for Island 1
     const messages = [
       { speaker: 'you', text: npc.question, timestamp: getCurrentTimestamp() },
-      { speaker: 'npc', text: 'Sure! Let me show you...', timestamp: getCurrentTimestamp(), hasImage: true, image: npc.missionImage }
+      { speaker: 'npc', text: 'Sure! Let me show you...', timestamp: getCurrentTimestamp(), hasImage: true, image: imageToShow }
     ]
     
     setTimeout(() => {
@@ -4554,36 +4635,55 @@ const IslandMap = ({ onExit }) => {
                                          message.src.includes('cake.png') || 
                                          message.src.includes('human.png')
                   
-                  return (
-                    <div key={index} style={{
-                      ...styles.modernNpcMessage, 
-                      textAlign: 'center',
-                      maxWidth: isRectangleCard ? '90%' : '80%', // 长方形卡片更宽
-                    }}>
-                      <div style={{
-                        background: 'white',
-                        borderRadius: '12px',
-                        padding: isRectangleCard ? '15px 30px' : '20px', // 长方形卡片：上下padding小，左右padding大
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  if (isRectangleCard) {
+                    // 长方形卡片布局 - 左对齐，卡片紧贴图片
+                    return (
+                      <div key={index} style={{
+                        width: '100%',
                         display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        minHeight: isRectangleCard ? '120px' : 'auto', // 长方形卡片固定较小高度
+                        justifyContent: 'flex-start', // 左对齐
+                        padding: '10px 0',
                       }}>
+                        <div style={{
+                          background: 'white',
+                          borderRadius: '12px',
+                          padding: '15px 20px', // 上下15px，左右20px
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          maxWidth: '500px', // 限制最大宽度
+                        }}>
+                          <img 
+                            src={message.src} 
+                            alt={message.alt}
+                            style={{
+                              width: '450px', // 固定宽度450px（横向）
+                              height: 'auto', // 高度自动
+                              display: 'block',
+                              objectFit: 'contain',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  } else {
+                    // 普通图片布局（保持原样）
+                    return (
+                      <div key={index} style={{...styles.modernNpcMessage, textAlign: 'center'}}>
                         <img 
                           src={message.src} 
                           alt={message.alt}
                           style={{
                             maxWidth: '100%',
-                            maxHeight: isRectangleCard ? '90px' : 'none', // 限制长方形卡片中图片的高度
                             height: 'auto',
-                            width: 'auto',
-                            objectFit: 'contain',
+                            borderRadius: '12px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                           }}
                         />
                       </div>
-                    </div>
-                  )
+                    )
+                  }
                 }
                 
                 if (message.type === 'quiz_feedback') {
