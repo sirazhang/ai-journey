@@ -2,30 +2,19 @@ import React, { useState, useEffect } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
 import YourProgress from './YourProgress'
 import { getGeminiUrl } from '../config/api'
+import volumeManager from '../utils/volumeManager'
 
-// Simple sound effect function
+// Simple sound effect function with volume manager
 const playSelectSound = () => {
   try {
     const audio = new Audio('/sound/select.mp3')
-    audio.volume = 0.6
+    const systemVolume = volumeManager.isMutedStatus() ? 0 : volumeManager.getVolume() / 100
+    audio.volume = systemVolume * 0.6
     audio.play().catch(error => {
       console.log('Could not play select sound:', error)
     })
   } catch (error) {
     console.log('Error creating select audio:', error)
-  }
-}
-
-// NPC Glitch dialogue sound effect
-const playHumSound = () => {
-  try {
-    const audio = new Audio('/sound/hum.mp3')
-    audio.volume = 0.5
-    audio.play().catch(error => {
-      console.log('Could not play hum sound:', error)
-    })
-  } catch (error) {
-    console.log('Error creating hum audio:', error)
   }
 }
 
@@ -440,11 +429,11 @@ const MapView = ({ onRegionClick }) => {
       transition: 'transform 0.3s ease',
       animation: hoveredNpc ? 'breathe 1s ease-in-out infinite' : 'none',
     },
-    // About Me button in bottom-right corner
+    // About Me button in top-left corner
     aboutMeButton: {
       position: 'absolute',
-      bottom: '5%',
-      right: '5%',
+      top: '5%',
+      left: '5%',
       display: 'flex',
       alignItems: 'center',
       gap: '8px',
@@ -952,7 +941,7 @@ const MapView = ({ onRegionClick }) => {
         </button>
       )}
       
-      {/* About Me Button in bottom-right */}
+      {/* About Me Button in top-left */}
       {!isZooming && (
         <a
           href="https://sirazhang.github.io"
@@ -960,6 +949,10 @@ const MapView = ({ onRegionClick }) => {
           rel="noopener noreferrer"
           style={{
             ...styles.aboutMeButton,
+            top: '5%',
+            left: '5%',
+            bottom: 'auto',
+            right: 'auto',
             opacity: (isCardShowing || isZooming) ? 0 : 1,
             pointerEvents: (isCardShowing || isZooming) ? 'none' : 'auto',
           }}

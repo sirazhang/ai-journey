@@ -1,12 +1,26 @@
 import { useCallback } from 'react'
+import volumeManager from '../utils/volumeManager'
 
 const useSoundEffects = () => {
-  const playSound = useCallback((soundFile, volume = 0.5) => {
+  const playSound = useCallback((soundFile, baseVolume = 0.5) => {
     try {
       const audio = new Audio(soundFile)
-      audio.volume = volume
+      
+      // Register with volume manager to apply system volume
+      volumeManager.registerAudio(audio)
+      
+      // Apply base volume multiplier (the audio element's volume is already set by volumeManager)
+      // We need to adjust it by the base volume
+      const systemVolume = volumeManager.isMutedStatus() ? 0 : volumeManager.getVolume() / 100
+      audio.volume = systemVolume * baseVolume
+      
       audio.play().catch(error => {
         console.log('Could not play sound effect:', error)
+      })
+      
+      // Unregister after playing
+      audio.addEventListener('ended', () => {
+        volumeManager.unregisterAudio(audio)
       })
     } catch (error) {
       console.log('Error creating audio:', error)

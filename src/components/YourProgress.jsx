@@ -388,7 +388,7 @@ const YourProgress = ({ isOpen, onClose }) => {
               gap: '16px',
               rowGap: '32px',
               justifyItems: 'center',
-              marginTop: '40px',
+              marginTop: '10px',
               maxWidth: '200px',
               marginLeft: 'auto',
               marginRight: 'auto'
