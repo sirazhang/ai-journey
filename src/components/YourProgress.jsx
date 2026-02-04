@@ -37,6 +37,13 @@ const YourProgress = ({ isOpen, onClose }) => {
     }, 300)
   }
 
+  const handleToggle = () => {
+    playSelectSound()
+    if (isExpanded) {
+      handleClose()
+    }
+  }
+
   const openApp = (appId) => {
     playSelectSound()
     setActiveApp(appId)
@@ -49,10 +56,10 @@ const YourProgress = ({ isOpen, onClose }) => {
 
   // App configurations
   const apps = [
-    { id: 'photos', name: 'Vision Log', icon: Aperture, color: 'linear-gradient(135deg, #fbbf24 0%, #f43f5e 50%, #a855f7 100%)' },
-    { id: 'assistant', name: 'NPC Link', icon: MessageCircle, color: '#10b981', badge: 3 },
-    { id: 'mail', name: 'Report', icon: MailIcon, color: '#fbbf24', badge: 5 },
-    { id: 'notes', name: 'Review', icon: StickyNote, color: '#f97316' },
+    { id: 'photos', name: 'Vision Log', icon: Aperture, color: 'linear-gradient(135deg, #fbbf24 0%, #f43f5e 50%, #a855f7 100%)', iconSize: 26 },
+    { id: 'assistant', name: 'NPC Link', icon: MessageCircle, color: '#10b981', badge: 3, iconSize: 26 },
+    { id: 'mail', name: 'Report', icon: MailIcon, color: '#fbbf24', badge: 5, iconSize: 26 },
+    { id: 'notes', name: 'Review', icon: StickyNote, color: '#f97316', iconSize: 26 },
   ]
 
   const renderApp = () => {
@@ -71,24 +78,18 @@ const YourProgress = ({ isOpen, onClose }) => {
   }
 
   return (
-    <div style={styles.overlay}>
+    <div style={styles.overlay} onClick={handleToggle}>
       <motion.div
-        initial={{ scale: 0.3, opacity: 0, x: 300, y: 300 }}
+        initial={{ scale: 0.2, opacity: 0 }}
         animate={{ 
-          scale: isExpanded ? 1 : 0.3, 
+          scale: isExpanded ? 1 : 0.2, 
           opacity: isExpanded ? 1 : 0,
-          x: isExpanded ? 0 : 300,
-          y: isExpanded ? 0 : 300
         }}
-        exit={{ scale: 0.3, opacity: 0, x: 300, y: 300 }}
+        exit={{ scale: 0.2, opacity: 0 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
         style={styles.phoneFrame}
+        onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
-        <button style={styles.closeButton} onClick={handleClose}>
-          <X size={20} color="#fff" />
-        </button>
-
         {/* Screen */}
         <div style={styles.screen}>
           {/* Status Bar */}
@@ -118,7 +119,7 @@ const YourProgress = ({ isOpen, onClose }) => {
                       ...styles.appIcon,
                       background: app.color
                     }}>
-                      <app.icon size={32} color="#fff" />
+                      <app.icon size={app.iconSize || 26} color="#fff" />
                       {app.badge && (
                         <div style={styles.badge}>{app.badge}</div>
                       )}
@@ -206,37 +207,25 @@ const styles = {
     left: 0,
     width: '100%',
     height: '100%',
-    background: 'rgba(0, 0, 0, 0.7)',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'flex-end',
+    justifyContent: 'flex-start',
     zIndex: 10000,
+    pointerEvents: 'auto',
   },
   phoneFrame: {
-    position: 'relative',
-    width: '375px',
-    height: '812px',
-    background: '#000',
-    borderRadius: '50px',
-    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8)',
-    border: '8px solid #1f1f1f',
-    overflow: 'hidden',
-  },
-  closeButton: {
     position: 'absolute',
-    top: '-50px',
-    right: '0',
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    background: 'rgba(255, 255, 255, 0.2)',
-    border: 'none',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 10001,
-    transition: 'all 0.2s',
+    bottom: '80px', // 定位在按钮上方
+    left: '5%',
+    width: '280px', // 缩小宽度
+    height: '75vh', // 75%视口高度
+    maxHeight: '600px', // 最大高度限制
+    background: '#000',
+    borderRadius: '40px',
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8)',
+    border: '6px solid #1f1f1f',
+    overflow: 'hidden',
+    transformOrigin: 'bottom left', // 从左下角展开
   },
   screen: {
     width: '100%',
@@ -250,58 +239,60 @@ const styles = {
     top: 0,
     left: 0,
     right: 0,
-    height: '44px',
+    height: '35px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '0 20px',
+    padding: '0 15px',
     color: '#fff',
-    fontSize: '14px',
+    fontSize: '11px',
     fontWeight: '600',
     zIndex: 100,
   },
   statusTime: {
     flex: 1,
+    fontSize: '11px',
   },
   notch: {
-    width: '150px',
-    height: '30px',
+    width: '120px',
+    height: '25px',
     background: '#000',
-    borderRadius: '0 0 20px 20px',
+    borderRadius: '0 0 15px 15px',
   },
   statusIcons: {
     flex: 1,
     display: 'flex',
     justifyContent: 'flex-end',
-    gap: '5px',
+    gap: '4px',
+    fontSize: '11px',
   },
   homeScreen: {
     width: '100%',
     height: '100%',
-    padding: '60px 20px 20px',
+    padding: '45px 15px 15px',
     display: 'flex',
     flexDirection: 'column',
   },
   timeDisplay: {
     textAlign: 'center',
     color: '#fff',
-    marginBottom: '40px',
+    marginBottom: '30px',
   },
   timeDate: {
-    fontSize: '16px',
+    fontSize: '13px',
     fontWeight: '500',
-    marginBottom: '8px',
+    marginBottom: '6px',
   },
   timeLarge: {
-    fontSize: '72px',
+    fontSize: '56px',
     fontWeight: '700',
     lineHeight: 1,
   },
   appGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',
-    gap: '20px',
-    padding: '20px 0',
+    gap: '15px',
+    padding: '15px 0',
   },
   appIconContainer: {
     display: 'flex',
@@ -312,42 +303,42 @@ const styles = {
   },
   appIcon: {
     position: 'relative',
-    width: '60px',
-    height: '60px',
-    borderRadius: '14px',
+    width: '50px',
+    height: '50px',
+    borderRadius: '12px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: '8px',
+    marginBottom: '6px',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
   },
   badge: {
     position: 'absolute',
-    top: '-5px',
-    right: '-5px',
+    top: '-4px',
+    right: '-4px',
     background: '#ff3b30',
     color: '#fff',
-    borderRadius: '10px',
-    padding: '2px 6px',
-    fontSize: '10px',
+    borderRadius: '8px',
+    padding: '1px 5px',
+    fontSize: '9px',
     fontWeight: '700',
     border: '2px solid #000',
   },
   appName: {
     color: '#fff',
-    fontSize: '11px',
+    fontSize: '9px',
     textAlign: 'center',
     fontWeight: '500',
   },
   homeBar: {
     position: 'absolute',
-    bottom: '8px',
+    bottom: '6px',
     left: '50%',
     transform: 'translateX(-50%)',
-    width: '120px',
-    height: '5px',
+    width: '100px',
+    height: '4px',
     background: 'rgba(255, 255, 255, 0.5)',
-    borderRadius: '3px',
+    borderRadius: '2px',
     cursor: 'pointer',
   },
   appContainer: {
@@ -366,26 +357,26 @@ const styles = {
     flexDirection: 'column',
   },
   appHeader: {
-    padding: '60px 20px 20px',
+    padding: '45px 15px 15px',
     background: '#f5f5f7',
     borderBottom: '1px solid #e5e5e7',
   },
   appTitle: {
-    fontSize: '28px',
+    fontSize: '22px',
     fontWeight: '700',
     color: '#1d1d1f',
     margin: 0,
   },
   appBody: {
     flex: 1,
-    padding: '20px',
+    padding: '15px',
     overflowY: 'auto',
   },
   placeholder: {
     textAlign: 'center',
     color: '#86868b',
-    fontSize: '16px',
-    marginTop: '40px',
+    fontSize: '13px',
+    marginTop: '30px',
   },
 }
 
