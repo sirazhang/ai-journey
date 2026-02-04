@@ -9,6 +9,7 @@ import DataCleaning from './components/DataCleaning'
 import DesertMap from './components/DesertMap'
 import IslandMap from './components/IslandMap'
 import GlacierMap from './components/GlacierMap'
+import CentralCity from './components/CentralCity'
 import useBackgroundMusic from './hooks/useBackgroundMusic'
 import { LanguageProvider } from './contexts/LanguageContext'
 
@@ -39,6 +40,8 @@ function App() {
         return '/sound/island.mp3'
       case 'glacierMap':
         return '/sound/glacier.mp3'
+      case 'centralCity':
+        return '/sound/city.wav'
       default:
         return '/sound/spaceship.mp3'
     }
@@ -268,6 +271,19 @@ function App() {
       // Go to Glacier map
       saveProgress('glacierMap')
       setCurrentScreen('glacierMap')
+    } else if (region === 'centralCity') {
+      if (startOver) {
+        // Clear Central City progress if needed
+        const savedUser = localStorage.getItem('aiJourneyUser')
+        if (savedUser) {
+          const userData = JSON.parse(savedUser)
+          userData.centralCityProgress = null
+          localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+        }
+      }
+      // Go to Central City
+      saveProgress('centralCity')
+      setCurrentScreen('centralCity')
     }
   }
 
@@ -355,6 +371,15 @@ function App() {
 
         {currentScreen === 'glacierMap' && (
           <GlacierMap 
+            onExit={() => {
+              saveProgress('map')
+              setCurrentScreen('map')
+            }}
+          />
+        )}
+
+        {currentScreen === 'centralCity' && (
+          <CentralCity 
             onExit={() => {
               saveProgress('map')
               setCurrentScreen('map')

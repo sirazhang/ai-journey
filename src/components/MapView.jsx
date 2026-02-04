@@ -85,7 +85,7 @@ const getRegions = (t) => [
     cardPosition: { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' },
     description: t('centralCityDescription'),
     difficulty: t('expertDifficulty'),
-    available: false, // Locked until all 4 regions complete
+    available: true, // Changed to true to show Enter button
   },
 ]
 
@@ -1317,7 +1317,7 @@ const MapView = ({ onRegionClick }) => {
           
           {getHoveredRegionData()?.available ? (
             <>
-              {/* Show "Start" if no progress, "Continue" if there is progress */}
+              {/* Show "Enter" for Central City, "Start" if no progress, "Continue" if there is progress */}
               <button 
                 style={styles.goButton}
                 onClick={() => {
@@ -1335,7 +1335,7 @@ const MapView = ({ onRegionClick }) => {
                   e.target.style.transform = 'scale(1)'
                 }}
               >
-                {regionProgress[selectedRegion] === 0 ? t('start') : t('continue')}
+                {selectedRegion === 'centralCity' ? 'Enter' : (regionProgress[selectedRegion] === 0 ? t('start') : t('continue'))}
               </button>
               
               {/* Show "Start Over" button only if there is progress */}

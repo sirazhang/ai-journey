@@ -1053,6 +1053,7 @@ const IslandMap = ({ onExit }) => {
   const [isTyping, setIsTyping] = useState(false)
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0) // Track current dialogue index
   const [currentDialogueIsland, setCurrentDialogueIsland] = useState(null) // Track which island's dialogue is active
+  const [clickedNpcPosition, setClickedNpcPosition] = useState(null) // Track clicked NPC position for dialogue positioning
   
   // Glitch dialogue states (modern design with input)
   const [showGlitchDialogue, setShowGlitchDialogue] = useState(false)
@@ -2760,6 +2761,7 @@ const IslandMap = ({ onExit }) => {
                   speaker: 'NPC'
                 })
                 setCurrentDialogueIsland(ISLANDS.ISLAND_1)
+                setClickedNpcPosition({ right: '15%', top: '10%', size: '220px' })
                 setShowDialogue(true)
               }
             },
@@ -2774,6 +2776,7 @@ const IslandMap = ({ onExit }) => {
                   speaker: 'NPC'
                 })
                 setCurrentDialogueIsland(ISLANDS.ISLAND_1)
+                setClickedNpcPosition({ left: '15%', bottom: '20%', size: '150px' })
                 setShowDialogue(true)
               }
             },
@@ -2788,6 +2791,7 @@ const IslandMap = ({ onExit }) => {
                   speaker: 'NPC'
                 })
                 setCurrentDialogueIsland(ISLANDS.ISLAND_1)
+                setClickedNpcPosition({ left: '50%', bottom: '35%', size: '160px' })
                 setShowDialogue(true)
               }
             },
@@ -2802,6 +2806,7 @@ const IslandMap = ({ onExit }) => {
                   speaker: 'NPC'
                 })
                 setCurrentDialogueIsland(ISLANDS.ISLAND_1)
+                setClickedNpcPosition({ right: '10%', bottom: '5%', size: '250px' })
                 setShowDialogue(true)
               }
             }
@@ -2819,6 +2824,7 @@ const IslandMap = ({ onExit }) => {
                   speaker: 'NPC'
                 })
                 setCurrentDialogueIsland(ISLANDS.ISLAND_2)
+                setClickedNpcPosition({ left: '5%', top: '10%', size: '200px' })
                 setShowDialogue(true)
               }
             },
@@ -2833,6 +2839,7 @@ const IslandMap = ({ onExit }) => {
                   speaker: 'NPC'
                 })
                 setCurrentDialogueIsland(ISLANDS.ISLAND_2)
+                setClickedNpcPosition({ right: '20%', bottom: '20%', size: '200px' })
                 setShowDialogue(true)
               }
             }
@@ -2850,6 +2857,7 @@ const IslandMap = ({ onExit }) => {
                   speaker: 'NPC'
                 })
                 setCurrentDialogueIsland(ISLANDS.ISLAND_3)
+                setClickedNpcPosition({ right: '5%', bottom: '10%', size: '200px' })
                 setShowDialogue(true)
               }
             },
@@ -2864,6 +2872,7 @@ const IslandMap = ({ onExit }) => {
                   speaker: 'NPC'
                 })
                 setCurrentDialogueIsland(ISLANDS.ISLAND_3)
+                setClickedNpcPosition({ left: '10%', bottom: '5%', size: '150px' })
                 setShowDialogue(true)
               }
             },
@@ -2878,6 +2887,7 @@ const IslandMap = ({ onExit }) => {
                   speaker: 'NPC'
                 })
                 setCurrentDialogueIsland(ISLANDS.ISLAND_3)
+                setClickedNpcPosition({ right: '10%', top: '10%', size: '200px' })
                 setShowDialogue(true)
               }
             },
@@ -2892,6 +2902,7 @@ const IslandMap = ({ onExit }) => {
                   speaker: 'NPC'
                 })
                 setCurrentDialogueIsland(ISLANDS.ISLAND_3)
+                setClickedNpcPosition({ left: '10%', top: '15%', size: '250px' })
                 setShowDialogue(true)
               }
             }
@@ -4346,54 +4357,76 @@ const IslandMap = ({ onExit }) => {
       {showDialogue && currentDialogue && currentDialogue.speaker !== 'Glitch' && (
         <div style={{
           ...styles.dialogueContainer,
-          // Position based on island
-          ...(currentDialogueIsland === ISLANDS.ISLAND_1 && {
-            right: 'calc(15% + 350px + 20px)', // Right side of NPC1
-            bottom: '15%',
-            left: 'auto',
-            top: 'auto'
-          }),
-          ...(currentDialogueIsland === ISLANDS.ISLAND_2 && {
-            left: '15%',
-            bottom: 'calc(10% + 300px + 20px)', // Top of NPC2
-            right: 'auto',
-            top: 'auto'
-          }),
-          ...(currentDialogueIsland === ISLANDS.ISLAND_3 && {
-            left: 'calc(15% + 300px + 20px)', // Right side of NPC3
-            bottom: '30%',
-            right: 'auto',
-            top: 'auto'
+          // Dynamic position based on clicked NPC position (near top-left of NPC)
+          ...(clickedNpcPosition && islandRestored ? {
+            // Position dialogue near top-left of NPC
+            ...(clickedNpcPosition.left && {
+              left: `calc(${clickedNpcPosition.left} + ${clickedNpcPosition.size} + 20px)`,
+              right: 'auto'
+            }),
+            ...(clickedNpcPosition.right && {
+              right: `calc(${clickedNpcPosition.right} + ${clickedNpcPosition.size} + 20px)`,
+              left: 'auto'
+            }),
+            ...(clickedNpcPosition.top && {
+              top: clickedNpcPosition.top,
+              bottom: 'auto'
+            }),
+            ...(clickedNpcPosition.bottom && !clickedNpcPosition.top && {
+              bottom: clickedNpcPosition.bottom,
+              top: 'auto'
+            })
+          } : {
+            // Original position for non-restored islands
+            ...(currentDialogueIsland === ISLANDS.ISLAND_1 && {
+              right: 'calc(15% + 350px + 20px)', // Right side of NPC1
+              bottom: '15%',
+              left: 'auto',
+              top: 'auto'
+            }),
+            ...(currentDialogueIsland === ISLANDS.ISLAND_2 && {
+              left: '15%',
+              bottom: 'calc(10% + 300px + 20px)', // Top of NPC2
+              right: 'auto',
+              top: 'auto'
+            }),
+            ...(currentDialogueIsland === ISLANDS.ISLAND_3 && {
+              left: 'calc(15% + 300px + 20px)', // Right side of NPC3
+              bottom: '30%',
+              right: 'auto',
+              top: 'auto'
+            })
           })
         }}>
           <div style={{
             padding: '20px 25px',
-            borderRadius: '16px',
-            // Glassmorphism with 85% opacity white background for better readability
-            background: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            // Subtle border
-            border: '1px solid rgba(255, 255, 255, 0.4)',
-            // Inner shadow for depth
-            boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.1), 0 8px 24px rgba(0, 0, 0, 0.15)',
+            borderRadius: '20px',
+            // Enhanced glassmorphism design
+            background: 'rgba(255, 255, 255, 0.25)',
+            backdropFilter: 'blur(30px)',
+            WebkitBackdropFilter: 'blur(30px)',
+            // Gradient border
+            border: '1.5px solid rgba(255, 255, 255, 0.6)',
+            // Enhanced shadow for depth
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
             position: 'relative',
           }}>
             <div style={{
               fontFamily: "'Roboto', sans-serif",
-              fontSize: '12px',
-              fontWeight: 600,
-              color: '#1a1a1a',
-              marginBottom: '8px',
-              textShadow: '0 0 8px rgba(255, 255, 255, 0.6)', // Subtle outer glow
+              fontSize: '13px',
+              fontWeight: 700,
+              color: '#2c3e50',
+              marginBottom: '10px',
+              textShadow: '0 1px 2px rgba(255, 255, 255, 0.8)',
+              letterSpacing: '0.5px',
             }}>{currentDialogue.speaker}</div>
             <p style={{
               fontFamily: "'Roboto', sans-serif",
-              fontSize: '18px', // Increased font size for better readability
-              color: '#1a1a1a',
+              fontSize: '16px',
+              color: '#2c3e50',
               lineHeight: 1.6,
               margin: 0,
-              textShadow: '0 0 6px rgba(255, 255, 255, 0.5)', // Subtle outer glow
+              textShadow: '0 1px 2px rgba(255, 255, 255, 0.6)',
             }}>
               {displayedText}
               {isTyping && <span style={{ opacity: 0.5 }}>|</span>}

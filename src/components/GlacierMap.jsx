@@ -455,7 +455,7 @@ const completeSceneNpcs = [
     id: 'momo',
     image: '/glacier/npc/momo.png',
     dialogue: "You did it! The data flow is stable and the colors are back.",
-    position: { left: '900px', bottom: '0px', height: '350px' }
+    position: { left: '1000px', bottom: '50px', height: '350px' }
   },
   {
     id: 'npc2',
@@ -479,7 +479,7 @@ const completeSceneNpcs = [
     id: 'npc11',
     image: '/glacier/npc/npc11.png',
     dialogue: "I used to just copy-paste the snow. Now I actually shape it.",
-    position: { left: '600px', top: '300px', height: '170px' }
+    position: { left: '580px', top: '360px', height: '120px' }
   },
   {
     id: 'npc12',
@@ -491,7 +491,7 @@ const completeSceneNpcs = [
     id: 'npc10',
     image: '/glacier/npc/npc10.png',
     dialogue: "It feels good to think clearly again.",
-    position: { right: '650px', bottom: '450px', height: '120px' }
+    position: { right: '650px', bottom: '430px', height: '150px' }
   }
 ]
 
@@ -4882,7 +4882,13 @@ const GlacierMap = ({ onExit }) => {
           {showCompleteNpcDialogue === npc.id && (
             <div style={{
               ...styles.completeNpcDialogue,
-              ...(npc.id === 'npc12' ? {
+              ...(npc.id === 'npc3' ? {
+                // Show dialogue below NPC3
+                bottom: 'auto',
+                top: '110%',
+                left: '50%',
+                transform: 'translateX(-50%)',
+              } : npc.id === 'npc12' ? {
                 left: 'auto',
                 right: '110%',
                 transform: 'none',
