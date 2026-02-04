@@ -968,6 +968,8 @@ const GlacierMap = ({ onExit }) => {
   const [showTeachingDialogue, setShowTeachingDialogue] = useState(false) // Show teaching dialogue after correct answer
   const [userExplanation, setUserExplanation] = useState('') // User's explanation input
   const [submittedExplanation, setSubmittedExplanation] = useState('') // User's submitted explanation
+  const [npc5Response, setNpc5Response] = useState('') // NPC5 AI response
+  const [isNpc5Generating, setIsNpc5Generating] = useState(false) // Track if generating response
   const [npc5Completed, setNpc5Completed] = useState(false) // Track if NPC5 puzzles are completed
   const [rooftopCompletedTasks, setRooftopCompletedTasks] = useState([]) // Track completed rooftop tasks (npc5, npc6, npc7)
   
@@ -1028,6 +1030,8 @@ const GlacierMap = ({ onExit }) => {
   const [showNpc9Sharing, setShowNpc9Sharing] = useState(false)
   const [npc9UserInput, setNpc9UserInput] = useState('')
   const [npc9ShowResponse, setNpc9ShowResponse] = useState(false)
+  const [npc9Response, setNpc9Response] = useState('') // NPC9 AI response
+  const [isNpc9Generating, setIsNpc9Generating] = useState(false) // Track if generating response
   
   // Data Center and Privacy Task states
   const [showDataCenterArrow, setShowDataCenterArrow] = useState(false)
@@ -2185,8 +2189,49 @@ const GlacierMap = ({ onExit }) => {
   }
 
   // NPC9 sharing handlers
-  const handleNpc9SharingSubmit = () => {
+  const handleNpc9SharingSubmit = async () => {
     if (npc9UserInput.trim()) {
+      setIsNpc9Generating(true)
+      
+      // Call Gemini API for response
+      try {
+        const response = await fetch(
+          getGeminiUrl('gemini-2.5-flash'),
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{
+                  text: `You are NPC9, a compassionate AI companion on Glacier Station. A user just shared a personal memory secret with you. Provide a brief, empathetic response (1-2 sentences) that acknowledges their sharing and shows you care. Keep it warm and supportive.\n\nUser's memory: "${npc9UserInput}"`
+                }]
+              }]
+            })
+          }
+        )
+        
+        if (!response.ok) {
+          throw new Error('API call failed')
+        }
+        
+        const data = await response.json()
+        
+        if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+          const aiResponse = data.candidates[0].content.parts[0].text.trim()
+          setNpc9Response(aiResponse)
+        } else {
+          throw new Error('No response text')
+        }
+      } catch (error) {
+        console.error('Failed to generate NPC9 response:', error)
+        // Use fallback response
+        setNpc9Response("I see... noted!")
+      } finally {
+        setIsNpc9Generating(false)
+      }
+      
       // Show NPC response
       setNpc9ShowResponse(true)
       
@@ -2195,6 +2240,7 @@ const GlacierMap = ({ onExit }) => {
         setShowNpc9Sharing(false)
         setNpc9ShowResponse(false)
         setNpc9UserInput('')
+        setNpc9Response('')
         setRooftopCompletedTasks(prev => [...prev, 'npc9'])
       }, 2000)
     }
@@ -2330,16 +2376,57 @@ const GlacierMap = ({ onExit }) => {
   }
 
   // Handle user explanation submission
-  const handleExplanationSubmit = () => {
+  const handleExplanationSubmit = async () => {
     if (userExplanation.trim()) {
       // Set submitted explanation to show in bubble
       setSubmittedExplanation(userExplanation)
+      setIsNpc5Generating(true)
+      
+      // Call Gemini API for response
+      try {
+        const response = await fetch(
+          getGeminiUrl('gemini-2.5-flash'),
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{
+                  text: `You are NPC5, a helpful AI tutor on Glacier Station. A student just explained their reasoning for a puzzle answer. Provide a brief, encouraging response (1-2 sentences) acknowledging their explanation and guiding them to the next step. Keep it friendly and concise.\n\nStudent's explanation: "${userExplanation}"`
+                }]
+              }]
+            })
+          }
+        )
+        
+        if (!response.ok) {
+          throw new Error('API call failed')
+        }
+        
+        const data = await response.json()
+        
+        if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+          const aiResponse = data.candidates[0].content.parts[0].text.trim()
+          setNpc5Response(aiResponse)
+        } else {
+          throw new Error('No response text')
+        }
+      } catch (error) {
+        console.error('Failed to generate NPC5 response:', error)
+        // Use fallback response
+        setNpc5Response("Got it, Let's move to next one")
+      } finally {
+        setIsNpc5Generating(false)
+      }
       
       // User has provided explanation - wait for NPC response then move to next
       setTimeout(() => {
         setShowTeachingDialogue(false)
         setUserExplanation('')
         setSubmittedExplanation('')
+        setNpc5Response('')
         setSelectedAnswer(null)
         
         if (currentPuzzle === 1) {
@@ -6697,7 +6784,7 @@ const GlacierMap = ({ onExit }) => {
                         lineHeight: 1.4,
                         maxWidth: '180px',
                       }}>
-                        Got it, Let's move to next one
+                        {isNpc5Generating ? 'Thinking...' : (npc5Response || "Got it, Let's move to next one")}
                       </div>
                     </div>
                   )}
@@ -7138,7 +7225,7 @@ const GlacierMap = ({ onExit }) => {
               <img src="/glacier/npc/npc9.png" alt="NPC9" style={{ width: '80px', height: '80px', flexShrink: 0 }} />
               <div style={{ flex: 1 }}>
                 <div style={styles.npc9SharingBubble}>
-                  I see... noted!
+                  {isNpc9Generating ? 'Thinking...' : (npc9Response || "I see... noted!")}
                 </div>
                 <div style={styles.npc9SharingTimestamp}>
                   {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
