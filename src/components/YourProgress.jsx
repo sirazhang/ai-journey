@@ -308,16 +308,11 @@ const YourProgress = ({ isOpen, onClose }) => {
   const apps = [
     { id: 'photos', name: 'Vision Log', icon: Aperture, color: 'linear-gradient(135deg, #fbbf24 0%, #f43f5e 50%, #a855f7 100%)' },
     { id: 'assistant', name: 'NPC Link', icon: MessageCircle, color: '#10b981', badge: badges.npcLink > 0 ? badges.npcLink : undefined },
+    { id: 'mail', name: 'Report', icon: MailIcon, color: '#fbbf24', badge: badges.report > 0 ? badges.report : undefined },
     { id: 'notes', name: 'Review', icon: StickyNote, color: '#f97316', badge: badges.review > 0 ? badges.review : undefined },
   ]
 
   const dockApps = ['photos', 'assistant', 'mail']
-  
-  // Add mail app for dock only
-  const allApps = [
-    ...apps,
-    { id: 'mail', name: 'Report', icon: MailIcon, color: '#fbbf24', badge: badges.report > 0 ? badges.report : undefined },
-  ]
 
   const renderApp = () => {
     switch (activeApp) {
@@ -377,14 +372,17 @@ const YourProgress = ({ isOpen, onClose }) => {
             transform: activeApp ? 'scale(0.95)' : 'scale(1)',
             opacity: activeApp ? 0 : 1
           }}>
-            {/* Grid - 2 rows, centered */}
+            {/* Grid - 2 rows, 2 columns */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
+              gridTemplateColumns: 'repeat(2, 1fr)',
               gap: '16px',
               rowGap: '32px',
               justifyItems: 'center',
-              marginTop: '40px'
+              marginTop: '40px',
+              maxWidth: '200px',
+              marginLeft: 'auto',
+              marginRight: 'auto'
             }}>
               {apps.map((app) => (
                 <AppIcon 
@@ -437,7 +435,7 @@ const YourProgress = ({ isOpen, onClose }) => {
               padding: '0 16px'
             }}>
               {dockApps.map((dockAppId) => {
-                const app = allApps.find(a => a.id === dockAppId)
+                const app = apps.find(a => a.id === dockAppId)
                 if (!app) return null
                 return (
                   <AppIcon 
