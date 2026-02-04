@@ -1459,8 +1459,8 @@ const IslandMap = ({ onExit }) => {
       setIsGlitchTyping(true) // Show typing indicator
       
       try {
-        // Call Gemini API
-        const response = await fetch(getGeminiUrl('gemini-2.0-flash-exp'), {
+        // Call Gemini API - use gemini-2.5-flash (more stable than experimental model)
+        const response = await fetch(getGeminiUrl('gemini-2.5-flash'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1473,6 +1473,10 @@ const IslandMap = ({ onExit }) => {
             }]
           })
         })
+        
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status}`)
+        }
         
         const data = await response.json()
         
