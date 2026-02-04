@@ -6194,22 +6194,126 @@ const DesertMap = ({ onExit }) => {
               justifyContent: 'center',
               zIndex: 1,
             }}>
+              {/* AI is reading text */}
               <div style={{
-                width: '60px',
-                height: '60px',
-                border: '4px solid #FABA14',
-                borderTop: '4px solid transparent',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite',
-                marginBottom: '20px',
-              }} />
-              <div style={{
-                color: '#fff',
-                fontSize: '18px',
+                color: '#FABA14',
+                fontSize: '24px',
                 fontWeight: 'bold',
+                fontFamily: "'Roboto', sans-serif",
+                marginBottom: '30px',
+                letterSpacing: '1px',
               }}>
-                AI Recognizing...
+                AI is reading
               </div>
+              
+              {/* Hourglass Animation */}
+              <div style={{
+                position: 'relative',
+                width: '80px',
+                height: '100px',
+                animation: 'flipHourglass 3s ease-in-out infinite',
+              }}>
+                {/* Top bulb */}
+                <div style={{
+                  position: 'absolute',
+                  top: '0',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '60px',
+                  height: '40px',
+                  background: 'transparent',
+                  border: '3px solid #FABA14',
+                  borderRadius: '50% 50% 0 0',
+                  borderBottom: 'none',
+                  overflow: 'hidden',
+                }}>
+                  {/* Sand in top bulb */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '0',
+                    left: '0',
+                    width: '100%',
+                    height: '100%',
+                    background: '#FABA14',
+                    animation: 'drainSand 3s linear infinite',
+                    transformOrigin: 'bottom',
+                  }} />
+                </div>
+                
+                {/* Middle neck */}
+                <div style={{
+                  position: 'absolute',
+                  top: '40px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '10px',
+                  height: '20px',
+                  background: 'transparent',
+                  borderLeft: '3px solid #FABA14',
+                  borderRight: '3px solid #FABA14',
+                }}>
+                  {/* Falling sand particles */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '0',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    width: '2px',
+                    height: '100%',
+                    background: '#FABA14',
+                    animation: 'fallingSand 0.5s linear infinite',
+                  }} />
+                </div>
+                
+                {/* Bottom bulb */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: '0',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '60px',
+                  height: '40px',
+                  background: 'transparent',
+                  border: '3px solid #FABA14',
+                  borderRadius: '0 0 50% 50%',
+                  borderTop: 'none',
+                  overflow: 'hidden',
+                }}>
+                  {/* Sand accumulating in bottom bulb */}
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '0',
+                    left: '0',
+                    width: '100%',
+                    height: '0%',
+                    background: '#FABA14',
+                    animation: 'fillSand 3s linear infinite',
+                  }} />
+                </div>
+              </div>
+              
+              {/* Keyframes for animations */}
+              <style>{`
+                @keyframes flipHourglass {
+                  0%, 45% { transform: rotate(0deg); }
+                  50%, 95% { transform: rotate(180deg); }
+                  100% { transform: rotate(180deg); }
+                }
+                @keyframes drainSand {
+                  0% { height: 100%; }
+                  45% { height: 0%; }
+                  50%, 100% { height: 0%; }
+                }
+                @keyframes fillSand {
+                  0%, 5% { height: 0%; }
+                  50% { height: 100%; }
+                  100% { height: 100%; }
+                }
+                @keyframes fallingSand {
+                  0% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                  100% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+                }
+              `}</style>
             </div>
           )}
         </div>
