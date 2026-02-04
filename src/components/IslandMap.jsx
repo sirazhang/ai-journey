@@ -1188,7 +1188,24 @@ const IslandMap = ({ onExit }) => {
   useEffect(() => {
     if (phase2CompletedMissions.length === 5 && !phase2Completed && phase2Active) {
       setPhase2Completed(true)
-      // Automatically trigger final Sparky dialogue after a short delay
+      
+      // Show message to return to main land (only if not already on main land)
+      if (currentIsland !== ISLANDS.MAIN_ISLAND) {
+        setTimeout(() => {
+          setCurrentDialogue({
+            text: "Mission complete! Return to the Main Land to meet Sparky and restore the island's power!",
+            speaker: 'Glitch'
+          })
+          setShowDialogue(true)
+        }, 1000)
+      }
+    }
+  }, [phase2CompletedMissions, phase2Completed, phase2Active, currentIsland])
+  
+  // Trigger final Sparky dialogue when user returns to main land after Phase 2 completion
+  useEffect(() => {
+    if (phase2Completed && !showFinalSparkyDialogue && currentIsland === ISLANDS.MAIN_ISLAND && !islandRestored) {
+      // Automatically trigger final Sparky dialogue when on main land
       setTimeout(() => {
         setShowFinalSparkyDialogue(true)
         setShowSparkyDialogue(true)
@@ -1202,9 +1219,9 @@ const IslandMap = ({ onExit }) => {
         if (firstItem) {
           addFinalSparkyMessage(firstItem)
         }
-      }, 2000)
+      }, 1000)
     }
-  }, [phase2CompletedMissions, phase2Completed, phase2Active])
+  }, [phase2Completed, showFinalSparkyDialogue, currentIsland, islandRestored])
 
   // Sound effects and music
   useBackgroundMusic('/sound/island.mp3')
@@ -1349,7 +1366,7 @@ const IslandMap = ({ onExit }) => {
     
     try {
       const response = await fetch(
-        `${getGeminiUrl()}&key=${import.meta.env.VITE_GEMINI_API_KEY}`,
+        getGeminiUrl('gemini-2.5-flash'),
         {
           method: 'POST',
           headers: {
