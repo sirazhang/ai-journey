@@ -511,15 +511,18 @@ const PhotosApp = ({ onClose }) => {
     if (savedUser) {
       const userData = JSON.parse(savedUser)
       const journal = userData.explorerJournal || []
-      // Convert to format with id
+      // Convert to format with id and additional fields
       const photosWithIds = journal.map((item, index) => ({
         id: index,
         url: item.photo,
-        item: item.item,
-        type: item.type,
-        timestamp: item.timestamp,
+        item: item.item || 'Unknown Item',
+        type: item.type || 'uncertain', // healthy, unhealthy, uncertain
+        timestamp: item.timestamp || Date.now(),
         date: 'Today',
-        time: new Date(item.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+        time: new Date(item.timestamp || Date.now()).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+        description: item.description || '',
+        tags: item.tags || [],
+        region: item.region || ''
       }))
       setPhotos(photosWithIds)
     }
@@ -556,23 +559,25 @@ const PhotosApp = ({ onClose }) => {
         background: '#000',
         display: 'flex',
         flexDirection: 'column',
-        position: 'relative'
+        position: 'relative',
+        overflowY: 'auto'
       }}>
         {/* Top Bar */}
         <div style={{
-          position: 'absolute',
+          position: 'sticky',
           top: 0,
           left: 0,
           right: 0,
           height: '96px',
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0.6), transparent)',
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.4))',
           zIndex: 20,
           display: 'flex',
           alignItems: 'flex-end',
           paddingBottom: '16px',
           paddingLeft: '16px',
           paddingRight: '16px',
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          backdropFilter: 'blur(10px)'
         }}>
           <button 
             onClick={() => setViewingPhotoId(null)}
@@ -592,7 +597,8 @@ const PhotosApp = ({ onClose }) => {
           <div style={{
             color: '#fff',
             fontWeight: '600',
-            fontSize: '14px'
+            fontSize: '14px',
+            textShadow: '0 1px 3px rgba(0,0,0,0.5)'
           }}>
             {viewingPhoto.date} • {viewingPhoto.time}
           </div>
@@ -603,47 +609,240 @@ const PhotosApp = ({ onClose }) => {
 
         {/* Image Container */}
         <div style={{
-          flex: 1,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          overflow: 'hidden'
+          padding: '16px',
+          minHeight: '300px'
         }}>
           <img 
             src={viewingPhoto.url} 
             style={{
               maxWidth: '100%',
-              maxHeight: '100%',
-              objectFit: 'contain'
+              maxHeight: '400px',
+              objectFit: 'contain',
+              borderRadius: '8px'
             }}
             alt="Detail"
           />
         </div>
 
-        {/* Bottom Bar */}
+        {/* Photo Information Card */}
         <div style={{
-          position: 'absolute',
+          padding: '16px',
+          paddingBottom: '100px'
+        }}>
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '16px',
+            padding: '16px',
+            border: '1px solid rgba(255, 255, 255, 0.2)'
+          }}>
+            {/* Item Name */}
+            <div style={{
+              marginBottom: '12px',
+              paddingBottom: '12px',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <div style={{
+                fontSize: '11px',
+                color: 'rgba(255, 255, 255, 0.6)',
+                marginBottom: '4px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}>Item</div>
+              <div style={{
+                fontSize: '18px',
+                fontWeight: '700',
+                color: '#fff'
+              }}>{viewingPhoto.item || 'Unknown'}</div>
+            </div>
+
+            {/* Type/Classification */}
+            {viewingPhoto.type && (
+              <div style={{
+                marginBottom: '12px',
+                paddingBottom: '12px',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+              }}>
+                <div style={{
+                  fontSize: '11px',
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  marginBottom: '4px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}>Classification</div>
+                <div style={{
+                  display: 'inline-block',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  background: viewingPhoto.type === 'healthy' ? 'rgba(34, 197, 94, 0.2)' : 
+                              viewingPhoto.type === 'unhealthy' ? 'rgba(239, 68, 68, 0.2)' : 
+                              'rgba(251, 191, 36, 0.2)',
+                  color: viewingPhoto.type === 'healthy' ? '#4ade80' : 
+                         viewingPhoto.type === 'unhealthy' ? '#f87171' : 
+                         '#fbbf24',
+                  border: `1px solid ${viewingPhoto.type === 'healthy' ? 'rgba(34, 197, 94, 0.3)' : 
+                                       viewingPhoto.type === 'unhealthy' ? 'rgba(239, 68, 68, 0.3)' : 
+                                       'rgba(251, 191, 36, 0.3)'}`
+                }}>
+                  {viewingPhoto.type === 'healthy' ? '✓ Healthy' : 
+                   viewingPhoto.type === 'unhealthy' ? '✗ Unhealthy' : 
+                   '? Uncertain'}
+                </div>
+              </div>
+            )}
+
+            {/* Description */}
+            {viewingPhoto.description && (
+              <div style={{
+                marginBottom: '12px',
+                paddingBottom: '12px',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+              }}>
+                <div style={{
+                  fontSize: '11px',
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  marginBottom: '4px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}>Description</div>
+                <div style={{
+                  fontSize: '14px',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  lineHeight: '1.5'
+                }}>{viewingPhoto.description}</div>
+              </div>
+            )}
+
+            {/* Tags */}
+            {viewingPhoto.tags && viewingPhoto.tags.length > 0 && (
+              <div>
+                <div style={{
+                  fontSize: '11px',
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  marginBottom: '8px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}>Tags</div>
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '8px'
+                }}>
+                  {viewingPhoto.tags.map((tag, index) => (
+                    <div 
+                      key={index}
+                      style={{
+                        padding: '4px 10px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        background: 'rgba(147, 51, 234, 0.2)',
+                        color: '#c084fc',
+                        border: '1px solid rgba(147, 51, 234, 0.3)'
+                      }}
+                    >
+                      #{tag}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Location/Region */}
+            {viewingPhoto.region && (
+              <div style={{
+                marginTop: '12px',
+                paddingTop: '12px',
+                borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+              }}>
+                <div style={{
+                  fontSize: '11px',
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  marginBottom: '4px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}>Location</div>
+                <div style={{
+                  fontSize: '14px',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  fontWeight: '500'
+                }}>{viewingPhoto.region}</div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Bottom Action Bar */}
+        <div style={{
+          position: 'fixed',
           bottom: 0,
           left: 0,
           right: 0,
-          height: '96px',
-          background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+          height: '80px',
+          background: 'rgba(0, 0, 0, 0.9)',
+          backdropFilter: 'blur(20px)',
           zIndex: 20,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingLeft: '32px',
-          paddingRight: '32px',
-          paddingBottom: '24px'
+          justifyContent: 'space-around',
+          paddingBottom: '16px',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)'
         }}>
-          <Share style={{ color: '#3b82f6' }} size={24} />
-          <Heart style={{ color: '#fff' }} size={24} />
-          <Info style={{ color: '#fff' }} size={24} />
-          <Trash2 
-            style={{ color: '#fff', cursor: 'pointer' }} 
-            size={24} 
+          <button style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px'
+          }}>
+            <Share style={{ color: '#3b82f6' }} size={24} />
+            <span style={{ fontSize: '10px', color: '#3b82f6' }}>Share</span>
+          </button>
+          <button style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px'
+          }}>
+            <Heart style={{ color: '#fff' }} size={24} />
+            <span style={{ fontSize: '10px', color: '#fff' }}>Like</span>
+          </button>
+          <button style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px'
+          }}>
+            <Info style={{ color: '#fff' }} size={24} />
+            <span style={{ fontSize: '10px', color: '#fff' }}>Info</span>
+          </button>
+          <button 
             onClick={() => deleteSingle(viewingPhoto.id)}
-          />
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <Trash2 style={{ color: '#ef4444' }} size={24} />
+            <span style={{ fontSize: '10px', color: '#ef4444' }}>Delete</span>
+          </button>
         </div>
       </div>
     )
