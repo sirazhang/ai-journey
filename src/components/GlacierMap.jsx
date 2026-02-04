@@ -8034,22 +8034,27 @@ const GlacierMap = ({ onExit }) => {
                   )
                   
                   if (foundItem) {
-                    const textToBlack = foundItem.hint || foundItem.text
-                    const parts = line.split(textToBlack)
-                    return (
-                      <div key={i} style={{marginBottom: '5px'}}>
-                        {parts[0]}
-                        <span style={{
-                          background: '#000',
-                          color: '#000',
-                          padding: '2px 4px',
-                          borderRadius: '4px',
-                        }}>
-                          {textToBlack}
-                        </span>
-                        {parts[1]}
-                      </div>
-                    )
+                    // Use the actual text to highlight, not the full hint
+                    const textToBlack = foundItem.text
+                    const index = line.indexOf(textToBlack)
+                    
+                    if (index !== -1) {
+                      return (
+                        <div key={i} style={{marginBottom: '5px'}}>
+                          {line.substring(0, index)}
+                          <span style={{
+                            background: '#000',
+                            color: '#000', // 文字颜色也是黑色，实现遮盖效果
+                            padding: '2px 4px',
+                            borderRadius: '4px',
+                            userSelect: 'none', // 防止选中已标记的文本
+                          }}>
+                            {textToBlack}
+                          </span>
+                          {line.substring(index + textToBlack.length)}
+                        </div>
+                      )
+                    }
                   }
                   
                   return <div key={i} style={{marginBottom: '5px'}}>{line}</div>
