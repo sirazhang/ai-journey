@@ -2670,6 +2670,99 @@ const GlacierMap = ({ onExit }) => {
     setTimeout(() => setStatementProgress(2), 2000)
     setTimeout(() => setStatementProgress(3), 3500)
   }
+  
+  // Handle play statement audio
+  const handlePlayStatement = async (npcId) => {
+    // Stop current audio if playing
+    if (currentAudio) {
+      currentAudio.pause()
+      currentAudio.currentTime = 0
+      setCurrentAudio(null)
+      setIsPlayingAudio(false)
+    }
+    
+    // Check if audio already generated
+    if (generatedAudio[npcId]) {
+      playAudio(generatedAudio[npcId])
+      return
+    }
+    
+    // Generate audio using Gemini API
+    setIsGeneratingAudio(true)
+    
+    try {
+      const statementText = courtCases[npcId].statementParts.join(' ')
+      
+      const response = await fetch(
+        getGeminiUrl('gemini-2.5-flash'),
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{
+                text: `Generate audio for this statement: "${statementText}"`
+              }]
+            }]
+          })
+        }
+      )
+      
+      if (!response.ok) {
+        throw new Error('API call failed')
+      }
+      
+      const data = await response.json()
+      
+      // Check if response contains audio data
+      if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.inlineData) {
+        const audioData = data.candidates[0].content.parts[0].inlineData
+        const audioUrl = `data:${audioData.mimeType};base64,${audioData.data}`
+        
+        setGeneratedAudio(prev => ({
+          ...prev,
+          [npcId]: audioUrl
+        }))
+        
+        setIsGeneratingAudio(false)
+        playAudio(audioUrl)
+      } else {
+        throw new Error('No audio data in response')
+      }
+    } catch (error) {
+      console.error('Failed to generate audio:', error)
+      setIsGeneratingAudio(false)
+      
+      // Use fallback audio
+      playAudio('/glacier/npc/test.wav')
+    }
+  }
+  
+  // Play audio helper function
+  const playAudio = (audioUrl) => {
+    const audio = new Audio(audioUrl)
+    audio.volume = 0.7
+    
+    audio.onplay = () => setIsPlayingAudio(true)
+    audio.onended = () => {
+      setIsPlayingAudio(false)
+      setCurrentAudio(null)
+    }
+    audio.onerror = () => {
+      setIsPlayingAudio(false)
+      setCurrentAudio(null)
+      console.error('Audio playback failed')
+    }
+    
+    setCurrentAudio(audio)
+    audio.play().catch(err => {
+      console.error('Audio play error:', err)
+      setIsPlayingAudio(false)
+      setCurrentAudio(null)
+    })
+  }
 
   const handleJudgment = (judgment) => {
     // All NPCs should be rejected
@@ -5322,28 +5415,78 @@ const GlacierMap = ({ onExit }) => {
               </div>
               
               <div style={styles.step2Container}>
-                {/* Left Column: NPC + Role */}
+                {/* Left Column: NPC + Role + Play Button */}
                 <div style={styles.step2LeftColumn}>
-                  <img
-                    src={courtCases[selectedNpc].npcImage}
-                    alt={selectedNpc}
-                    style={{
-                      width: 'auto',
-                      height: '500px',
-                      maxWidth: 'none',
-                      objectFit: 'contain',
-                    }}
-                  />
+                  {/* NPC Image Container with Play Button */}
                   <div style={{
-                    fontSize: '13px',
+                    position: 'relative',
+                    display: 'inline-block',
+                  }}>
+                    <img
+                      src={courtCases[selectedNpc].npcImage}
+                      alt={selectedNpc}
+                      style={{
+                        width: 'auto',
+                        height: '480px', // 从500px减少到480px，上移20px
+                        maxWidth: 'none',
+                        objectFit: 'contain',
+                      }}
+                    />
+                    
+                    {/* Play Button Overlay */}
+                    <button
+                      onClick={() => handlePlayStatement(selectedNpc)}
+                      disabled={isGeneratingAudio || isPlayingAudio}
+                      style={{
+                        position: 'absolute',
+                        bottom: '30%',
+                        left: '50%',
+                        transform: 'translate(-50%, 50%)',
+                        width: '80px',
+                        height: '80px',
+                        background: 'none',
+                        border: 'none',
+                        cursor: isGeneratingAudio || isPlayingAudio ? 'not-allowed' : 'pointer',
+                        opacity: isGeneratingAudio ? 0.5 : (isPlayingAudio ? 0.7 : 1),
+                        transition: 'all 0.3s ease',
+                        padding: 0,
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isGeneratingAudio && !isPlayingAudio) {
+                          e.currentTarget.style.transform = 'translate(-50%, 50%) scale(1.1)'
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'translate(-50%, 50%) scale(1)'
+                      }}
+                    >
+                      <img 
+                        src="/glacier/icon/play.png"
+                        alt="Play"
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'contain',
+                          filter: isPlayingAudio ? 'brightness(0.7)' : 'none',
+                        }}
+                      />
+                    </button>
+                  </div>
+                  
+                  {/* NPC Role Info - Roboto font, smaller, single line, tight below NPC */}
+                  <div style={{
+                    fontSize: '11px',
                     color: '#e0e0e0',
-                    fontFamily: "'Orbitron', sans-serif",
+                    fontFamily: "'Roboto', sans-serif",
                     fontWeight: 400,
                     textAlign: 'center',
-                    lineHeight: 1.6,
-                    padding: '0 10px',
-                    marginTop: '10px',
-                    width: '260px',
+                    lineHeight: 1.2,
+                    padding: '0',
+                    marginTop: '5px', // 紧贴NPC下方
+                    width: '280px',
+                    whiteSpace: 'nowrap', // 强制一行显示
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
                   }}>
                     {t('language') === 'zh' 
                       ? courtCases[selectedNpc].npcRole.zh 
