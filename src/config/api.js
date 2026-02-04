@@ -9,3 +9,6 @@ export const GEMINI_API_ENDPOINTS = {
 export const getGeminiUrl = (model = 'gemini-2.0-flash-exp') => {
   return `${GEMINI_API_ENDPOINTS[model]}?key=${GEMINI_API_KEY}`
 }
+
+// Backend API Base URL
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api'

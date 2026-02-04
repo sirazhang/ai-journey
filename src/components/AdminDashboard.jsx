@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
-import { db } from '../config/firebase'
-import { collection, getDocs, query, orderBy } from 'firebase/firestore'
+import { getAllUsers } from '../services/userTracking'
 
 /**
  * 管理员仪表板 - 查看所有用户数据
@@ -8,6 +7,7 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore'
  */
 const AdminDashboard = () => {
   const [users, setUsers] = useState([])
+  const [stats, setStats] = useState({})
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all') // 'all', 'high-p-high-j', etc.
 
@@ -18,16 +18,9 @@ const AdminDashboard = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true)
-      const usersRef = collection(db, 'users')
-      const q = query(usersRef, orderBy('createdAt', 'desc'))
-      const querySnapshot = await getDocs(q)
-      
-      const usersData = []
-      querySnapshot.forEach((doc) => {
-        usersData.push({ id: doc.id, ...doc.data() })
-      })
-      
-      setUsers(usersData)
+      const data = await getAllUsers()
+      setUsers(data.users)
+      setStats(data.stats)
       setLoading(false)
     } catch (error) {
       console.error('Error fetching users:', error)
@@ -39,18 +32,6 @@ const AdminDashboard = () => {
     ? users 
     : users.filter(user => user.userProfile?.aiType === filter)
 
-  const stats = {
-    total: users.length,
-    highPHighJ: users.filter(u => u.userProfile?.aiType === 'high-p-high-j').length,
-    lowPHighJ: users.filter(u => u.userProfile?.aiType === 'low-p-high-j').length,
-    lowPLowJ: users.filter(u => u.userProfile?.aiType === 'low-p-low-j').length,
-    highPLowJ: users.filter(u => u.userProfile?.aiType === 'high-p-low-j').length,
-    avgReplayCount: users.reduce((sum, u) => sum + (u.abilityLevel?.replayCount || 0), 0) / users.length || 0,
-    avgWrongClicks: users.reduce((sum, u) => sum + (u.abilityLevel?.wrongClicks || 0), 0) / users.length || 0,
-    avgAIAttempts: users.reduce((sum, u) => sum + (u.abilityLevel?.aiImageAttempts || 0), 0) / users.length || 0,
-    avgTotalTime: users.reduce((sum, u) => sum + (u.preferences?.totalTime || 0), 0) / users.length || 0,
-  }
-
   const formatTime = (seconds) => {
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
@@ -59,7 +40,7 @@ const AdminDashboard = () => {
 
   const formatDate = (timestamp) => {
     if (!timestamp) return 'N/A'
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
+    const date = new Date(timestamp)
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
   }
 
