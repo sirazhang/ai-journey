@@ -936,6 +936,12 @@ const GlacierMap = ({ onExit }) => {
   const [caseTimer, setCaseTimer] = useState(167) // 2:47 in seconds
   const [shakeApprovedButton, setShakeApprovedButton] = useState(false) // Track if approved button should shake
   
+  // Audio generation states
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false)
+  const [generatedAudio, setGeneratedAudio] = useState({}) // Store generated audio URLs by npcId
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false)
+  const [currentAudio, setCurrentAudio] = useState(null) // Current audio element
+  
   // Summary dialogue states
   const [showSummaryDialogue, setShowSummaryDialogue] = useState(savedProgress?.showSummaryDialogue || false)
   const [summaryDialogueIndex, setSummaryDialogueIndex] = useState(0)
