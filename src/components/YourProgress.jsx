@@ -214,6 +214,7 @@ const YourProgress = ({ isOpen, onClose }) => {
   const [activeApp, setActiveApp] = useState(null)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [wallpaper] = useState('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop')
+  const [badges, setBadges] = useState({ npcLink: 0, report: 0, review: 0 })
   const { playSelectSound } = useSoundEffects()
 
   useEffect(() => {
@@ -224,8 +225,57 @@ const YourProgress = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (isOpen) {
       setIsExpanded(true)
+      calculateBadges()
     }
   }, [isOpen])
+
+  // Calculate badge numbers based on user progress
+  const calculateBadges = () => {
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (!savedUser) {
+      setBadges({ npcLink: 1, report: 0, review: 0 }) // Only Glitch available by default
+      return
+    }
+
+    const userData = JSON.parse(savedUser)
+    
+    // NPC Link badge: Count NPCs from regions with progress > 0
+    // Regions: Desert, Jungle, Island, Glacier, Central City (Glitch always available)
+    let availableNPCs = 1 // Glitch is always available
+    
+    // Check Desert progress (Alpha)
+    const desertProgress = userData.desertProgress || 0
+    if (desertProgress > 0) availableNPCs++
+    
+    // Check Jungle progress (Ranger Moss)
+    const jungleProgress = userData.jungleProgress || 0
+    if (jungleProgress > 0) availableNPCs++
+    
+    // Check Island progress (Sparky)
+    const islandProgress = userData.islandProgress || 0
+    if (islandProgress > 0) availableNPCs++
+    
+    // Check Glacier progress (Momo)
+    const glacierProgress = userData.glacierProgress || 0
+    if (glacierProgress > 0) availableNPCs++
+    
+    // Report badge: Count regions with 100% completion
+    let completedRegions = 0
+    if (desertProgress === 100) completedRegions++
+    if (jungleProgress === 100) completedRegions++
+    if (islandProgress === 100) completedRegions++
+    if (glacierProgress === 100) completedRegions++
+    
+    // Review badge: Count total wrong answers
+    const errorRecords = userData.errorRecords || []
+    const wrongAnswersCount = errorRecords.length
+    
+    setBadges({
+      npcLink: availableNPCs,
+      report: completedRegions,
+      review: wrongAnswersCount
+    })
+  }
 
   if (!isOpen) return null
 
@@ -254,12 +304,12 @@ const YourProgress = ({ isOpen, onClose }) => {
     setActiveApp(null)
   }
 
-  // App configurations
+  // App configurations with dynamic badges
   const apps = [
     { id: 'photos', name: 'Vision Log', icon: Aperture, color: 'linear-gradient(135deg, #fbbf24 0%, #f43f5e 50%, #a855f7 100%)' },
-    { id: 'assistant', name: 'NPC Link', icon: MessageCircle, color: '#10b981', badge: 3 },
-    { id: 'mail', name: 'Report', icon: MailIcon, color: '#fbbf24', badge: 5 },
-    { id: 'notes', name: 'Review', icon: StickyNote, color: '#f97316' },
+    { id: 'assistant', name: 'NPC Link', icon: MessageCircle, color: '#10b981', badge: badges.npcLink > 0 ? badges.npcLink : undefined },
+    { id: 'mail', name: 'Report', icon: MailIcon, color: '#fbbf24', badge: badges.report > 0 ? badges.report : undefined },
+    { id: 'notes', name: 'Review', icon: StickyNote, color: '#f97316', badge: badges.review > 0 ? badges.review : undefined },
   ]
 
   const dockApps = ['photos', 'assistant', 'mail', 'notes']
@@ -796,68 +846,95 @@ const AssistantApp = ({ onClose }) => {
     }
   }, [messages])
 
-  const npcs = [
-    { 
-      id: 'momo', 
-      name: 'Momo', 
-      location: 'Glacier', 
-      color: '#0891b2', 
-      textColor: '#164e63',
-      bgGradient: 'linear-gradient(135deg, #cffafe 0%, #bfdbfe 100%)',
-      backgroundImage: 'https://images.unsplash.com/photo-1478562853135-c3c9e3ef7905?auto=format&fit=crop&q=80',
-      avatar: '❄️',
-      initialMessage: "Privacy is the last bastion of civilization. You showed respect for 'Alex Chen's' personal data in the last verdict, which is good. But the law allows for no deviation. Stay vigilant. ❄️",
-      instruction: "You are Momo, living in the Glacier. You focus on ethics, values, and legal precision. You speak formally and use sophisticated vocabulary. You view privacy as sacred. Even when praising, remain cautious and stern. Focus on the user's ethical tendencies."
-    },
-    { 
-      id: 'sparky', 
-      name: 'Sparky', 
-      location: 'Island', 
-      color: '#f97316', 
-      textColor: '#7c2d12',
-      bgGradient: 'linear-gradient(135deg, #fed7aa 0%, #fef08a 100%)',
-      backgroundImage: 'https://images.unsplash.com/photo-1596484552993-9c8cb05d15a5?auto=format&fit=crop&q=80',
-      avatar: '🏝️',
-      initialMessage: "OMG! You actually spotted that the 'Fake Captain' was an AI? 😱 How did you train those eagle eyes? Come play another round with me, if you win I've got a huge gift pack for you! ✨",
-      instruction: "You are Sparky, living on a tropical Island. You are extremely high-energy, use lots of emojis (✨, 😱, 🔥), and treat everything like a game. You are very enthusiastic and get incredibly excited when the user identifies AI or solves puzzles correctly. You are a gamer/surfer archetype."
-    },
-    { 
-      id: 'glitch', 
-      name: 'Glitch', 
-      location: 'Central City', 
-      color: '#9333ea', 
-      textColor: '#ddd6fe',
-      bgGradient: 'linear-gradient(135deg, #0f172a 0%, #581c87 100%)',
-      backgroundImage: 'https://images.unsplash.com/photo-1517646577322-2637b3f2c002?auto=format&fit=crop&q=80',
-      avatar: '💻',
-      initialMessage: "[System Error]... Welcome to my world. I've read your entire 'Error Collection'. Very interesting thought paths. Rebooting reality for you... Are you ready for the ultimate test? 💻",
-      instruction: "You are Glitch, an AI construct in Central City. You speak with a cyberpunk/hacker tone. You often act like there are system errors. You are omniscient regarding the user's data and past mistakes. You reference 'reading their error logs'. You are mysterious and slightly intimidating."
-    },
-    { 
-      id: 'moss', 
-      name: 'Ranger Moss', 
-      location: 'Jungle', 
-      color: '#16a34a', 
-      textColor: '#14532d',
-      bgGradient: 'linear-gradient(135deg, #bbf7d0 0%, #6ee7b7 100%)',
-      backgroundImage: 'https://images.unsplash.com/photo-1596706978434-2e94711933cc?auto=format&fit=crop&q=80',
-      avatar: '🌿',
-      initialMessage: "Bro! Look at that logic jungle! You just missed a 'Bias Mushroom' back there, that's a huge taboo in data collection. Don't lose heart, keep your eyes peeled next time! 🌿",
-      instruction: "You are Ranger Moss, protector of the Jungle. You act like a supportive 'Big Brother'. You use slang like 'Bro'. You use jungle/nature metaphors to describe data and logic (e.g., 'logic jungle', 'bias mushroom'). Even when the user is wrong, you encourage them warmly and guide them."
-    },
-    { 
-      id: 'alpha', 
-      name: 'Alpha', 
-      location: 'Desert', 
-      color: '#d97706', 
-      textColor: '#78350f',
-      bgGradient: 'linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%)',
-      backgroundImage: 'https://images.unsplash.com/photo-1545656134-8c46011c2e42?auto=format&fit=crop&q=80',
-      avatar: '🌵',
-      initialMessage: "Target locked. Label accuracy 85%. Speed is acceptable, but precision needs improvement. In the desert, a wrong label means death. Proceed. 🌵",
-      instruction: "You are Alpha, a wanderer in the Desert. You are cold, emotionless, and purely data-driven. You speak in short, clipped sentences. You focus on percentages, accuracy, and efficiency. You do not offer comfort; you offer facts."
+  // Determine available NPCs based on region progress
+  const [availableNPCs, setAvailableNPCs] = useState([])
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    
+    const allNPCs = [
+      { 
+        id: 'glitch', 
+        name: 'Glitch', 
+        location: 'Central City', 
+        color: '#9333ea', 
+        textColor: '#ddd6fe',
+        bgGradient: 'linear-gradient(135deg, #0f172a 0%, #581c87 100%)',
+        backgroundImage: 'https://images.unsplash.com/photo-1517646577322-2637b3f2c002?auto=format&fit=crop&q=80',
+        avatar: '💻',
+        initialMessage: "[System Error]... Welcome to my world. I've read your entire 'Error Collection'. Very interesting thought paths. Rebooting reality for you... Are you ready for the ultimate test? 💻",
+        instruction: "You are Glitch, an AI construct in Central City. You speak with a cyberpunk/hacker tone. You often act like there are system errors. You are omniscient regarding the user's data and past mistakes. You reference 'reading their error logs'. You are mysterious and slightly intimidating.",
+        alwaysAvailable: true
+      },
+      { 
+        id: 'alpha', 
+        name: 'Alpha', 
+        location: 'Desert', 
+        color: '#d97706', 
+        textColor: '#78350f',
+        bgGradient: 'linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%)',
+        backgroundImage: 'https://images.unsplash.com/photo-1545656134-8c46011c2e42?auto=format&fit=crop&q=80',
+        avatar: '🌵',
+        initialMessage: "Target locked. Label accuracy 85%. Speed is acceptable, but precision needs improvement. In the desert, a wrong label means death. Proceed. 🌵",
+        instruction: "You are Alpha, a wanderer in the Desert. You are cold, emotionless, and purely data-driven. You speak in short, clipped sentences. You focus on percentages, accuracy, and efficiency. You do not offer comfort; you offer facts.",
+        region: 'desert'
+      },
+      { 
+        id: 'moss', 
+        name: 'Ranger Moss', 
+        location: 'Jungle', 
+        color: '#16a34a', 
+        textColor: '#14532d',
+        bgGradient: 'linear-gradient(135deg, #bbf7d0 0%, #6ee7b7 100%)',
+        backgroundImage: 'https://images.unsplash.com/photo-1596706978434-2e94711933cc?auto=format&fit=crop&q=80',
+        avatar: '🌿',
+        initialMessage: "Bro! Look at that logic jungle! You just missed a 'Bias Mushroom' back there, that's a huge taboo in data collection. Don't lose heart, keep your eyes peeled next time! 🌿",
+        instruction: "You are Ranger Moss, protector of the Jungle. You act like a supportive 'Big Brother'. You use slang like 'Bro'. You use jungle/nature metaphors to describe data and logic (e.g., 'logic jungle', 'bias mushroom'). Even when the user is wrong, you encourage them warmly and guide them.",
+        region: 'jungle'
+      },
+      { 
+        id: 'sparky', 
+        name: 'Sparky', 
+        location: 'Island', 
+        color: '#f97316', 
+        textColor: '#7c2d12',
+        bgGradient: 'linear-gradient(135deg, #fed7aa 0%, #fef08a 100%)',
+        backgroundImage: 'https://images.unsplash.com/photo-1596484552993-9c8cb05d15a5?auto=format&fit=crop&q=80',
+        avatar: '🏝️',
+        initialMessage: "OMG! You actually spotted that the 'Fake Captain' was an AI? 😱 How did you train those eagle eyes? Come play another round with me, if you win I've got a huge gift pack for you! ✨",
+        instruction: "You are Sparky, living on a tropical Island. You are extremely high-energy, use lots of emojis (✨, 😱, 🔥), and treat everything like a game. You are very enthusiastic and get incredibly excited when the user identifies AI or solves puzzles correctly. You are a gamer/surfer archetype.",
+        region: 'island'
+      },
+      { 
+        id: 'momo', 
+        name: 'Momo', 
+        location: 'Glacier', 
+        color: '#0891b2', 
+        textColor: '#164e63',
+        bgGradient: 'linear-gradient(135deg, #cffafe 0%, #bfdbfe 100%)',
+        backgroundImage: 'https://images.unsplash.com/photo-1478562853135-c3c9e3ef7905?auto=format&fit=crop&q=80',
+        avatar: '❄️',
+        initialMessage: "Privacy is the last bastion of civilization. You showed respect for 'Alex Chen's' personal data in the last verdict, which is good. But the law allows for no deviation. Stay vigilant. ❄️",
+        instruction: "You are Momo, living in the Glacier. You focus on ethics, values, and legal precision. You speak formally and use sophisticated vocabulary. You view privacy as sacred. Even when praising, remain cautious and stern. Focus on the user's ethical tendencies.",
+        region: 'glacier'
+      }
+    ]
+
+    if (!savedUser) {
+      setAvailableNPCs(allNPCs.filter(npc => npc.alwaysAvailable))
+      return
     }
-  ]
+
+    const userData = JSON.parse(savedUser)
+    const filtered = allNPCs.filter(npc => {
+      if (npc.alwaysAvailable) return true
+      const progressKey = `${npc.region}Progress`
+      const progress = userData[progressKey] || 0
+      return progress > 0
+    })
+
+    setAvailableNPCs(filtered)
+  }, [])
 
   const handleSelectNPC = (npc) => {
     setSelectedNPC(npc)
@@ -925,7 +1002,16 @@ const AssistantApp = ({ onClose }) => {
           flexDirection: 'column',
           gap: '16px'
         }}>
-          {npcs.map(npc => (
+          {availableNPCs.length === 0 ? (
+            <div style={{
+              padding: '48px 16px',
+              textAlign: 'center',
+              color: '#6b7280'
+            }}>
+              <p>Complete missions to unlock NPCs!</p>
+            </div>
+          ) : (
+            availableNPCs.map(npc => (
             <div 
               key={npc.id}
               onClick={() => handleSelectNPC(npc)}
@@ -993,7 +1079,8 @@ const AssistantApp = ({ onClose }) => {
                 </div>
               </div>
             </div>
-          ))}
+          ))
+          )}
         </div>
       </div>
     )
