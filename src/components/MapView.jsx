@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
 import SettingsPanel from './SettingsPanel'
-import ExplorerJournal from './ExplorerJournal'
+import YourProgress from './YourProgress'
 import { getGeminiUrl } from '../config/api'
 
 // Simple sound effect function
@@ -103,7 +103,7 @@ const MapView = ({ onRegionClick }) => {
   const [isGlitchTyping, setIsGlitchTyping] = useState(false) // Show typing indicator
   const [regionProgress, setRegionProgress] = useState({}) // Track progress for each region
   const [allRegionsComplete, setAllRegionsComplete] = useState(false) // Track if all 4 regions are complete
-  const [showJournal, setShowJournal] = useState(false) // Track Explorer's Journal visibility
+  const [showProgress, setShowProgress] = useState(false) // Track Your Progress visibility
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -905,7 +905,7 @@ const MapView = ({ onRegionClick }) => {
       {/* Settings Panel */}
       {!isZooming && <SettingsPanel position="topLeft" />}
       
-      {/* Explorer's Journal Button in bottom-left */}
+      {/* Your Progress Button in bottom-left */}
       {!isZooming && (
         <button
           style={{
@@ -930,7 +930,7 @@ const MapView = ({ onRegionClick }) => {
           }}
           onClick={() => {
             playSelectSound()
-            setShowJournal(true)
+            setShowProgress(true)
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'rgba(0, 0, 0, 0.5)'
@@ -942,15 +942,15 @@ const MapView = ({ onRegionClick }) => {
           }}
         >
           <img 
-            src="/icon/journal.svg" 
-            alt="Journal" 
+            src="/icon/phone.png" 
+            alt="Phone" 
             style={{
               width: '18px',
               height: '18px',
               objectFit: 'contain',
             }}
           />
-          <span>Explorer's Journal</span>
+          <span>Your Progress</span>
         </button>
       )}
       
@@ -1379,10 +1379,10 @@ const MapView = ({ onRegionClick }) => {
         </div>
       )}
       
-      {/* Explorer's Journal */}
-      <ExplorerJournal 
-        isOpen={showJournal} 
-        onClose={() => setShowJournal(false)} 
+      {/* Your Progress */}
+      <YourProgress 
+        isOpen={showProgress} 
+        onClose={() => setShowProgress(false)} 
       />
     </div>
   )

@@ -1,0 +1,7 @@
+{
+  "name": "iOS Web Simulator",
+  "description": "A fully interactive iOS system simulation featuring a lock screen, home screen, functional apps (Calculator, Weather, Photos), and a Gemini-powered AI Assistant.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
