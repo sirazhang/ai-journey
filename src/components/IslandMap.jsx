@@ -1122,6 +1122,7 @@ const IslandMap = ({ onExit }) => {
   const [phase2Completed, setPhase2Completed] = useState(false) // Track if Phase 2 is completed
   const [showFinalSparkyDialogue, setShowFinalSparkyDialogue] = useState(false) // Final Sparky dialogue
   const [finalDialogueStep, setFinalDialogueStep] = useState(0) // Track final dialogue progress
+  const [finalDialogueTriggered, setFinalDialogueTriggered] = useState(false) // Track if final dialogue has been triggered
   
   // New Conversation Test states for Mission 1
   const [conversationMessages, setConversationMessages] = useState([]) // Messages displayed in conversation
@@ -1204,8 +1205,10 @@ const IslandMap = ({ onExit }) => {
   
   // Trigger final Sparky dialogue when user returns to main land after Phase 2 completion
   useEffect(() => {
-    if (phase2Completed && !showFinalSparkyDialogue && currentIsland === ISLANDS.MAIN_ISLAND && !islandRestored) {
+    if (phase2Completed && !finalDialogueTriggered && currentIsland === ISLANDS.MAIN_ISLAND && !islandRestored) {
       // Automatically trigger final Sparky dialogue when on main land
+      setFinalDialogueTriggered(true) // Mark as triggered to prevent re-triggering
+      
       setTimeout(() => {
         setShowFinalSparkyDialogue(true)
         setShowSparkyDialogue(true)
@@ -1221,7 +1224,7 @@ const IslandMap = ({ onExit }) => {
         }
       }, 1000)
     }
-  }, [phase2Completed, showFinalSparkyDialogue, currentIsland, islandRestored])
+  }, [phase2Completed, finalDialogueTriggered, currentIsland, islandRestored])
 
   // Sound effects and music
   useBackgroundMusic('/sound/island.mp3')
@@ -1246,9 +1249,10 @@ const IslandMap = ({ onExit }) => {
       debriefStep,
       showFinalSparkyDialogue,
       finalDialogueStep,
+      finalDialogueTriggered,
     }
     localStorage.setItem('islandProgress', JSON.stringify(progress))
-  }, [missionActive, missionCompleted, phase2Active, phase2Completed, completedMissions, completedNpcs, phase2CompletedMissions, islandRestored, showSparkyDialogue, currentSparkyStep, showSparkyDebrief, debriefStep, showFinalSparkyDialogue, finalDialogueStep])
+  }, [missionActive, missionCompleted, phase2Active, phase2Completed, completedMissions, completedNpcs, phase2CompletedMissions, islandRestored, showSparkyDialogue, currentSparkyStep, showSparkyDebrief, debriefStep, showFinalSparkyDialogue, finalDialogueStep, finalDialogueTriggered])
   
   // Load progress from localStorage on mount
   useEffect(() => {
@@ -1281,6 +1285,7 @@ const IslandMap = ({ onExit }) => {
           setDebriefStep(progress.debriefStep || 0)
           setShowFinalSparkyDialogue(progress.showFinalSparkyDialogue || false)
           setFinalDialogueStep(progress.finalDialogueStep || 0)
+          setFinalDialogueTriggered(progress.finalDialogueTriggered || false)
           
           // Rebuild Sparky messages if dialogue is active
           if (progress.showFinalSparkyDialogue && progress.finalDialogueStep >= 0) {
