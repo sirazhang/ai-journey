@@ -308,11 +308,16 @@ const YourProgress = ({ isOpen, onClose }) => {
   const apps = [
     { id: 'photos', name: 'Vision Log', icon: Aperture, color: 'linear-gradient(135deg, #fbbf24 0%, #f43f5e 50%, #a855f7 100%)' },
     { id: 'assistant', name: 'NPC Link', icon: MessageCircle, color: '#10b981', badge: badges.npcLink > 0 ? badges.npcLink : undefined },
-    { id: 'mail', name: 'Report', icon: MailIcon, color: '#fbbf24', badge: badges.report > 0 ? badges.report : undefined },
     { id: 'notes', name: 'Review', icon: StickyNote, color: '#f97316', badge: badges.review > 0 ? badges.review : undefined },
   ]
 
-  const dockApps = ['photos', 'assistant', 'mail', 'notes']
+  const dockApps = ['photos', 'assistant', 'mail']
+  
+  // Add mail app for dock only
+  const allApps = [
+    ...apps,
+    { id: 'mail', name: 'Report', icon: MailIcon, color: '#fbbf24', badge: badges.report > 0 ? badges.report : undefined },
+  ]
 
   const renderApp = () => {
     switch (activeApp) {
@@ -372,12 +377,14 @@ const YourProgress = ({ isOpen, onClose }) => {
             transform: activeApp ? 'scale(0.95)' : 'scale(1)',
             opacity: activeApp ? 0 : 1
           }}>
-            {/* Grid */}
+            {/* Grid - 2 rows, centered */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '16px 16px',
-              rowGap: '32px'
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '16px',
+              rowGap: '32px',
+              justifyItems: 'center',
+              marginTop: '40px'
             }}>
               {apps.map((app) => (
                 <AppIcon 
@@ -430,7 +437,7 @@ const YourProgress = ({ isOpen, onClose }) => {
               padding: '0 16px'
             }}>
               {dockApps.map((dockAppId) => {
-                const app = apps.find(a => a.id === dockAppId)
+                const app = allApps.find(a => a.id === dockAppId)
                 if (!app) return null
                 return (
                   <AppIcon 
@@ -1029,22 +1036,6 @@ const AssistantApp = ({ onClose }) => {
                 overflow: 'hidden'
               }}
             >
-              {/* Subtle background image overlay */}
-              <img 
-                src={npc.backgroundImage} 
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  opacity: 0.2,
-                  mixBlendMode: 'overlay',
-                  pointerEvents: 'none'
-                }}
-                alt=""
-              />
-              
               <div style={{
                 width: '64px',
                 height: '64px',
@@ -1054,7 +1045,7 @@ const AssistantApp = ({ onClose }) => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '30px',
+                fontSize: '36px',
                 boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
                 zIndex: 10
               }}>
@@ -1093,38 +1084,17 @@ const AssistantApp = ({ onClose }) => {
       display: 'flex',
       flexDirection: 'column',
       position: 'relative',
-      background: '#000'
+      background: selectedNPC.id === 'glitch' ? '#0f172a' : '#f3f4f6'
     }}>
-      {/* Background Image */}
-      <div 
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: `url(${selectedNPC.backgroundImage})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          zIndex: 0,
-          transition: 'opacity 0.5s',
-          opacity: 0.6
-        }}
-      />
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        background: 'rgba(0, 0, 0, 0.4)',
-        backdropFilter: 'blur(2px)',
-        zIndex: 0
-      }} />
-
       {/* Header */}
       <div style={{
         height: '96px',
         paddingTop: '40px',
         paddingLeft: '16px',
         paddingRight: '16px',
-        background: 'rgba(255, 255, 255, 0.1)',
+        background: selectedNPC.id === 'glitch' ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+        borderBottom: selectedNPC.id === 'glitch' ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
         display: 'flex',
         alignItems: 'center',
         position: 'sticky',
@@ -1142,7 +1112,7 @@ const AssistantApp = ({ onClose }) => {
             border: 'none',
             cursor: 'pointer',
             transition: 'background 0.2s',
-            color: '#fff'
+            color: selectedNPC.id === 'glitch' ? '#fff' : '#000'
           }}
         >
           <ChevronLeft />
@@ -1155,26 +1125,23 @@ const AssistantApp = ({ onClose }) => {
           alignItems: 'center',
           justifyContent: 'center',
           marginRight: '12px',
-          fontSize: '18px',
-          background: 'rgba(255, 255, 255, 0.2)',
-          backdropFilter: 'blur(4px)',
-          border: '1px solid rgba(255, 255, 255, 0.2)'
+          fontSize: '24px',
+          background: 'rgba(128, 128, 128, 0.2)',
+          backdropFilter: 'blur(4px)'
         }}>
           {selectedNPC.avatar}
         </div>
-        <div style={{ color: '#fff' }}>
+        <div style={{ color: selectedNPC.id === 'glitch' ? '#fff' : '#000' }}>
           <h1 style={{
             fontSize: '18px',
             fontWeight: '700',
             lineHeight: 1,
-            textShadow: '0 1px 3px rgba(0, 0, 0, 0.3)',
             margin: 0
           }}>{selectedNPC.name}</h1>
           <span style={{
             fontSize: '12px',
-            color: 'rgba(255, 255, 255, 0.8)',
-            fontWeight: '500',
-            textShadow: '0 1px 3px rgba(0, 0, 0, 0.3)'
+            opacity: 0.7,
+            fontWeight: '500'
           }}>{selectedNPC.location}</span>
         </div>
       </div>
@@ -1189,7 +1156,7 @@ const AssistantApp = ({ onClose }) => {
           display: 'flex',
           flexDirection: 'column',
           gap: '16px',
-          zIndex: 10
+          background: selectedNPC.id === 'glitch' ? '#0f172a' : '#f3f4f6'
         }}
       >
         {messages.map((msg) => (
@@ -1207,9 +1174,8 @@ const AssistantApp = ({ onClose }) => {
                 padding: '12px 16px',
                 fontSize: '15px',
                 boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
-                backdropFilter: 'blur(12px)',
-                background: msg.role === 'user' ? selectedNPC.color : 'rgba(255, 255, 255, 0.9)',
-                color: msg.role === 'user' ? '#fff' : '#1f2937',
+                background: msg.role === 'user' ? selectedNPC.color : (selectedNPC.id === 'glitch' ? '#1e293b' : '#fff'),
+                color: msg.role === 'user' ? '#fff' : (selectedNPC.id === 'glitch' ? '#fff' : '#1f2937'),
                 borderBottomRightRadius: msg.role === 'user' ? '4px' : '16px',
                 borderBottomLeftRadius: msg.role === 'user' ? '16px' : '4px'
               }}
@@ -1221,7 +1187,7 @@ const AssistantApp = ({ onClose }) => {
         {isLoading && (
           <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
             <div style={{
-              background: 'rgba(255, 255, 255, 0.9)',
+              background: selectedNPC.id === 'glitch' ? '#1e293b' : '#fff',
               borderRadius: '16px',
               borderBottomLeftRadius: '4px',
               padding: '12px 16px',
@@ -1258,11 +1224,10 @@ const AssistantApp = ({ onClose }) => {
       {/* Input */}
       <div style={{
         padding: '16px',
-        background: 'rgba(0, 0, 0, 0.4)',
+        background: selectedNPC.id === 'glitch' ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
         backdropFilter: 'blur(40px)',
-        borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-        paddingBottom: '32px',
-        zIndex: 10
+        borderTop: selectedNPC.id === 'glitch' ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
+        paddingBottom: '32px'
       }}>
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
           <input
@@ -1273,13 +1238,13 @@ const AssistantApp = ({ onClose }) => {
             placeholder={`Message ${selectedNPC.name}...`}
             style={{
               width: '100%',
-              background: 'rgba(255, 255, 255, 0.2)',
-              color: '#fff',
+              background: selectedNPC.id === 'glitch' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+              color: selectedNPC.id === 'glitch' ? '#fff' : '#000',
               borderRadius: '9999px',
               padding: '12px 16px',
               paddingRight: '48px',
               outline: 'none',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              border: selectedNPC.id === 'glitch' ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
               transition: 'all 0.2s'
             }}
           />
