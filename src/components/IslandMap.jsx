@@ -1242,7 +1242,7 @@ const IslandMap = ({ onExit }) => {
         const progress = JSON.parse(savedProgress)
         
         // Only load if there's actual progress
-        if (progress.missionActive || progress.missionCompleted || progress.phase2Active || progress.phase2Completed) {
+        if (progress.missionActive || progress.missionCompleted || progress.phase2Active || progress.phase2Completed || progress.islandRestored) {
           setMissionActive(progress.missionActive || false)
           setMissionCompleted(progress.missionCompleted || false)
           setPhase2Active(progress.phase2Active || false)
@@ -1251,6 +1251,11 @@ const IslandMap = ({ onExit }) => {
           setCompletedNpcs(new Set(progress.completedNpcs || []))
           setPhase2CompletedMissions(progress.phase2CompletedMissions || [])
           setIslandRestored(progress.islandRestored || false)
+          
+          // If island is restored, start at main island
+          if (progress.islandRestored) {
+            setCurrentIsland(ISLANDS.MAIN_ISLAND)
+          }
           
           // Load Sparky dialogue progress - always load these states
           setShowSparkyDialogue(progress.showSparkyDialogue || false)
