@@ -4681,6 +4681,53 @@ const DataCleaning = ({ onComplete, onExit }) => {
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
+                {/* Scanning Animation Overlay */}
+                {isRecognizing && (
+                  <>
+                    {/* SCANNING text - top left */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '30px',
+                      left: '30px',
+                      fontFamily: "'Roboto Mono', monospace",
+                      fontSize: '24px',
+                      fontWeight: 600,
+                      color: '#00ff41',
+                      textShadow: '0 0 10px #00ff41, 0 0 20px #00ff41, 0 0 30px #00ff41',
+                      letterSpacing: '3px',
+                      zIndex: 202,
+                      animation: 'pulse 1.5s ease-in-out infinite',
+                    }}>
+                      SCANNING...
+                    </div>
+                    
+                    {/* Scanning line - moves from top to bottom */}
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '3px',
+                      background: 'linear-gradient(90deg, transparent, #00ff41, transparent)',
+                      boxShadow: '0 0 20px #00ff41, 0 0 40px #00ff41',
+                      zIndex: 201,
+                      animation: 'scanLine 2s linear infinite',
+                    }} />
+                    
+                    {/* Add keyframes for animations */}
+                    <style>{`
+                      @keyframes scanLine {
+                        0% { transform: translateY(0); }
+                        100% { transform: translateY(100vh); }
+                      }
+                      @keyframes pulse {
+                        0%, 100% { opacity: 1; }
+                        50% { opacity: 0.5; }
+                      }
+                    `}</style>
+                  </>
+                )}
+                
                 {/* Close button */}
                 <button
                   style={{
