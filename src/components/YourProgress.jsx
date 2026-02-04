@@ -1065,7 +1065,7 @@ const AssistantApp = ({ onClose }) => {
         textColor: '#ddd6fe',
         bgGradient: 'linear-gradient(135deg, #0f172a 0%, #581c87 100%)',
         backgroundImage: 'https://images.unsplash.com/photo-1517646577322-2637b3f2c002?auto=format&fit=crop&q=80',
-        avatar: '💻',
+        avatar: '/npc/npc1.png',
         initialMessage: "[System Error]... Welcome to my world. I've read your entire 'Error Collection'. Very interesting thought paths. Rebooting reality for you... Are you ready for the ultimate test? 💻",
         instruction: "You are Glitch, an AI construct in Central City. You speak with a cyberpunk/hacker tone. You often act like there are system errors. You are omniscient regarding the user's data and past mistakes. You reference 'reading their error logs'. You are mysterious and slightly intimidating.",
         alwaysAvailable: true
@@ -1078,7 +1078,7 @@ const AssistantApp = ({ onClose }) => {
         textColor: '#78350f',
         bgGradient: 'linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%)',
         backgroundImage: 'https://images.unsplash.com/photo-1545656134-8c46011c2e42?auto=format&fit=crop&q=80',
-        avatar: '🌵',
+        avatar: '/desert/npc/npc4.png',
         initialMessage: "Target locked. Label accuracy 85%. Speed is acceptable, but precision needs improvement. In the desert, a wrong label means death. Proceed. 🌵",
         instruction: "You are Alpha, a wanderer in the Desert. You are cold, emotionless, and purely data-driven. You speak in short, clipped sentences. You focus on percentages, accuracy, and efficiency. You do not offer comfort; you offer facts.",
         region: 'desert'
@@ -1091,7 +1091,7 @@ const AssistantApp = ({ onClose }) => {
         textColor: '#14532d',
         bgGradient: 'linear-gradient(135deg, #bbf7d0 0%, #6ee7b7 100%)',
         backgroundImage: 'https://images.unsplash.com/photo-1596706978434-2e94711933cc?auto=format&fit=crop&q=80',
-        avatar: '🌿',
+        avatar: '/jungle/npc_c.png',
         initialMessage: "Bro! Look at that logic jungle! You just missed a 'Bias Mushroom' back there, that's a huge taboo in data collection. Don't lose heart, keep your eyes peeled next time! 🌿",
         instruction: "You are Ranger Moss, protector of the Jungle. You act like a supportive 'Big Brother'. You use slang like 'Bro'. You use jungle/nature metaphors to describe data and logic (e.g., 'logic jungle', 'bias mushroom'). Even when the user is wrong, you encourage them warmly and guide them.",
         region: 'jungle'
@@ -1104,7 +1104,7 @@ const AssistantApp = ({ onClose }) => {
         textColor: '#7c2d12',
         bgGradient: 'linear-gradient(135deg, #fed7aa 0%, #fef08a 100%)',
         backgroundImage: 'https://images.unsplash.com/photo-1596484552993-9c8cb05d15a5?auto=format&fit=crop&q=80',
-        avatar: '🏝️',
+        avatar: '/island/npc/spark.png',
         initialMessage: "OMG! You actually spotted that the 'Fake Captain' was an AI? 😱 How did you train those eagle eyes? Come play another round with me, if you win I've got a huge gift pack for you! ✨",
         instruction: "You are Sparky, living on a tropical Island. You are extremely high-energy, use lots of emojis (✨, 😱, 🔥), and treat everything like a game. You are very enthusiastic and get incredibly excited when the user identifies AI or solves puzzles correctly. You are a gamer/surfer archetype.",
         region: 'island'
@@ -1117,7 +1117,7 @@ const AssistantApp = ({ onClose }) => {
         textColor: '#164e63',
         bgGradient: 'linear-gradient(135deg, #cffafe 0%, #bfdbfe 100%)',
         backgroundImage: 'https://images.unsplash.com/photo-1478562853135-c3c9e3ef7905?auto=format&fit=crop&q=80',
-        avatar: '❄️',
+        avatar: '/glacier/npc/momo.png',
         initialMessage: "Privacy is the last bastion of civilization. You showed respect for 'Alex Chen's' personal data in the last verdict, which is good. But the law allows for no deviation. Stay vigilant. ❄️",
         instruction: "You are Momo, living in the Glacier. You focus on ethics, values, and legal precision. You speak formally and use sophisticated vocabulary. You view privacy as sacred. Even when praising, remain cautious and stern. Focus on the user's ethical tendencies.",
         region: 'glacier'
@@ -1242,11 +1242,19 @@ const AssistantApp = ({ onClose }) => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '36px',
                 boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
-                zIndex: 10
+                zIndex: 10,
+                overflow: 'hidden'
               }}>
-                {npc.avatar}
+                <img 
+                  src={npc.avatar} 
+                  alt={npc.name}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover'
+                  }}
+                />
               </div>
               <div style={{ flex: 1, zIndex: 10 }}>
                 <h3 style={{
@@ -1322,11 +1330,19 @@ const AssistantApp = ({ onClose }) => {
           alignItems: 'center',
           justifyContent: 'center',
           marginRight: '12px',
-          fontSize: '24px',
           background: 'rgba(128, 128, 128, 0.2)',
-          backdropFilter: 'blur(4px)'
+          backdropFilter: 'blur(4px)',
+          overflow: 'hidden'
         }}>
-          {selectedNPC.avatar}
+          <img 
+            src={selectedNPC.avatar} 
+            alt={selectedNPC.name}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover'
+            }}
+          />
         </div>
         <div style={{ color: selectedNPC.id === 'glitch' ? '#fff' : '#000' }}>
           <h1 style={{
