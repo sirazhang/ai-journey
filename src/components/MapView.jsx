@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { useLanguage } from '../contexts/LanguageContext'
-import SettingsPanel from './SettingsPanel'
 import YourProgress from './YourProgress'
 import { getGeminiUrl } from '../config/api'
 
@@ -902,8 +901,7 @@ const MapView = ({ onRegionClick }) => {
     <div style={styles.container}>
       <style>{styles.keyframes}</style>
       
-      {/* Settings Panel */}
-      {!isZooming && <SettingsPanel position="topLeft" />}
+      {/* Settings moved to phone interface */}
       
       {/* Your Progress Button in bottom-left */}
       {!isZooming && (
@@ -989,187 +987,7 @@ const MapView = ({ onRegionClick }) => {
         }}
       />
       
-      {/* NPC Glitch in top-right (disappears when card shows) */}
-      <div 
-        style={{
-          ...styles.npcContainer,
-          opacity: (isCardShowing || isZooming) ? 0 : 1,
-          pointerEvents: (isCardShowing || isZooming) ? 'none' : 'auto',
-        }}
-        onMouseEnter={() => setHoveredNpc(true)}
-        onMouseLeave={() => setHoveredNpc(false)}
-        onClick={() => {
-          playHumSound()
-          setShowGlitchDialogue(true)
-        }}
-      >
-        <img 
-          src="/npc/npc1.png" 
-          alt="Glitch" 
-          style={styles.npcImage}
-        />
-      </div>
-      
-      {/* NPC Dialogue (shows on click) */}
-      {showGlitchDialogue && !isCardShowing && !isZooming && (
-        <div style={styles.npcDialogue}>
-          {/* Close button */}
-          <button
-            style={styles.npcDialogueCloseButton}
-            onClick={() => {
-              setShowGlitchDialogue(false)
-              setGlitchChatHistory([]) // Clear chat history when closing
-            }}
-            onMouseOver={(e) => {
-              e.target.style.color = '#333'
-              e.target.style.transform = 'scale(1.1)'
-            }}
-            onMouseOut={(e) => {
-              e.target.style.color = '#999'
-              e.target.style.transform = 'scale(1)'
-            }}
-          >
-            ✕
-          </button>
-          
-          {/* Header with avatar and name */}
-          <div style={styles.npcDialogueHeader}>
-            <div style={styles.npcDialogueAvatar}>
-              <span style={styles.npcDialogueAvatarIcon}>👾</span>
-            </div>
-            <h4 style={styles.npcDialogueName}>Glitch</h4>
-          </div>
-          
-          {/* Chat history */}
-          <div style={{
-            maxHeight: '300px',
-            overflowY: 'auto',
-            marginBottom: '15px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
-          }}>
-            {/* Initial greeting if no chat history */}
-            {glitchChatHistory.length === 0 && (
-              <p style={styles.npcDialogueText}>
-                I suggest go to the Fungi Jungle first.
-              </p>
-            )}
-            
-            {/* Chat messages */}
-            {glitchChatHistory.map((message, index) => (
-              <div
-                key={index}
-                style={{
-                  padding: '10px 12px',
-                  borderRadius: '12px',
-                  background: message.role === 'user' 
-                    ? 'rgba(175, 77, 202, 0.1)' 
-                    : 'rgba(175, 77, 202, 0.05)',
-                  border: message.role === 'user'
-                    ? '1px solid rgba(175, 77, 202, 0.3)'
-                    : '1px solid rgba(175, 77, 202, 0.1)',
-                  alignSelf: message.role === 'user' ? 'flex-end' : 'flex-start',
-                  maxWidth: '85%',
-                }}
-              >
-                <div style={{
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  color: '#af4dca',
-                  marginBottom: '4px',
-                  fontFamily: "'Roboto', sans-serif",
-                }}>
-                  {message.role === 'user' ? 'YOU' : 'GLITCH'}
-                </div>
-                <div style={{
-                  fontSize: '14px',
-                  color: '#333',
-                  lineHeight: 1.5,
-                  fontFamily: "'Roboto', sans-serif",
-                  whiteSpace: 'pre-wrap',
-                }}>
-                  {message.text}
-                </div>
-              </div>
-            ))}
-            
-            {/* Typing indicator */}
-            {isGlitchTyping && (
-              <div style={{
-                padding: '10px 12px',
-                borderRadius: '12px',
-                background: 'rgba(175, 77, 202, 0.05)',
-                border: '1px solid rgba(175, 77, 202, 0.1)',
-                alignSelf: 'flex-start',
-                maxWidth: '85%',
-              }}>
-                <div style={{
-                  fontSize: '10px',
-                  fontWeight: 'bold',
-                  color: '#af4dca',
-                  marginBottom: '4px',
-                  fontFamily: "'Roboto', sans-serif",
-                }}>
-                  GLITCH
-                </div>
-                <div style={{
-                  fontSize: '14px',
-                  color: '#999',
-                  fontFamily: "'Roboto', sans-serif",
-                }}>
-                  <span style={{ animation: 'blink 1.4s infinite' }}>●</span>
-                  <span style={{ animation: 'blink 1.4s infinite 0.2s' }}>●</span>
-                  <span style={{ animation: 'blink 1.4s infinite 0.4s' }}>●</span>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          {/* Input container */}
-          <div 
-            style={styles.npcDialogueInputContainer}
-            onFocus={(e) => {
-              e.currentTarget.style.borderColor = '#af4dca'
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.borderColor = '#d9d7de'
-            }}
-          >
-            <input
-              type="text"
-              placeholder="Ask Glitch anything..."
-              value={glitchInput}
-              onChange={(e) => setGlitchInput(e.target.value)}
-              onKeyPress={handleGlitchInputKeyPress}
-              disabled={isGlitchTyping}
-              style={styles.npcDialogueInput}
-            />
-            <div style={styles.npcDialogueDivider}></div>
-            <button
-              onClick={handleGlitchSend}
-              style={{
-                ...styles.npcDialogueSendButton,
-                opacity: isGlitchTyping ? 0.5 : 1,
-                cursor: isGlitchTyping ? 'not-allowed' : 'pointer',
-              }}
-              disabled={isGlitchTyping}
-              onMouseOver={(e) => {
-                if (!isGlitchTyping) e.currentTarget.style.transform = 'scale(1.1)'
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'scale(1)'
-              }}
-            >
-              <img 
-                src="/icon/send.png" 
-                alt="Send" 
-                style={styles.npcDialogueSendIcon}
-              />
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Glitch NPC removed - now available in phone interface */}
       
       {/* Region Labels - New Card Style */}
       {regions

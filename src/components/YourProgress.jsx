@@ -22,10 +22,16 @@ import {
   MoreHorizontal,
   Archive,
   Reply,
-  Edit3
+  Edit3,
+  Settings as SettingsIcon,
+  Volume2,
+  VolumeX,
+  Globe
 } from 'lucide-react'
 import { format } from 'date-fns'
 import useSoundEffects from '../hooks/useSoundEffects'
+import { useLanguage } from '../contexts/LanguageContext'
+import volumeManager from '../utils/volumeManager'
 
 // System UI Components
 const StatusBar = ({ color = 'white' }) => {
@@ -310,6 +316,7 @@ const YourProgress = ({ isOpen, onClose }) => {
     { id: 'assistant', name: 'NPC Link', icon: MessageCircle, color: '#10b981', badge: badges.npcLink > 0 ? badges.npcLink : undefined },
     { id: 'mail', name: 'Report', icon: MailIcon, color: '#fbbf24', badge: badges.report > 0 ? badges.report : undefined },
     { id: 'notes', name: 'Review', icon: StickyNote, color: '#f97316', badge: badges.review > 0 ? badges.review : undefined },
+    { id: 'settings', name: 'Settings', icon: SettingsIcon, color: '#6b7280' },
   ]
 
   const dockApps = ['photos', 'assistant', 'mail']
@@ -324,6 +331,8 @@ const YourProgress = ({ isOpen, onClose }) => {
         return <MailApp onClose={closeApp} />
       case 'notes':
         return <NotesApp onClose={closeApp} />
+      case 'settings':
+        return <SettingsApp onClose={closeApp} />
       default:
         return null
     }
@@ -372,7 +381,7 @@ const YourProgress = ({ isOpen, onClose }) => {
             transform: activeApp ? 'scale(0.95)' : 'scale(1)',
             opacity: activeApp ? 0 : 1
           }}>
-            {/* Grid - 2 rows, 2 columns */}
+            {/* Grid - 3 rows, 2 columns for 5 apps */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(2, 1fr)',
@@ -1066,7 +1075,7 @@ const AssistantApp = ({ onClose }) => {
         bgGradient: 'linear-gradient(135deg, #0f172a 0%, #581c87 100%)',
         backgroundImage: 'https://images.unsplash.com/photo-1517646577322-2637b3f2c002?auto=format&fit=crop&q=80',
         avatar: '/npc/npc1.png',
-        initialMessage: "[System Error]... Welcome to my world. I've read your entire 'Error Collection'. Very interesting thought paths. Rebooting reality for you... Are you ready for the ultimate test? 💻",
+        initialMessage: "I suggest go to the Fungi Jungle first.",
         instruction: "You are Glitch, an AI construct in Central City. You speak with a cyberpunk/hacker tone. You often act like there are system errors. You are omniscient regarding the user's data and past mistakes. You reference 'reading their error logs'. You are mysterious and slightly intimidating.",
         alwaysAvailable: true
       },
@@ -2015,6 +2024,277 @@ const NotesApp = ({ onClose }) => {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+// Settings App - Complete iOS Implementation
+const SettingsApp = ({ onClose }) => {
+  const { language, changeLanguage, t } = useLanguage()
+  const [volume, setVolume] = useState(volumeManager.getVolume())
+  const [tempVolume, setTempVolume] = useState(volumeManager.getVolume())
+  const [isMuted, setIsMuted] = useState(volumeManager.isMutedStatus())
+
+  // Subscribe to volume changes
+  useEffect(() => {
+    const unsubscribe = volumeManager.subscribe(({ volume: newVolume, isMuted: newMuted }) => {
+      setVolume(newVolume)
+      setTempVolume(newVolume)
+      setIsMuted(newMuted)
+    })
+    
+    return unsubscribe
+  }, [])
+
+  const handleLanguageChange = (lang) => {
+    changeLanguage(lang)
+  }
+
+  const handleVolumeChange = (e) => {
+    const newVolume = parseInt(e.target.value)
+    setTempVolume(newVolume)
+    volumeManager.setVolume(newVolume)
+  }
+
+  const handleMuteToggle = () => {
+    volumeManager.toggleMute()
+  }
+
+  return (
+    <div style={{
+      height: '100%',
+      background: '#000',
+      overflowY: 'auto'
+    }}>
+      {/* Header */}
+      <div style={{
+        paddingTop: '48px',
+        paddingLeft: '16px',
+        paddingRight: '16px',
+        paddingBottom: '16px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+        background: 'rgba(0, 0, 0, 0.95)',
+        backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+      }}>
+        <h1 style={{
+          fontSize: '30px',
+          fontWeight: '700',
+          color: '#fff',
+          margin: 0
+        }}>Settings</h1>
+      </div>
+
+      {/* Settings Content */}
+      <div style={{
+        paddingLeft: '16px',
+        paddingRight: '16px',
+        paddingTop: '24px',
+        paddingBottom: '80px'
+      }}>
+        {/* Language Section */}
+        <div style={{
+          background: '#1f2937',
+          borderRadius: '16px',
+          padding: '20px',
+          marginBottom: '24px'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            marginBottom: '16px'
+          }}>
+            <Globe size={24} style={{ color: '#3b82f6' }} />
+            <h2 style={{
+              fontSize: '18px',
+              fontWeight: '600',
+              color: '#fff',
+              margin: 0
+            }}>Language</h2>
+          </div>
+          
+          <div style={{
+            display: 'flex',
+            gap: '12px'
+          }}>
+            <button
+              onClick={() => handleLanguageChange('en')}
+              style={{
+                flex: 1,
+                padding: '12px',
+                borderRadius: '12px',
+                border: 'none',
+                background: language === 'en' ? '#3b82f6' : 'rgba(255, 255, 255, 0.1)',
+                color: '#fff',
+                fontSize: '15px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: language === 'en' ? '0 2px 8px rgba(59, 130, 246, 0.4)' : 'none'
+              }}
+            >
+              English
+            </button>
+            <button
+              onClick={() => handleLanguageChange('zh')}
+              style={{
+                flex: 1,
+                padding: '12px',
+                borderRadius: '12px',
+                border: 'none',
+                background: language === 'zh' ? '#3b82f6' : 'rgba(255, 255, 255, 0.1)',
+                color: '#fff',
+                fontSize: '15px',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: language === 'zh' ? '0 2px 8px rgba(59, 130, 246, 0.4)' : 'none'
+              }}
+            >
+              中文
+            </button>
+          </div>
+        </div>
+
+        {/* Volume Section */}
+        <div style={{
+          background: '#1f2937',
+          borderRadius: '16px',
+          padding: '20px'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '16px'
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              {isMuted ? (
+                <VolumeX size={24} style={{ color: '#ef4444' }} />
+              ) : (
+                <Volume2 size={24} style={{ color: '#3b82f6' }} />
+              )}
+              <h2 style={{
+                fontSize: '18px',
+                fontWeight: '600',
+                color: '#fff',
+                margin: 0
+              }}>Volume</h2>
+            </div>
+            <span style={{
+              fontSize: '16px',
+              fontWeight: '600',
+              color: '#9ca3af'
+            }}>{tempVolume}%</span>
+          </div>
+
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            marginBottom: '16px'
+          }}>
+            <button
+              onClick={handleMuteToggle}
+              style={{
+                padding: '8px',
+                borderRadius: '8px',
+                border: 'none',
+                background: isMuted ? 'rgba(239, 68, 68, 0.2)' : 'rgba(59, 130, 246, 0.2)',
+                color: isMuted ? '#ef4444' : '#3b82f6',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+            </button>
+            
+            <div style={{ flex: 1, position: 'relative' }}>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={tempVolume}
+                onChange={handleVolumeChange}
+                style={{
+                  width: '100%',
+                  height: '8px',
+                  borderRadius: '4px',
+                  background: `linear-gradient(to right, #3b82f6 0%, #3b82f6 ${tempVolume}%, rgba(255, 255, 255, 0.1) ${tempVolume}%, rgba(255, 255, 255, 0.1) 100%)`,
+                  outline: 'none',
+                  WebkitAppearance: 'none',
+                  appearance: 'none',
+                  cursor: 'pointer'
+                }}
+              />
+            </div>
+          </div>
+
+          <p style={{
+            fontSize: '13px',
+            color: '#9ca3af',
+            margin: 0,
+            lineHeight: '1.5'
+          }}>
+            Adjust the system volume for all sounds including background music, sound effects, and NPC dialogues.
+          </p>
+        </div>
+
+        {/* Info Section */}
+        <div style={{
+          marginTop: '32px',
+          padding: '16px',
+          textAlign: 'center'
+        }}>
+          <p style={{
+            fontSize: '13px',
+            color: '#6b7280',
+            margin: 0,
+            marginBottom: '8px'
+          }}>
+            AI Journey Game
+          </p>
+          <p style={{
+            fontSize: '12px',
+            color: '#4b5563',
+            margin: 0
+          }}>
+            Version 1.0.0
+          </p>
+        </div>
+      </div>
+
+      <style>{`
+        input[type="range"]::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: #3b82f6;
+          cursor: pointer;
+          box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+        }
+        input[type="range"]::-moz-range-thumb {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: #3b82f6;
+          cursor: pointer;
+          border: none;
+          box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+        }
+      `}</style>
     </div>
   )
 }
