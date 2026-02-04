@@ -3307,7 +3307,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
       height: 'auto',
       marginBottom: '30px',
     },
-    progressBarContainer: {
+    finalProgressBarContainer: {
       width: '400px',
       height: '20px',
       background: 'rgba(255,255,255,0.3)',

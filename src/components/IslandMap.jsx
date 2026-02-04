@@ -3577,7 +3577,7 @@ const IslandMap = ({ onExit }) => {
       height: '40px',
       marginBottom: '6px',
     },
-    missionImageContainer: {
+    missionImageViewerContainer: {
       position: 'absolute',
       top: '12.5%',
       left: '35%',

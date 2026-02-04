@@ -710,7 +710,7 @@ const DataCollection = ({ onComplete, onExit }) => {
       backgroundClip: 'padding-box, border-box',
       textAlign: 'center',
     },
-    dialogueText: {
+    completionDialogueText: {
       fontFamily: "'Roboto', sans-serif",
       fontSize: '18px',
       color: '#333',
