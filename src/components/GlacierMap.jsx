@@ -467,7 +467,7 @@ const completeSceneNpcs = [
     id: 'npc3',
     image: '/glacier/npc/npc3.png',
     dialogue: "Fast is good, but correct is better.",
-    position: { right: '100px', bottom: '120px', height: '180px' }
+    position: { left: '200px', top: '10px', height: '180px' }
   },
   {
     id: 'npc4',
@@ -479,7 +479,7 @@ const completeSceneNpcs = [
     id: 'npc11',
     image: '/glacier/npc/npc11.png',
     dialogue: "I used to just copy-paste the snow. Now I actually shape it.",
-    position: { left: '1200px', top: '300px', height: '170px' }
+    position: { left: '600px', top: '300px', height: '170px' }
   },
   {
     id: 'npc12',
@@ -491,7 +491,7 @@ const completeSceneNpcs = [
     id: 'npc10',
     image: '/glacier/npc/npc10.png',
     dialogue: "It feels good to think clearly again.",
-    position: { right: '700px', bottom: '500px', height: '90px' }
+    position: { right: '650px', bottom: '450px', height: '120px' }
   }
 ]
 
