@@ -429,11 +429,11 @@ const MapView = ({ onRegionClick }) => {
       transition: 'transform 0.3s ease',
       animation: hoveredNpc ? 'breathe 1s ease-in-out infinite' : 'none',
     },
-    // About Me button in top-left corner
+    // About Me button in top-right corner
     aboutMeButton: {
       position: 'absolute',
       top: '5%',
-      left: '5%',
+      right: '5%',
       display: 'flex',
       alignItems: 'center',
       gap: '8px',
@@ -941,7 +941,7 @@ const MapView = ({ onRegionClick }) => {
         </button>
       )}
       
-      {/* About Me Button in top-left */}
+      {/* About Me Button in top-right */}
       {!isZooming && (
         <a
           href="https://sirazhang.github.io"
@@ -950,9 +950,9 @@ const MapView = ({ onRegionClick }) => {
           style={{
             ...styles.aboutMeButton,
             top: '5%',
-            left: '5%',
+            right: '5%',
+            left: 'auto',
             bottom: 'auto',
-            right: 'auto',
             opacity: (isCardShowing || isZooming) ? 0 : 1,
             pointerEvents: (isCardShowing || isZooming) ? 'none' : 'auto',
           }}
