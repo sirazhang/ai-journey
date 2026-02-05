@@ -2796,7 +2796,6 @@ const DesertMap = ({ onExit }) => {
       fontFamily: "'Coming Soon', cursive",
       fontSize: '16px',
       fontWeight: 700,
-      color: '#43302E', // Dark brown color
       marginBottom: '12px',
       padding: '8px 16px',
       background: '#43302E',
@@ -3747,13 +3746,12 @@ const DesertMap = ({ onExit }) => {
       alignItems: 'center',
     },
     mission3LoadingText: {
-      fontFamily: "'Roboto', sans-serif",
+      fontFamily: "'Courier New', monospace", // 终端字体
       fontSize: '28px',
       fontWeight: 700,
       color: '#00ff00', // 绿色终端风格
       marginBottom: '30px',
       textAlign: 'center',
-      fontFamily: "'Courier New', monospace", // 终端字体
       letterSpacing: '2px',
     },
     loadingCursor: {
