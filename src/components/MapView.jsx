@@ -902,19 +902,21 @@ const MapView = ({ onRegionClick }) => {
             display: 'flex',
             alignItems: 'center',
             gap: '16px',
-            padding: '20px 40px',
+            padding: '16px 40px',
             borderRadius: '16px',
             border: '3px solid rgba(255, 255, 255, 0.9)',
             background: 'rgba(255, 255, 255, 0.95)',
             color: '#000',
             fontFamily: "'Inter', 'Roboto', sans-serif",
-            fontSize: '16px',
+            fontSize: '20px',
             fontWeight: 700,
             cursor: 'pointer',
             transition: 'all 0.3s',
             backdropFilter: 'blur(10px)',
             zIndex: 100,
             boxShadow: '0 0 20px rgba(255, 255, 255, 0.6), 0 0 40px rgba(255, 255, 255, 0.4), 0 4px 12px rgba(0, 0, 0, 0.1)',
+            textTransform: 'uppercase',
+            letterSpacing: '1px',
           }}
           onClick={() => {
             playSelectSound()

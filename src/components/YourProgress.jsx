@@ -2483,7 +2483,7 @@ const styles = {
   },
   phoneFrame: {
     position: 'absolute',
-    bottom: '80px',
+    bottom: '120px',
     left: '5%',
     width: '280px',
     height: '75vh',
