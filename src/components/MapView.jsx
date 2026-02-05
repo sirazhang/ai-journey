@@ -91,7 +91,7 @@ const MapView = ({ onRegionClick }) => {
   const [isGlitchTyping, setIsGlitchTyping] = useState(false) // Show typing indicator
   const [regionProgress, setRegionProgress] = useState({}) // Track progress for each region
   const [allRegionsComplete, setAllRegionsComplete] = useState(false) // Track if all 4 regions are complete
-  const [showProgress, setShowProgress] = useState(false) // Track Your Progress visibility
+  const [showProgress, setShowProgress] = useState(false) // Track User Log visibility
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -892,7 +892,7 @@ const MapView = ({ onRegionClick }) => {
       
       {/* Settings moved to phone interface */}
       
-      {/* Your Progress Button in bottom-left */}
+      {/* User Log Button in bottom-left */}
       {!isZooming && (
         <button
           style={{
@@ -937,7 +937,7 @@ const MapView = ({ onRegionClick }) => {
               objectFit: 'contain',
             }}
           />
-          <span>Your Progress</span>
+          <span>User Log</span>
         </button>
       )}
       
@@ -1190,7 +1190,7 @@ const MapView = ({ onRegionClick }) => {
         </div>
       )}
       
-      {/* Your Progress */}
+      {/* User Log */}
       <YourProgress 
         isOpen={showProgress} 
         onClose={() => setShowProgress(false)} 

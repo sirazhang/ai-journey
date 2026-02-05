@@ -1850,6 +1850,11 @@ const DataCleaning = ({ onComplete, onExit }) => {
         setLoadingProgress(progress)
         if (progress >= 100) {
           clearInterval(interval)
+          // Play loading complete sound
+          const loadingSound = new Audio('/sound/loading.wav')
+          loadingSound.volume = 0.6
+          loadingSound.play().catch(err => console.log('Loading sound error:', err))
+          
           setTimeout(() => {
             setPhase('COLOR_MAP_EXPLORATION')
           }, 500)
@@ -2092,7 +2097,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
   
   const handleCapturePhoto = () => {
     // Play camera sound if available
-    const cameraSound = new Audio('/sound/camera.wav')
+    const cameraSound = new Audio('/sound/camera.mp3')
     cameraSound.volume = 0.5
     cameraSound.play().catch(err => console.log('Camera sound error:', err))
     

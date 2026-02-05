@@ -374,7 +374,7 @@ const DesertMap = ({ onExit }) => {
   const [showFinalQuiz, setShowFinalQuiz] = useState(false)
 
   // Sound effects
-  const { playClickSound, playCameraSound, playStampSound, playSafeSound, playAlertSound, playCorrectSound, playWrongSound, playSelectSound } = useSoundEffects()
+  const { playClickSound, playCameraSound, playStampSound, playSafeSound, playAlertSound, playCorrectSound, playWrongSound, playSelectSound, playLoadingSound } = useSoundEffects()
   const { startTypingSound, stopTypingSound } = useTypingSound('/sound/desert_typing.wav')
 
   // Mission 3 states
@@ -1960,6 +1960,7 @@ const DesertMap = ({ onExit }) => {
     setShowDialogue(false)
     
     // Show loading screen and transition to color mode
+    playLoadingSound()
     setShowMission3Loading(true)
     
     // After loading, switch to color mode
@@ -2142,6 +2143,7 @@ const DesertMap = ({ onExit }) => {
     setShowDialogue(false)
     
     // Show loading screen with desert icon and transition to color mode
+    playLoadingSound()
     setShowMission3Loading(true)
     
     // After loading, switch to color mode

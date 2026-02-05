@@ -6,7 +6,7 @@ const CentralCity = ({ onExit }) => {
   const { t } = useLanguage()
 
   // Background music
-  useBackgroundMusic('/sound/city.wav')
+  useBackgroundMusic('/sound/spaceship.mp3')
 
   const styles = {
     container: {

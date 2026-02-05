@@ -41,7 +41,7 @@ function App() {
       case 'glacierMap':
         return '/sound/glacier.mp3'
       case 'centralCity':
-        return '/sound/city.wav'
+        return '/sound/spaceship.mp3'
       default:
         return '/sound/spaceship.mp3'
     }

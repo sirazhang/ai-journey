@@ -239,38 +239,47 @@ const YourProgress = ({ isOpen, onClose }) => {
   const calculateBadges = () => {
     const savedUser = localStorage.getItem('aiJourneyUser')
     if (!savedUser) {
-      setBadges({ npcLink: 1, report: 0, review: 0 }) // Only Glitch available by default
+      setBadges({ npcLink: 0, report: 0, review: 0 })
       return
     }
 
     const userData = JSON.parse(savedUser)
     
     // NPC Link badge: Count NPCs from regions with progress > 0
-    // Regions: Desert, Jungle, Island, Glacier, Central City (Glitch always available)
-    let availableNPCs = 1 // Glitch is always available
+    let availableNPCs = 0
     
     // Check Desert progress (Alpha)
-    const desertProgress = userData.desertProgress || 0
-    if (desertProgress > 0) availableNPCs++
+    const hasDesertProgress = userData.desertProgress && Object.keys(userData.desertProgress).length > 0
+    if (hasDesertProgress) availableNPCs++
     
     // Check Jungle progress (Ranger Moss)
-    const jungleProgress = userData.jungleProgress || 0
-    if (jungleProgress > 0) availableNPCs++
+    const hasJungleProgress = userData.rangerMossPhase && userData.rangerMossPhase > 1
+    if (hasJungleProgress) availableNPCs++
     
     // Check Island progress (Sparky)
-    const islandProgress = userData.islandProgress || 0
-    if (islandProgress > 0) availableNPCs++
+    const islandData = localStorage.getItem('islandProgress')
+    const hasIslandProgress = islandData && JSON.parse(islandData).missionActive
+    if (hasIslandProgress) availableNPCs++
     
     // Check Glacier progress (Momo)
-    const glacierProgress = userData.glacierProgress || 0
-    if (glacierProgress > 0) availableNPCs++
+    const glacierData = localStorage.getItem('glacierProgress')
+    const hasGlacierProgress = glacierData && Object.keys(JSON.parse(glacierData)).length > 0
+    if (hasGlacierProgress) availableNPCs++
     
     // Report badge: Count regions with 100% completion
     let completedRegions = 0
-    if (desertProgress === 100) completedRegions++
-    if (jungleProgress === 100) completedRegions++
-    if (islandProgress === 100) completedRegions++
-    if (glacierProgress === 100) completedRegions++
+    
+    // Jungle completion
+    if (userData.rangerMossPhase === 5) completedRegions++
+    
+    // Desert completion
+    if (userData.desertProgress && userData.desertProgress.mission4Completed) completedRegions++
+    
+    // Island completion
+    if (islandData && JSON.parse(islandData).islandRestored) completedRegions++
+    
+    // Glacier completion
+    if (glacierData && JSON.parse(glacierData).isComplete) completedRegions++
     
     // Review badge: Count total wrong answers
     const errorRecords = userData.errorRecords || []
@@ -787,12 +796,12 @@ const PhotosApp = ({ onClose }) => {
 
         {/* Bottom Action Bar */}
         <div style={{
-          position: 'absolute',
+          position: 'fixed',
           bottom: 0,
           left: 0,
           right: 0,
-          height: '80px',
-          background: 'rgba(0, 0, 0, 0.9)',
+          height: '96px',
+          background: 'rgba(0, 0, 0, 0.95)',
           backdropFilter: 'blur(20px)',
           zIndex: 20,
           display: 'flex',
