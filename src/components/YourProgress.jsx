@@ -787,7 +787,7 @@ const PhotosApp = ({ onClose }) => {
 
         {/* Bottom Action Bar */}
         <div style={{
-          position: 'fixed',
+          position: 'absolute',
           bottom: 0,
           left: 0,
           right: 0,
@@ -1139,11 +1139,34 @@ const AssistantApp = ({ onClose }) => {
     }
 
     const userData = JSON.parse(savedUser)
+    
+    // Check progress for each region
+    const hasDesertProgress = userData.desertProgress && Object.keys(userData.desertProgress).length > 0
+    const hasJungleProgress = userData.rangerMossPhase && userData.rangerMossPhase > 1
+    const hasIslandProgress = (() => {
+      const islandData = localStorage.getItem('islandProgress')
+      return islandData && JSON.parse(islandData).missionActive
+    })()
+    const hasGlacierProgress = (() => {
+      const glacierData = localStorage.getItem('glacierProgress')
+      return glacierData && Object.keys(JSON.parse(glacierData)).length > 0
+    })()
+    
     const filtered = allNPCs.filter(npc => {
       if (npc.alwaysAvailable) return true
-      const progressKey = `${npc.region}Progress`
-      const progress = userData[progressKey] || 0
-      return progress > 0
+      
+      switch (npc.region) {
+        case 'desert':
+          return hasDesertProgress
+        case 'jungle':
+          return hasJungleProgress
+        case 'island':
+          return hasIslandProgress
+        case 'glacier':
+          return hasGlacierProgress
+        default:
+          return false
+      }
     })
 
     setAvailableNPCs(filtered)
@@ -1500,24 +1523,161 @@ const MailApp = ({ onClose }) => {
   const [selectedMail, setSelectedMail] = useState(null)
 
   useEffect(() => {
-    // Load error records from localStorage
+    const allMails = []
+    
+    // Load user data
     const savedUser = localStorage.getItem('aiJourneyUser')
-    if (savedUser) {
-      const userData = JSON.parse(savedUser)
-      const errorRecords = userData.errorRecords || []
-      // Format for mail display
-      const formattedMails = errorRecords.map((record, index) => ({
-        id: index.toString(),
-        sender: 'System',
-        subject: record.subject || 'Error Report',
-        preview: record.preview || record.content?.substring(0, 50) + '...',
-        body: record.content || 'No details available.',
-        time: new Date(record.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
-        unread: true,
-        color: '#6b7280'
-      }))
-      setMails(formattedMails)
+    if (!savedUser) {
+      setMails([])
+      return
     }
+    
+    const userData = JSON.parse(savedUser)
+    
+    // 1. Add congratulation emails for completed regions (100% progress)
+    const regionCompletions = []
+    
+    // Check Jungle completion
+    if (userData.rangerMossPhase === 5) {
+      regionCompletions.push({
+        id: 'jungle-complete',
+        sender: 'Ranger Moss',
+        subject: '🌿 Fungi Jungle Complete!',
+        preview: 'Bro! You did it! The jungle is clean and the data is perfect!',
+        body: `Hey Bro! 🌿
+
+You've completed the Fungi Jungle mission! I'm so proud of you!
+
+You've learned:
+✓ Data Collection fundamentals
+✓ Data Cleaning techniques
+✓ Label Correction methods
+✓ Model Testing basics
+
+The jungle thanks you, and so do I! Keep up the great work!
+
+- Ranger Moss`,
+        time: 'Today',
+        unread: true,
+        color: '#16a34a'
+      })
+    }
+    
+    // Check Desert completion
+    const desertData = userData.desertProgress
+    if (desertData && desertData.mission4Completed) {
+      regionCompletions.push({
+        id: 'desert-complete',
+        sender: 'Alpha',
+        subject: '🏜️ Aether Desert Complete',
+        preview: 'Mission accomplished. Efficiency: 100%. Proceed to next objective.',
+        body: `Target: User
+Status: Mission Complete
+Accuracy: 100%
+
+Desert objectives achieved:
+✓ Photo Collection: 11/11
+✓ Data Labeling: Complete
+✓ Context Analysis: Complete
+✓ Expert Validation: Complete
+
+Performance: Acceptable.
+Recommendation: Continue to next region.
+
+- Alpha`,
+        time: 'Today',
+        unread: true,
+        color: '#d97706'
+      })
+    }
+    
+    // Check Island completion
+    const islandData = localStorage.getItem('islandProgress')
+    if (islandData) {
+      const island = JSON.parse(islandData)
+      if (island.islandRestored) {
+        regionCompletions.push({
+          id: 'island-complete',
+          sender: 'Sparky',
+          subject: '🏝️ Nexus Island Restored!',
+          preview: 'OMG! You did it! The island is back to normal! 🎉✨',
+          body: `OMG OMG OMG! 🎉✨
+
+You actually did it! The island is RESTORED! 🏝️
+
+You're like a super AI detective! You spotted all the fakes and saved everyone!
+
+What you mastered:
+✓ AI vs Human detection 🤖👤
+✓ GenAI image recognition 🖼️
+✓ Critical thinking skills 🧠
+✓ Pattern recognition 🔍
+
+You're officially a GenAI expert now! SO COOL! 😱🔥
+
+Let's celebrate! 🎊
+
+- Sparky`,
+          time: 'Today',
+          unread: true,
+          color: '#f97316'
+        })
+      }
+    }
+    
+    // Check Glacier completion
+    const glacierData = localStorage.getItem('glacierProgress')
+    if (glacierData) {
+      const glacier = JSON.parse(glacierData)
+      if (glacier.isComplete) {
+        regionCompletions.push({
+          id: 'glacier-complete',
+          sender: 'Momo',
+          subject: '❄️ Core Glacier Complete',
+          preview: 'Privacy protocols mastered. Ethical standards maintained.',
+          body: `Greetings.
+
+Your completion of the Glacier mission has been noted.
+
+Achievements:
+✓ Privacy Law Understanding
+✓ Ethical Decision Making
+✓ Data Protection Principles
+✓ Legal Compliance
+
+You have demonstrated respect for individual privacy and data rights. This is commendable.
+
+The law is absolute. Privacy is sacred. You have proven yourself worthy.
+
+Continue to uphold these standards.
+
+- Momo`,
+          time: 'Today',
+          unread: true,
+          color: '#0891b2'
+        })
+      }
+    }
+    
+    // Add completion emails first (most recent)
+    allMails.push(...regionCompletions)
+    
+    // 2. Add error reports
+    const errorRecords = userData.errorRecords || []
+    const errorMails = errorRecords.map((record, index) => ({
+      id: `error-${index}`,
+      sender: 'System',
+      subject: record.subject || 'Error Report',
+      preview: record.preview || record.content?.substring(0, 50) + '...',
+      body: record.content || 'No details available.',
+      time: new Date(record.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }),
+      unread: true,
+      color: '#6b7280'
+    }))
+    
+    allMails.push(...errorMails)
+    
+    setMails(allMails)
   }, [])
 
   if (selectedMail) {
