@@ -95,7 +95,7 @@ const MacBookInterface = ({ onClose }) => {
       height: '85vh',
       maxWidth: '1400px',
       maxHeight: '900px',
-      background: 'linear-gradient(135deg, #866ac6 0%, #9071b5 40%, #392a68 100%)',
+      background: 'linear-gradient(135deg, #a78bfa 0%, #c4b5fd 30%, #fef3c7 70%, #fde68a 100%)',
       borderRadius: '20px',
       overflow: 'hidden',
       boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
