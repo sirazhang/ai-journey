@@ -1069,6 +1069,17 @@ const GlacierMap = ({ onExit }) => {
   
   // Court completion dialogue state
   const [showCourtCompletionDialogue, setShowCourtCompletionDialogue] = useState(null) // npc id
+  
+  // Creativity Card states
+  const [showCreativityCard, setShowCreativityCard] = useState(false)
+  const [creativityCardType, setCreativityCardType] = useState('why') // 'why' or 'whatif'
+  const [creativityCardPosition, setCreativityCardPosition] = useState('bottom-left') // 'bottom-left' or 'top-right'
+  const [creativityQuestion, setCreativityQuestion] = useState('')
+  const [creativityUserAnswer, setCreativityUserAnswer] = useState('')
+  const [creativityAiFeedback, setCreativityAiFeedback] = useState('')
+  const [creativityAiAnswer, setCreativityAiAnswer] = useState('')
+  const [creativityShowAnswer, setCreativityShowAnswer] = useState(false)
+  const [isGeneratingCreativity, setIsGeneratingCreativity] = useState(false)
 
   // Background music
   useEffect(() => {
@@ -2138,6 +2149,186 @@ const GlacierMap = ({ onExit }) => {
         }, 500)
       }
     }, 50)
+  }
+  
+  // Creativity Card handlers
+  const handleCompleteNpcClick = async (npcId) => {
+    // First show the NPC dialogue
+    setShowCompleteNpcDialogue(showCompleteNpcDialogue === npcId ? null : npcId)
+    
+    // If dialogue is being shown (not closed), trigger creativity card after a delay
+    if (showCompleteNpcDialogue !== npcId) {
+      setTimeout(async () => {
+        // Randomly choose card type
+        const cardType = Math.random() > 0.5 ? 'why' : 'whatif'
+        setCreativityCardType(cardType)
+        
+        // Randomly choose position
+        const position = Math.random() > 0.5 ? 'bottom-left' : 'top-right'
+        setCreativityCardPosition(position)
+        
+        // Generate question
+        setIsGeneratingCreativity(true)
+        const question = await generateCreativityQuestion(cardType)
+        setCreativityQuestion(question)
+        setIsGeneratingCreativity(false)
+        
+        // Reset other states
+        setCreativityUserAnswer('')
+        setCreativityAiFeedback('')
+        setCreativityAiAnswer('')
+        setCreativityShowAnswer(false)
+        
+        // Show the card
+        setShowCreativityCard(true)
+      }, 1500) // Show card 1.5s after dialogue appears
+    }
+  }
+  
+  const generateCreativityQuestion = async (type) => {
+    try {
+      const prompt = type === 'why'
+        ? 'Generate a creative "Why" question about everyday objects. The question should be simple, curious, and encourage creative thinking. Format: "Why do [object] have/do [feature]?" Example: "Why do water bottles have bumpy lines on them?" Only return the question, nothing else.'
+        : 'Generate a creative "What if" question that challenges conventional thinking. The question should be imaginative and thought-provoking. Format: "What if [subject] could [action]?" Example: "What if clouds could talk?" Only return the question, nothing else.'
+      
+      const response = await fetch(getGeminiUrl('gemini-2.0-flash-exp'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: prompt }]
+          }]
+        })
+      })
+      
+      const data = await response.json()
+      if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+        return data.candidates[0].content.parts[0].text.trim()
+      }
+      
+      // Fallback questions
+      return type === 'why' 
+        ? 'Why do straws have a sharp end and a flat end?'
+        : 'What if clouds could talk?'
+    } catch (error) {
+      console.error('Failed to generate creativity question:', error)
+      return type === 'why' 
+        ? 'Why do straws have a sharp end and a flat end?'
+        : 'What if clouds could talk?'
+    }
+  }
+  
+  const handleCreativityGetFeedback = async () => {
+    if (!creativityUserAnswer.trim()) return
+    
+    setIsGeneratingCreativity(true)
+    
+    try {
+      const prompt = `User's answer: ${creativityUserAnswer}\nQuestion: ${creativityQuestion}\n\nProvide a brief, encouraging feedback (2-3 sentences) that:\n1. Acknowledges their thinking\n2. Adds an interesting insight\n3. Encourages further curiosity`
+      
+      const response = await fetch(getGeminiUrl('gemini-2.0-flash-exp'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: prompt }]
+          }]
+        })
+      })
+      
+      const data = await response.json()
+      if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+        setCreativityAiFeedback(data.candidates[0].content.parts[0].text.trim())
+      } else {
+        setCreativityAiFeedback("Great thinking! Your curiosity is leading you in interesting directions. Keep exploring!")
+      }
+    } catch (error) {
+      console.error('Failed to generate feedback:', error)
+      setCreativityAiFeedback("Great thinking! Your curiosity is leading you in interesting directions. Keep exploring!")
+    } finally {
+      setIsGeneratingCreativity(false)
+    }
+  }
+  
+  const handleCreativitySkipToAnswer = async () => {
+    setIsGeneratingCreativity(true)
+    setCreativityShowAnswer(true)
+    
+    try {
+      const prompt = `Question: ${creativityQuestion}\n\nProvide a clear, educational answer (3-4 sentences) that explains:\n1. The practical reason\n2. The design principle\n3. An interesting fact`
+      
+      const response = await fetch(getGeminiUrl('gemini-2.0-flash-exp'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: prompt }]
+          }]
+        })
+      })
+      
+      const data = await response.json()
+      if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
+        setCreativityAiAnswer(data.candidates[0].content.parts[0].text.trim())
+      } else {
+        setCreativityAiAnswer("This is a fascinating question that shows how design thinking works in everyday objects!")
+      }
+    } catch (error) {
+      console.error('Failed to generate answer:', error)
+      setCreativityAiAnswer("This is a fascinating question that shows how design thinking works in everyday objects!")
+    } finally {
+      setIsGeneratingCreativity(false)
+    }
+  }
+  
+  const handleCreativitySave = () => {
+    // Save to localStorage
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    if (savedUser) {
+      const userData = JSON.parse(savedUser)
+      
+      if (!userData.creativityRecords) {
+        userData.creativityRecords = []
+      }
+      
+      const record = {
+        id: Date.now(),
+        type: creativityCardType,
+        question: creativityQuestion,
+        userAnswer: creativityUserAnswer,
+        aiFeedback: creativityAiFeedback,
+        aiAnswer: creativityAiAnswer,
+        timestamp: Date.now(),
+        region: 'Glacier',
+        saved: true
+      }
+      
+      userData.creativityRecords.push(record)
+      
+      // Also add to errorRecords for Report display
+      if (!userData.errorRecords) {
+        userData.errorRecords = []
+      }
+      
+      const mailRecord = {
+        subject: `Creativity - ${creativityCardType === 'why' ? 'Why' : 'What If'} Question`,
+        preview: creativityQuestion.substring(0, 50) + '...',
+        content: `Question: ${creativityQuestion}\n\nYour Thought: ${creativityUserAnswer}\n\n${creativityAiFeedback ? `AI Feedback: ${creativityAiFeedback}\n\n` : ''}${creativityAiAnswer ? `Answer: ${creativityAiAnswer}` : ''}`,
+        timestamp: Date.now()
+      }
+      
+      userData.errorRecords.push(mailRecord)
+      
+      localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+      
+      // Play save sound
+      playCorrectSound()
+      
+      // Close card after a delay
+      setTimeout(() => {
+        setShowCreativityCard(false)
+      }, 500)
+    }
   }
   
   // Handle Glitch NPC click
@@ -4870,7 +5061,7 @@ const GlacierMap = ({ onExit }) => {
             ...styles.completeNpc,
             ...npc.position,
           }}
-          onClick={() => setShowCompleteNpcDialogue(showCompleteNpcDialogue === npc.id ? null : npc.id)}
+          onClick={() => handleCompleteNpcClick(npc.id)}
           onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
           onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
         >
@@ -8349,6 +8540,269 @@ const GlacierMap = ({ onExit }) => {
           </div>
         )
       })()}
+      
+      {/* Creativity Card */}
+      {currentScene === 'complete' && showCreativityCard && (
+        <div style={{
+          position: 'absolute',
+          ...(creativityCardPosition === 'bottom-left' ? {
+            bottom: '100px',
+            left: '50px',
+          } : {
+            top: '100px',
+            right: '50px',
+          }),
+          width: '400px',
+          background: creativityCardType === 'why' 
+            ? 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)'
+            : 'linear-gradient(135deg, #fed7aa 0%, #fdba74 100%)',
+          border: `3px dashed ${creativityCardType === 'why' ? '#3b82f6' : '#f97316'}`,
+          borderRadius: '20px',
+          padding: '24px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+          zIndex: 200,
+          fontFamily: 'Inter, system-ui, sans-serif',
+        }}>
+          {/* Header */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '16px',
+          }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+            }}>
+              <img 
+                src="/glacier/icon/ask.png" 
+                alt="Ask"
+                style={{ width: '24px', height: '24px' }}
+              />
+              <span style={{
+                fontSize: '18px',
+                fontWeight: '700',
+                color: creativityCardType === 'why' ? '#1e40af' : '#c2410c',
+              }}>
+                {creativityCardType === 'why' ? 'WHY? DARE WHY' : 'What if?'}
+              </span>
+            </div>
+            <button
+              onClick={() => setShowCreativityCard(false)}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '24px',
+                cursor: 'pointer',
+                color: creativityCardType === 'why' ? '#1e40af' : '#c2410c',
+                padding: '0',
+                lineHeight: '1',
+              }}
+            >
+              ×
+            </button>
+          </div>
+          
+          {/* Question */}
+          {isGeneratingCreativity && !creativityQuestion ? (
+            <div style={{
+              padding: '16px',
+              background: 'white',
+              borderRadius: '12px',
+              marginBottom: '16px',
+              textAlign: 'center',
+              color: '#6b7280',
+            }}>
+              Generating question...
+            </div>
+          ) : (
+            <div style={{
+              padding: '16px',
+              background: 'white',
+              border: `2px dashed ${creativityCardType === 'why' ? '#3b82f6' : '#f97316'}`,
+              borderRadius: '12px',
+              marginBottom: '16px',
+            }}>
+              <p style={{
+                margin: 0,
+                fontSize: '16px',
+                fontWeight: '700',
+                color: '#1f2937',
+                textDecoration: `underline wavy ${creativityCardType === 'why' ? '#3b82f6' : '#f97316'}`,
+                textUnderlineOffset: '4px',
+              }}>
+                {creativityQuestion}
+              </p>
+            </div>
+          )}
+          
+          {/* User Input or Answer Display */}
+          {!creativityShowAnswer ? (
+            <>
+              <div style={{ marginBottom: '8px' }}>
+                <label style={{
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: creativityCardType === 'why' ? '#1e40af' : '#c2410c',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}>
+                  YOUR THOUGHT
+                </label>
+              </div>
+              <textarea
+                value={creativityUserAnswer}
+                onChange={(e) => setCreativityUserAnswer(e.target.value)}
+                placeholder="Type your answer here... don't be afraid to guess! Curiosity has no wrong answers."
+                style={{
+                  width: '100%',
+                  minHeight: '100px',
+                  padding: '12px',
+                  border: `2px solid ${creativityCardType === 'why' ? '#3b82f6' : '#f97316'}`,
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontFamily: 'Inter, system-ui, sans-serif',
+                  resize: 'vertical',
+                  marginBottom: '16px',
+                  boxSizing: 'border-box',
+                }}
+              />
+              
+              {/* Feedback Display */}
+              {creativityAiFeedback && (
+                <div style={{
+                  padding: '12px',
+                  background: 'rgba(255, 255, 255, 0.7)',
+                  borderRadius: '8px',
+                  marginBottom: '16px',
+                  fontSize: '14px',
+                  color: '#374151',
+                  lineHeight: '1.5',
+                }}>
+                  {creativityAiFeedback}
+                </div>
+              )}
+              
+              {/* Action Buttons */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '12px',
+              }}>
+                <button
+                  onClick={handleCreativityGetFeedback}
+                  disabled={!creativityUserAnswer.trim() || isGeneratingCreativity}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '10px 16px',
+                    background: creativityCardType === 'why' ? '#3b82f6' : '#f97316',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: creativityUserAnswer.trim() && !isGeneratingCreativity ? 'pointer' : 'not-allowed',
+                    opacity: creativityUserAnswer.trim() && !isGeneratingCreativity ? 1 : 0.5,
+                  }}
+                >
+                  <img 
+                    src="/glacier/icon/feedback.png" 
+                    alt="Feedback"
+                    style={{ width: '16px', height: '16px' }}
+                  />
+                  {isGeneratingCreativity ? 'Generating...' : 'Get Feedback'}
+                </button>
+                
+                <button
+                  onClick={handleCreativitySkipToAnswer}
+                  disabled={isGeneratingCreativity}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '10px 16px',
+                    background: 'white',
+                    color: creativityCardType === 'why' ? '#1e40af' : '#c2410c',
+                    border: `2px solid ${creativityCardType === 'why' ? '#3b82f6' : '#f97316'}`,
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: isGeneratingCreativity ? 'not-allowed' : 'pointer',
+                    opacity: isGeneratingCreativity ? 0.5 : 1,
+                  }}
+                >
+                  <span style={{ fontSize: '10px' }}>Thinking is the best way to learn! |</span>
+                  <span>Skip to answer</span>
+                  <img 
+                    src="/glacier/icon/skip.png" 
+                    alt="Skip"
+                    style={{ width: '16px', height: '16px' }}
+                  />
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Answer Display */}
+              <div style={{ marginBottom: '8px' }}>
+                <label style={{
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: creativityCardType === 'why' ? '#1e40af' : '#c2410c',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                }}>
+                  ANSWER
+                </label>
+              </div>
+              <div style={{
+                padding: '16px',
+                background: 'rgba(255, 255, 255, 0.9)',
+                borderRadius: '8px',
+                marginBottom: '16px',
+                fontSize: '14px',
+                color: '#374151',
+                lineHeight: '1.6',
+              }}>
+                {isGeneratingCreativity ? 'Generating answer...' : creativityAiAnswer}
+              </div>
+              
+              {/* Save Button */}
+              <button
+                onClick={handleCreativitySave}
+                disabled={isGeneratingCreativity}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  width: '100%',
+                  padding: '12px',
+                  background: creativityCardType === 'why' ? '#3b82f6' : '#f97316',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: isGeneratingCreativity ? 'not-allowed' : 'pointer',
+                  opacity: isGeneratingCreativity ? 0.5 : 1,
+                }}
+              >
+                <img 
+                  src="/desert/icon/save.svg" 
+                  alt="Save"
+                  style={{ width: '20px', height: '20px', filter: 'brightness(0) invert(1)' }}
+                />
+                Save
+              </button>
+            </>
+          )}
+        </div>
+      )}
       
     </div>
   )
