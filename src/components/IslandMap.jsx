@@ -1232,8 +1232,13 @@ const IslandMap = ({ onExit }) => {
   const { playClickSound, playCorrectSound, playWrongSound, playSelectSound } = useSoundEffects()
   const { startTypingSound, stopTypingSound } = useTypingSound('/sound/island_typing.wav')
   
-  // Save progress to localStorage
+  // Track if initial load is complete
+  const [isInitialLoadComplete, setIsInitialLoadComplete] = useState(false)
+  
+  // Save progress to localStorage (only after initial load)
   useEffect(() => {
+    if (!isInitialLoadComplete) return // Don't save during initial load
+    
     const progress = {
       missionActive,
       missionCompleted,
@@ -1252,19 +1257,31 @@ const IslandMap = ({ onExit }) => {
       finalDialogueStep,
       finalDialogueTriggered,
     }
+    console.log('IslandMap - Saving progress:', progress)
     localStorage.setItem('islandProgress', JSON.stringify(progress))
-  }, [missionActive, missionCompleted, phase2Active, phase2Completed, completedMissions, completedNpcs, phase2CompletedMissions, islandRestored, showSparkyDialogue, currentSparkyStep, showSparkyDebrief, debriefStep, showFinalSparkyDialogue, finalDialogueStep, finalDialogueTriggered])
+  }, [isInitialLoadComplete, missionActive, missionCompleted, phase2Active, phase2Completed, completedMissions, completedNpcs, phase2CompletedMissions, islandRestored, showSparkyDialogue, currentSparkyStep, showSparkyDebrief, debriefStep, showFinalSparkyDialogue, finalDialogueStep, finalDialogueTriggered])
   
   // Load progress from localStorage on mount
   useEffect(() => {
     const savedProgress = localStorage.getItem('islandProgress')
     
+    console.log('IslandMap - Loading progress from localStorage:', savedProgress)
+    
     if (savedProgress) {
       try {
         const progress = JSON.parse(savedProgress)
+        console.log('IslandMap - Parsed progress:', progress)
         
         // Only load if there's actual progress
         if (progress.missionActive || progress.missionCompleted || progress.phase2Active || progress.phase2Completed || progress.islandRestored) {
+          console.log('IslandMap - Loading progress states:', {
+            missionActive: progress.missionActive,
+            missionCompleted: progress.missionCompleted,
+            phase2Active: progress.phase2Active,
+            phase2Completed: progress.phase2Completed,
+            islandRestored: progress.islandRestored
+          })
+          
           setMissionActive(progress.missionActive || false)
           setMissionCompleted(progress.missionCompleted || false)
           setPhase2Active(progress.phase2Active || false)
@@ -1360,6 +1377,9 @@ const IslandMap = ({ onExit }) => {
         console.log('Failed to load island progress:', e)
       }
     }
+    
+    // Mark initial load as complete
+    setIsInitialLoadComplete(true)
   }, [])
 
   // Generate boat illustration using Gemini API
@@ -2304,6 +2324,33 @@ const IslandMap = ({ onExit }) => {
       playCorrectSound()
     } else {
       playWrongSound()
+      
+      // Save wrong answer to errorRecords
+      const savedUser = localStorage.getItem('aiJourneyUser')
+      if (savedUser) {
+        const userData = JSON.parse(savedUser)
+        if (!userData.errorRecords) {
+          userData.errorRecords = []
+        }
+        
+        // Get current quiz question
+        const currentFlow = showFinalSparkyDialogue ? getFinalSparkyDialogueFlow(t) : getSparkyDebriefFlow(t)
+        const currentStep = showFinalSparkyDialogue ? finalDialogueStep : debriefStep
+        const currentItem = currentFlow[currentStep]
+        
+        userData.errorRecords.push({
+          timestamp: Date.now(),
+          region: 'Island',
+          question: currentItem?.quiz?.question || 'Quiz Question',
+          userAnswer: choiceText,
+          correctAnswer: currentItem?.quiz?.choices?.find(c => c.correct)?.text || 'N/A',
+          subject: `Island Quiz - Wrong Answer`,
+          preview: `You selected: ${choiceText.substring(0, 50)}...`,
+          content: `Question: ${currentItem?.quiz?.question || 'Quiz Question'}\n\nYour Answer: ${choiceText}\n\nCorrect Answer: ${currentItem?.quiz?.choices?.find(c => c.correct)?.text || 'N/A'}\n\nFeedback: ${currentItem?.quiz?.feedback || 'Review this topic again.'}`
+        })
+        
+        localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+      }
     }
     
     setShowQuizChoice(false)
@@ -2909,6 +2956,7 @@ const IslandMap = ({ onExit }) => {
           ]
         case ISLANDS.MAIN_ISLAND:
           return [{
+            id: 'sparky_restored',
             image: '/island/npc/sparky.gif',
             style: { height: '400px', right: '20%', bottom: '25%' },
             onClick: () => {
@@ -2985,6 +3033,7 @@ const IslandMap = ({ onExit }) => {
         }
       case ISLANDS.MAIN_ISLAND:
         return [{
+          id: 'sparky_main',
           image: '/island/npc/sparky.gif',
           style: { height: '400px', right: '20%', bottom: '25%' },
           onClick: handleSparkyClick
@@ -4752,25 +4801,29 @@ const IslandMap = ({ onExit }) => {
                 }
                 
                 if (message.type === 'user_quiz_choice') {
+                  const borderColor = message.isCorrect ? '#4caf50' : '#ef4444'
+                  const iconColor = message.isCorrect ? '#4caf50' : '#ef4444'
+                  const icon = message.isCorrect ? '✓' : '✗'
+                  
                   return (
                     <div key={index} style={styles.modernUserMessage}>
                       <div style={{
                         padding: '12px 18px',
                         background: 'white',
-                        border: '2px solid #4caf50',
+                        border: `2px solid ${borderColor}`,
                         borderRadius: '12px',
                         color: '#333',
                         fontFamily: "'Roboto', sans-serif",
                         fontSize: '15px',
-                        boxShadow: '0 2px 8px rgba(76, 175, 80, 0.2)',
+                        boxShadow: `0 2px 8px ${message.isCorrect ? 'rgba(76, 175, 80, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px',
                       }}>
                         <span style={{
                           fontSize: '18px',
-                          color: '#4caf50',
-                        }}>✓</span>
+                          color: iconColor,
+                        }}>{icon}</span>
                         <span>{message.text}</span>
                       </div>
                       <div style={{...styles.modernTimestamp, textAlign: 'right'}}>{timestamp}</div>

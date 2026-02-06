@@ -52,21 +52,37 @@ const CentralCity = ({ onExit }) => {
       height: '100%',
       objectFit: 'contain',
     },
-    buttonCard: {
+    buttonContainer: {
       position: 'absolute',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '12px',
+      cursor: 'pointer',
+      zIndex: 20,
+    },
+    buttonCard: {
       width: '120px',
       height: '120px',
-      borderRadius: '50%',
-      background: 'rgba(138, 43, 226, 0.3)',
-      border: '3px solid rgba(255, 255, 255, 0.9)',
+      borderRadius: '24px',
+      background: 'rgba(138, 43, 226, 0.6)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      border: '2px solid rgba(255, 255, 255, 0.5)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      cursor: 'pointer',
-      transition: 'transform 0.3s ease',
-      zIndex: 20,
-      boxShadow: '0 0 30px rgba(138, 43, 226, 0.8), 0 0 60px rgba(138, 43, 226, 0.4), inset 0 0 20px rgba(138, 43, 226, 0.2)',
-      animation: 'cardGlow 2s ease-in-out infinite',
+      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+      boxShadow: '0 8px 32px rgba(138, 43, 226, 0.6), 0 0 30px rgba(138, 43, 226, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.15)',
+    },
+    buttonLabel: {
+      color: '#fff',
+      fontSize: '14px',
+      fontWeight: 700,
+      fontFamily: "'Inter', 'Roboto', sans-serif",
+      letterSpacing: '1.5px',
+      textShadow: '0 2px 8px rgba(0, 0, 0, 0.5), 0 0 20px rgba(186, 135, 255, 0.6)',
+      userSelect: 'none',
     },
     homeButton: {
       bottom: '100px',
@@ -145,32 +161,50 @@ const CentralCity = ({ onExit }) => {
         />
       </div>
 
-      {/* Home Button (Purple Circle Card with Glow) */}
+      {/* Home Button (Purple Glassmorphism Card with Label) */}
       <div 
-        style={{...styles.buttonCard, ...styles.homeButton}}
+        style={{...styles.buttonContainer, ...styles.homeButton}}
         onClick={handleHomeClick}
-        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        onMouseOver={(e) => {
+          const card = e.currentTarget.querySelector('[data-card]')
+          if (card) card.style.transform = 'scale(1.05)'
+        }}
+        onMouseOut={(e) => {
+          const card = e.currentTarget.querySelector('[data-card]')
+          if (card) card.style.transform = 'scale(1)'
+        }}
       >
-        <img 
-          src="/city/icon/home.png"
-          alt="Home"
-          style={styles.buttonIcon}
-        />
+        <div data-card style={styles.buttonCard}>
+          <img 
+            src="/city/icon/home.png"
+            alt="Home"
+            style={styles.buttonIcon}
+          />
+        </div>
+        <div style={styles.buttonLabel}>HOME</div>
       </div>
 
-      {/* Company Button (Purple Circle Card with Glow) */}
+      {/* Company Button (Purple Glassmorphism Card with Label) */}
       <div 
-        style={{...styles.buttonCard, ...styles.companyButton}}
+        style={{...styles.buttonContainer, ...styles.companyButton}}
         onClick={handleCompanyClick}
-        onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-        onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        onMouseOver={(e) => {
+          const card = e.currentTarget.querySelector('[data-card]')
+          if (card) card.style.transform = 'scale(1.05)'
+        }}
+        onMouseOut={(e) => {
+          const card = e.currentTarget.querySelector('[data-card]')
+          if (card) card.style.transform = 'scale(1)'
+        }}
       >
-        <img 
-          src="/city/icon/company.png"
-          alt="Company"
-          style={styles.buttonIcon}
-        />
+        <div data-card style={styles.buttonCard}>
+          <img 
+            src="/city/icon/company.png"
+            alt="Company"
+            style={styles.buttonIcon}
+          />
+        </div>
+        <div style={styles.buttonLabel}>COMPANY</div>
       </div>
     </div>
   )

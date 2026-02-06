@@ -1989,18 +1989,19 @@ const NotesApp = ({ onClose }) => {
   const [selectedNote, setSelectedNote] = useState(null)
 
   useEffect(() => {
-    // Load congratulation messages from localStorage
+    // Load error records from localStorage
     const savedUser = localStorage.getItem('aiJourneyUser')
     if (savedUser) {
       const userData = JSON.parse(savedUser)
-      const congratulations = userData.congratulations || []
+      const errorRecords = userData.errorRecords || []
       // Format for notes display
-      const formattedNotes = congratulations.map((congrat, index) => ({
+      const formattedNotes = errorRecords.map((record, index) => ({
         id: index.toString(),
-        title: congrat.title || 'Achievement Unlocked',
-        preview: congrat.preview || congrat.content?.substring(0, 50) + '...',
-        content: congrat.content || 'Congratulations on your progress!',
-        timestamp: congrat.timestamp || Date.now()
+        title: record.subject || 'Quiz Error',
+        preview: record.preview || record.userAnswer?.substring(0, 50) + '...',
+        content: record.content || `Question: ${record.question}\n\nYour Answer: ${record.userAnswer}\n\nCorrect Answer: ${record.correctAnswer}`,
+        timestamp: record.timestamp || Date.now(),
+        region: record.region || 'Unknown'
       }))
       setNotes(formattedNotes)
     }
@@ -2141,7 +2142,7 @@ const NotesApp = ({ onClose }) => {
             textAlign: 'center',
             color: '#6b7280'
           }}>
-            <p>Complete missions to receive congratulations!</p>
+            <p>No quiz errors yet. Keep learning!</p>
           </div>
         ) : (
           <div style={{
