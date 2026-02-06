@@ -2991,7 +2991,11 @@ const IslandMap = ({ onExit }) => {
             return Object.values(missionNpcs)
           }
         } else {
-          // Original NPC
+          // In phase2, don't show initial dialogue NPCs
+          if (phase2Active) {
+            return []
+          }
+          // Original NPC (only in phase 1)
           return [{
             image: '/island/npc/npc1.png',
             style: { height: '350px', right: '15%', bottom: '15%' },
@@ -3010,7 +3014,11 @@ const IslandMap = ({ onExit }) => {
             return Object.values(island2Npcs)
           }
         } else {
-          // Original NPC
+          // In phase2, don't show initial dialogue NPCs
+          if (phase2Active) {
+            return []
+          }
+          // Original NPC (only in phase 1)
           return [{
             image: '/island/npc/npc2.png',
             style: { height: '300px', left: '15%', bottom: '10%' },
@@ -3029,7 +3037,11 @@ const IslandMap = ({ onExit }) => {
             return Object.values(island3Npcs)
           }
         } else {
-          // Original NPC
+          // In phase2, don't show initial dialogue NPCs
+          if (phase2Active) {
+            return []
+          }
+          // Original NPC (only in phase 1)
           return [{
             image: '/island/npc/npc3.png',
             style: { height: '300px', left: '15%', bottom: '30%' },
