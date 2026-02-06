@@ -1551,6 +1551,11 @@ const IslandMap = ({ onExit }) => {
   }
 
   const handleNpcClick = (island) => {
+    // Don't show initial dialogues in phase2 (color map)
+    if (phase2Active) {
+      return
+    }
+    
     if (!missionActive) {
       // Original dialogue system for non-mission islands
       const npcDialogues = getNpcDialogues(t)
