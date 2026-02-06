@@ -1,14 +1,19 @@
-import { useState } from 'react'
-import { X, Circle, Minus, Square } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import WorkbenchApp from './workbench/WorkbenchApp'
+import BrowserApp from './workbench/BrowserApp'
+import MapsApp from './workbench/MapsApp'
+import CalendarApp from './workbench/CalendarApp'
+import { FileText, Globe, MapPin, Calendar } from 'lucide-react'
 
 const MacBookInterface = ({ onClose }) => {
   const [currentTime, setCurrentTime] = useState(new Date().toLocaleTimeString('en-US', { 
     hour: 'numeric', 
     minute: '2-digit' 
   }))
+  const [openApps, setOpenApps] = useState(['workbench'])
+  const [activeApp, setActiveApp] = useState('workbench')
 
-  // Update time every minute
-  useState(() => {
+  useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date().toLocaleTimeString('en-US', { 
         hour: 'numeric', 
@@ -17,6 +22,57 @@ const MacBookInterface = ({ onClose }) => {
     }, 60000)
     return () => clearInterval(timer)
   }, [])
+
+  const toggleApp = (id) => {
+    if (openApps.includes(id)) {
+      setActiveApp(id)
+    } else {
+      setOpenApps([...openApps, id])
+      setActiveApp(id)
+    }
+  }
+
+  const closeApp = (id) => {
+    setOpenApps(openApps.filter(app => app !== id))
+    if (activeApp === id) {
+      setActiveApp(openApps.length > 1 ? openApps[openApps.length - 2] : null)
+    }
+  }
+
+  const getZIndex = (id) => {
+    return activeApp === id ? 50 : 10
+  }
+
+  const apps = {
+    workbench: {
+      id: 'workbench',
+      name: 'Workbench',
+      icon: FileText,
+      color: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+      component: WorkbenchApp
+    },
+    browser: {
+      id: 'browser',
+      name: 'Safari',
+      icon: Globe,
+      color: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+      component: BrowserApp
+    },
+    maps: {
+      id: 'maps',
+      name: 'Maps',
+      icon: MapPin,
+      color: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+      component: MapsApp
+    },
+    calendar: {
+      id: 'calendar',
+      name: 'Calendar',
+      icon: Calendar,
+      color: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+      component: CalendarApp
+    }
+  }
 
   const styles = {
     overlay: {
@@ -74,6 +130,15 @@ const MacBookInterface = ({ onClose }) => {
       fontWeight: 600,
       fontFamily: "'Inter', 'Roboto', sans-serif",
     },
+    closeButton: {
+      background: 'none',
+      border: 'none',
+      color: '#fff',
+      cursor: 'pointer',
+      fontSize: '18px',
+      padding: '4px 8px',
+      transition: 'opacity 0.2s',
+    },
     desktop: {
       flex: 1,
       position: 'relative',
@@ -87,6 +152,7 @@ const MacBookInterface = ({ onClose }) => {
       display: 'flex',
       flexDirection: 'column',
       gap: '20px',
+      zIndex: 1,
     },
     desktopIcon: {
       display: 'flex',
@@ -100,12 +166,19 @@ const MacBookInterface = ({ onClose }) => {
       width: '64px',
       height: '64px',
       borderRadius: '16px',
-      background: 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
       transition: 'transform 0.2s',
+      position: 'relative',
+      overflow: 'hidden',
+    },
+    iconGradient: {
+      position: 'absolute',
+      inset: 0,
+      background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.3), transparent)',
+      opacity: 0.5,
     },
     iconLabel: {
       color: '#fff',
@@ -113,6 +186,11 @@ const MacBookInterface = ({ onClose }) => {
       fontWeight: 600,
       textShadow: '0 1px 3px rgba(0, 0, 0, 0.5)',
       textAlign: 'center',
+    },
+    windowsContainer: {
+      position: 'absolute',
+      inset: 0,
+      pointerEvents: 'none',
     },
     window: {
       position: 'absolute',
@@ -127,6 +205,7 @@ const MacBookInterface = ({ onClose }) => {
       display: 'flex',
       flexDirection: 'column',
       overflow: 'hidden',
+      pointerEvents: 'auto',
     },
     windowHeader: {
       height: '40px',
@@ -136,6 +215,7 @@ const MacBookInterface = ({ onClose }) => {
       alignItems: 'center',
       padding: '0 16px',
       gap: '8px',
+      cursor: 'move',
     },
     windowButton: {
       width: '12px',
@@ -143,6 +223,7 @@ const MacBookInterface = ({ onClose }) => {
       borderRadius: '50%',
       border: 'none',
       cursor: 'pointer',
+      transition: 'opacity 0.2s',
     },
     windowTitle: {
       flex: 1,
@@ -153,24 +234,7 @@ const MacBookInterface = ({ onClose }) => {
     },
     windowContent: {
       flex: 1,
-      padding: '32px',
-      overflowY: 'auto',
-      background: '#fff',
-    },
-    welcomeText: {
-      fontSize: '32px',
-      fontWeight: 700,
-      color: '#333',
-      marginBottom: '16px',
-      textAlign: 'center',
-    },
-    descriptionText: {
-      fontSize: '16px',
-      color: '#666',
-      lineHeight: 1.6,
-      textAlign: 'center',
-      maxWidth: '600px',
-      margin: '0 auto',
+      overflow: 'hidden',
     },
     dock: {
       position: 'absolute',
@@ -187,23 +251,91 @@ const MacBookInterface = ({ onClose }) => {
       alignItems: 'center',
       gap: '12px',
       border: '1px solid rgba(255, 255, 255, 0.3)',
+      zIndex: 100,
     },
     dockIcon: {
       width: '52px',
       height: '52px',
       borderRadius: '12px',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       cursor: 'pointer',
       transition: 'transform 0.2s',
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+      position: 'relative',
     },
+    dockIndicator: {
+      position: 'absolute',
+      bottom: '-6px',
+      width: '4px',
+      height: '4px',
+      borderRadius: '50%',
+      background: '#fff',
+    },
+  }
+
+  const DesktopIcon = ({ app }) => {
+    const Icon = app.icon
+    return (
+      <div style={styles.desktopIcon} onClick={() => toggleApp(app.id)}>
+        <div 
+          style={{...styles.iconImage, background: app.color}}
+          onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+          onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <div style={styles.iconGradient} />
+          <Icon size={32} color="#fff" style={{ position: 'relative', zIndex: 1 }} />
+        </div>
+        <span style={styles.iconLabel}>{app.name}</span>
+      </div>
+    )
+  }
+
+  const Window = ({ app }) => {
+    const AppComponent = app.component
+    return (
+      <div 
+        style={{...styles.window, zIndex: getZIndex(app.id)}}
+        onClick={() => setActiveApp(app.id)}
+      >
+        <div style={styles.windowHeader}>
+          <button 
+            style={{...styles.windowButton, background: '#ff5f57'}}
+            onClick={(e) => {
+              e.stopPropagation()
+              closeApp(app.id)
+            }}
+            onMouseOver={(e) => e.target.style.opacity = '0.8'}
+            onMouseOut={(e) => e.target.style.opacity = '1'}
+          />
+          <button 
+            style={{...styles.windowButton, background: '#ffbd2e'}}
+            onMouseOver={(e) => e.target.style.opacity = '0.8'}
+            onMouseOut={(e) => e.target.style.opacity = '1'}
+          />
+          <button 
+            style={{...styles.windowButton, background: '#28ca42'}}
+            onMouseOver={(e) => e.target.style.opacity = '0.8'}
+            onMouseOut={(e) => e.target.style.opacity = '1'}
+          />
+          <div style={styles.windowTitle}>{app.name}</div>
+        </div>
+        <div style={styles.windowContent}>
+          <AppComponent />
+        </div>
+      </div>
+    )
   }
 
   return (
     <div style={styles.overlay} onClick={onClose}>
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
+        }
+      `}</style>
       <div style={styles.macbook} onClick={(e) => e.stopPropagation()}>
         {/* Menu Bar */}
         <div style={styles.menuBar}>
@@ -215,14 +347,9 @@ const MacBookInterface = ({ onClose }) => {
             <span style={styles.menuText}>{currentTime}</span>
             <button 
               onClick={onClose}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#fff',
-                cursor: 'pointer',
-                fontSize: '18px',
-                padding: '4px 8px',
-              }}
+              style={styles.closeButton}
+              onMouseOver={(e) => e.target.style.opacity = '0.7'}
+              onMouseOut={(e) => e.target.style.opacity = '1'}
             >
               ×
             </button>
@@ -233,73 +360,36 @@ const MacBookInterface = ({ onClose }) => {
         <div style={styles.desktop}>
           {/* Desktop Icons */}
           <div style={styles.desktopIcons}>
-            <div style={styles.desktopIcon}>
-              <div 
-                style={styles.iconImage}
-                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-              >
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                  <polyline points="14 2 14 8 20 8" />
-                </svg>
-              </div>
-              <span style={styles.iconLabel}>Workbench</span>
-            </div>
+            {Object.values(apps).map((app) => (
+              <DesktopIcon key={app.id} app={app} />
+            ))}
           </div>
 
-          {/* Window */}
-          <div style={styles.window}>
-            {/* Window Header */}
-            <div style={styles.windowHeader}>
-              <button 
-                style={{...styles.windowButton, background: '#ff5f57'}}
-                onClick={onClose}
-              />
-              <button style={{...styles.windowButton, background: '#ffbd2e'}} />
-              <button style={{...styles.windowButton, background: '#28ca42'}} />
-              <div style={styles.windowTitle}>Glitch's Workbench</div>
-            </div>
-
-            {/* Window Content */}
-            <div style={styles.windowContent}>
-              <div style={styles.welcomeText}>
-                Welcome to Glitch's Workbench! 🚀
-              </div>
-              <div style={styles.descriptionText}>
-                This is where I work on AI models, analyze data, and help learners understand 
-                the fascinating world of artificial intelligence. Here, you can see how I process 
-                information, make decisions, and learn from interactions.
-                <br /><br />
-                <strong>Coming Soon:</strong> Interactive demos, real-time AI processing visualization, 
-                and hands-on experiments!
-              </div>
-            </div>
+          {/* Windows */}
+          <div style={styles.windowsContainer}>
+            {openApps.map((appId) => (
+              <Window key={appId} app={apps[appId]} />
+            ))}
           </div>
 
           {/* Dock */}
           <div style={styles.dock}>
-            <div 
-              style={styles.dockIcon}
-              onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.15)'}
-              onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-              </svg>
-            </div>
-            <div 
-              style={{...styles.dockIcon, background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)'}}
-              onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.15)'}
-              onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="2" y1="12" x2="22" y2="12" />
-                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-              </svg>
-            </div>
+            {Object.values(apps).map((app) => {
+              const Icon = app.icon
+              const isOpen = openApps.includes(app.id)
+              return (
+                <div 
+                  key={app.id}
+                  style={{...styles.dockIcon, background: app.color}}
+                  onClick={() => toggleApp(app.id)}
+                  onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.15)'}
+                  onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  <Icon size={28} color="#fff" />
+                  {isOpen && <div style={styles.dockIndicator} />}
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>
