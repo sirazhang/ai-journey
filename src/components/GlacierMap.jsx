@@ -8759,6 +8759,11 @@ const GlacierMap = ({ onExit }) => {
                     }}>
                       Thinking is the best way to learn!
                     </span>
+                    <div style={{
+                      width: '1px',
+                      height: '16px',
+                      background: 'white',
+                    }} />
                     <button
                       onClick={handleCreativitySkipToAnswer}
                       disabled={isGeneratingCreativity}
@@ -8767,9 +8772,9 @@ const GlacierMap = ({ onExit }) => {
                         alignItems: 'center',
                         gap: '4px',
                         padding: '8px 12px',
-                        background: 'white',
-                        color: creativityCardType === 'why' ? '#1e40af' : '#c2410c',
-                        border: `2px solid ${creativityCardType === 'why' ? '#3b82f6' : '#f97316'}`,
+                        background: 'transparent',
+                        color: 'white',
+                        border: 'none',
                         borderRadius: '8px',
                         fontSize: '12px',
                         fontWeight: '600',
@@ -8781,7 +8786,7 @@ const GlacierMap = ({ onExit }) => {
                       <img 
                         src="/glacier/icon/skip.png" 
                         alt="Skip"
-                        style={{ width: '16px', height: '16px' }}
+                        style={{ width: '16px', height: '16px', filter: 'brightness(0) invert(1)' }}
                       />
                     </button>
                   </div>
