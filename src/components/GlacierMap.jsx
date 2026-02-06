@@ -8584,8 +8584,9 @@ const GlacierMap = ({ onExit }) => {
                 fontSize: '18px',
                 fontWeight: '700',
                 color: creativityCardType === 'why' ? '#1e40af' : '#c2410c',
+                fontFamily: creativityCardType === 'whatif' ? 'Comic Sans MS, cursive' : 'Inter, system-ui, sans-serif',
               }}>
-                {creativityCardType === 'why' ? 'WHY? DARE WHY' : 'What if?'}
+                {creativityCardType === 'why' ? 'WHY? DARE WHY' : 'WHAT IF?'}
               </span>
             </div>
             <button
@@ -8684,66 +8685,108 @@ const GlacierMap = ({ onExit }) => {
                 </div>
               )}
               
-              {/* Action Buttons */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: '12px',
-              }}>
+              {/* Action Buttons - Show Save button after feedback, otherwise show Get Feedback and Skip */}
+              {creativityAiFeedback ? (
                 <button
-                  onClick={handleCreativityGetFeedback}
-                  disabled={!creativityUserAnswer.trim() || isGeneratingCreativity}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '10px 16px',
-                    background: creativityCardType === 'why' ? '#3b82f6' : '#f97316',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: creativityUserAnswer.trim() && !isGeneratingCreativity ? 'pointer' : 'not-allowed',
-                    opacity: creativityUserAnswer.trim() && !isGeneratingCreativity ? 1 : 0.5,
-                  }}
-                >
-                  <img 
-                    src="/glacier/icon/feedback.png" 
-                    alt="Feedback"
-                    style={{ width: '16px', height: '16px' }}
-                  />
-                  {isGeneratingCreativity ? 'Generating...' : 'Get Feedback'}
-                </button>
-                
-                <button
-                  onClick={handleCreativitySkipToAnswer}
+                  onClick={handleCreativitySave}
                   disabled={isGeneratingCreativity}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: '8px',
-                    padding: '10px 16px',
-                    background: 'white',
-                    color: creativityCardType === 'why' ? '#1e40af' : '#c2410c',
-                    border: `2px solid ${creativityCardType === 'why' ? '#3b82f6' : '#f97316'}`,
+                    width: '100%',
+                    padding: '12px',
+                    background: creativityCardType === 'why' ? '#3b82f6' : '#f97316',
+                    color: 'white',
+                    border: 'none',
                     borderRadius: '8px',
-                    fontSize: '12px',
+                    fontSize: '16px',
                     fontWeight: '600',
                     cursor: isGeneratingCreativity ? 'not-allowed' : 'pointer',
                     opacity: isGeneratingCreativity ? 0.5 : 1,
                   }}
                 >
-                  <span style={{ fontSize: '10px' }}>Thinking is the best way to learn! |</span>
-                  <span>Skip to answer</span>
                   <img 
-                    src="/glacier/icon/skip.png" 
-                    alt="Skip"
-                    style={{ width: '16px', height: '16px' }}
+                    src="/desert/icon/save.svg" 
+                    alt="Save"
+                    style={{ width: '20px', height: '20px', filter: 'brightness(0) invert(1)' }}
                   />
+                  Save
                 </button>
-              </div>
+              ) : (
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '12px',
+                }}>
+                  <button
+                    onClick={handleCreativityGetFeedback}
+                    disabled={!creativityUserAnswer.trim() || isGeneratingCreativity}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 16px',
+                      background: creativityCardType === 'why' ? '#3b82f6' : '#f97316',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      cursor: creativityUserAnswer.trim() && !isGeneratingCreativity ? 'pointer' : 'not-allowed',
+                      opacity: creativityUserAnswer.trim() && !isGeneratingCreativity ? 1 : 0.5,
+                    }}
+                  >
+                    <img 
+                      src="/glacier/icon/feedback.png" 
+                      alt="Feedback"
+                      style={{ width: '16px', height: '16px' }}
+                    />
+                    {isGeneratingCreativity ? 'Generating...' : 'Get Feedback'}
+                  </button>
+                  
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}>
+                    <span style={{
+                      fontSize: '10px',
+                      color: creativityCardType === 'why' ? '#1e40af' : '#c2410c',
+                      fontWeight: '500',
+                    }}>
+                      Thinking is the best way to learn!
+                    </span>
+                    <button
+                      onClick={handleCreativitySkipToAnswer}
+                      disabled={isGeneratingCreativity}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        padding: '8px 12px',
+                        background: 'white',
+                        color: creativityCardType === 'why' ? '#1e40af' : '#c2410c',
+                        border: `2px solid ${creativityCardType === 'why' ? '#3b82f6' : '#f97316'}`,
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        cursor: isGeneratingCreativity ? 'not-allowed' : 'pointer',
+                        opacity: isGeneratingCreativity ? 0.5 : 1,
+                      }}
+                    >
+                      Skip to answer
+                      <img 
+                        src="/glacier/icon/skip.png" 
+                        alt="Skip"
+                        style={{ width: '16px', height: '16px' }}
+                      />
+                    </button>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             <>
