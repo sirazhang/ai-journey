@@ -447,8 +447,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
 
   const rangerDialogues = [
     "Outstanding work, Human! You've gathered enough raw data. But... we can't feed this directly to the <strong>AI</strong>. Not yet.",
-    "In the world of AI, there is a golden rule: <strong>'Garbage In, Garbage Out'</strong>. If we train the model with messy data, it will learn the wrong lessons.",
-    "We must enter the <strong>Data Cleaning Phase</strong>.",
+    "In the world of AI, there is a golden rule: <strong>'Garbage In, Garbage Out'</strong>. If we train the model with messy data, it will learn the wrong lessons. We must enter the <strong>Data Cleaning Phase</strong>.",
   ]
 
   const labelIntroDialogues = [
