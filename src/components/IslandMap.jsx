@@ -4,6 +4,7 @@ import useSoundEffects from '../hooks/useSoundEffects'
 import useTypingSound from '../hooks/useTypingSound'
 import { useLanguage } from '../contexts/LanguageContext'
 import { getGeminiUrl } from '../config/api'
+import IPadCoCreationModal from './iPadCoCreation/iPadCoCreationModal'
 
 // Island positions
 const ISLANDS = {
@@ -1143,6 +1144,10 @@ const IslandMap = ({ onExit }) => {
   })
   const [isGeneratingBoat, setIsGeneratingBoat] = useState(false)
 
+  // iPad Co-Creation Modal states
+  const [showIPadModal, setShowIPadModal] = useState(false)
+  const [selectedNpcForIPad, setSelectedNpcForIPad] = useState(null)
+
   // Helper function to get NPC status icon
   const getNpcStatusIcon = (npcId) => {
     if (!completedNpcs.has(npcId)) return null
@@ -1463,6 +1468,16 @@ const IslandMap = ({ onExit }) => {
       setShowDialogue(false)
       setCurrentDialogueIsland(null)
       setCurrentDialogueIndex(0)
+      setCurrentDialogue(null) // Clear current dialogue
+      return
+    }
+    
+    // Don't auto-trigger dialogues during phase2 or after phase2 completion (color map)
+    if (phase2Active || phase2Completed) {
+      setShowDialogue(false)
+      setCurrentDialogueIsland(null)
+      setCurrentDialogueIndex(0)
+      setCurrentDialogue(null) // Clear current dialogue
       return
     }
     
@@ -1483,7 +1498,7 @@ const IslandMap = ({ onExit }) => {
         }, 500) // Small delay for smooth transition
       }
     }
-  }, [currentIsland, missionActive])
+  }, [currentIsland, missionActive, phase2Active, phase2Completed])
 
   // Event handlers
   const handleGlitchClick = () => {
@@ -1551,8 +1566,8 @@ const IslandMap = ({ onExit }) => {
   }
 
   const handleNpcClick = (island) => {
-    // Don't show initial dialogues in phase2 (color map)
-    if (phase2Active) {
+    // Don't show initial dialogues in phase2 or after phase2 completion (color map)
+    if (phase2Active || phase2Completed) {
       return
     }
     
@@ -1678,6 +1693,34 @@ const IslandMap = ({ onExit }) => {
     setTimeout(() => {
       typeNextMessage(messages, 0)
     }, 100)
+  }
+
+  // iPad Co-Creation save handler
+  const handleIPadSave = (compositeImage, storyText) => {
+    const savedUser = localStorage.getItem('aiJourneyUser')
+    const userData = savedUser ? JSON.parse(savedUser) : {}
+    
+    if (!userData.explorerJournal) {
+      userData.explorerJournal = []
+    }
+    
+    // Create story preview (first 30 chars)
+    const storyPreview = storyText.substring(0, 30) + (storyText.length > 30 ? '...' : '')
+    
+    userData.explorerJournal.push({
+      photo: compositeImage,
+      item: `Story: ${storyPreview}`,
+      type: 'creative',
+      timestamp: Date.now(),
+      description: storyText,
+      tags: ['island', 'cocreation', 'ai-story'],
+      region: 'Island'
+    })
+    
+    localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+    
+    // Show success feedback (optional)
+    console.log('Story saved to Vision Log!')
   }
 
   const handleImageNpcClick = (npcId) => {
@@ -2559,6 +2602,14 @@ const IslandMap = ({ onExit }) => {
     } else {
       // Check if there are more dialogues for the current island
       if (currentDialogueIsland) {
+        // Don't advance dialogues during phase2 or after phase2 completion
+        if (phase2Active || phase2Completed) {
+          setShowDialogue(false)
+          setCurrentDialogueIsland(null)
+          setCurrentDialogueIndex(0)
+          return
+        }
+        
         const npcDialogues = getNpcDialogues(t)
         const dialogues = npcDialogues[currentDialogueIsland]
         const nextIndex = currentDialogueIndex + 1
@@ -2604,6 +2655,16 @@ const IslandMap = ({ onExit }) => {
   useEffect(() => {
     if (!currentDialogue || !showDialogue) return
     
+    // Don't run typing effect for initial dialogues during phase2 or after phase2 completion
+    if ((phase2Active || phase2Completed) && currentDialogueIsland) {
+      // This is an initial NPC dialogue, close it
+      setShowDialogue(false)
+      setCurrentDialogueIsland(null)
+      setCurrentDialogueIndex(0)
+      setCurrentDialogue(null)
+      return
+    }
+    
     const fullText = currentDialogue.text
     if (!fullText) return
     
@@ -2623,6 +2684,11 @@ const IslandMap = ({ onExit }) => {
         
         // Auto-advance to next dialogue after typing completes
         if (currentDialogueIsland) {
+          // Don't auto-advance during phase2 or after phase2 completion
+          if (phase2Active || phase2Completed) {
+            return
+          }
+          
           const npcDialogues = getNpcDialogues(t)
           const dialogues = npcDialogues[currentDialogueIsland]
           const nextIndex = currentDialogueIndex + 1
@@ -2643,7 +2709,7 @@ const IslandMap = ({ onExit }) => {
       clearInterval(typingInterval)
       stopTypingSound() // Clean up typing sound
     }
-  }, [currentDialogue, showDialogue, currentDialogueIndex, currentDialogueIsland, startTypingSound, stopTypingSound])
+  }, [currentDialogue, showDialogue, currentDialogueIndex, currentDialogueIsland, phase2Active, phase2Completed, startTypingSound, stopTypingSound])
   
   // New Conversation Test typing effect - disabled, now using typeNextMessage function
   // useEffect removed to use manual typeNextMessage control
@@ -2798,7 +2864,7 @@ const IslandMap = ({ onExit }) => {
   // Get NPC for current island
   const getCurrentNpc = () => {
     if (islandRestored) {
-      // Restored island NPCs - only show specific NPCs
+      // Restored island NPCs - clicking opens iPad co-creation modal
       switch (currentIsland) {
         case ISLANDS.ISLAND_1:
           return [
@@ -2808,43 +2874,28 @@ const IslandMap = ({ onExit }) => {
               size: '220px',
               position: { right: '15%', top: '10%' },
               onClick: () => {
-                setCurrentDialogue({
-                  text: getRandomDialogue(t),
-                  speaker: 'NPC'
-                })
-                setCurrentDialogueIsland(ISLANDS.ISLAND_1)
-                setClickedNpcPosition({ right: '15%', top: '10%', size: '220px' })
-                setShowDialogue(true)
+                setSelectedNpcForIPad({ id: 'npc1_restored', image: '/island/npc/npc1.png' })
+                setShowIPadModal(true)
               }
             },
             {
               id: 'npc6_restored',
               image: '/island/npc/npc6.png',
               size: '150px',
-              position: { left: '15%', bottom: '20%' }, // 调整为底20%
+              position: { left: '15%', bottom: '20%' },
               onClick: () => {
-                setCurrentDialogue({
-                  text: getRandomDialogue(t),
-                  speaker: 'NPC'
-                })
-                setCurrentDialogueIsland(ISLANDS.ISLAND_1)
-                setClickedNpcPosition({ left: '15%', bottom: '20%', size: '150px' })
-                setShowDialogue(true)
+                setSelectedNpcForIPad({ id: 'npc6_restored', image: '/island/npc/npc6.png' })
+                setShowIPadModal(true)
               }
             },
             {
               id: 'npc7_restored',
               image: '/island/npc/npc7.png',
               size: '160px',
-              position: { left: '50%', bottom: '35%' }, // 调整为左50%
+              position: { left: '50%', bottom: '35%' },
               onClick: () => {
-                setCurrentDialogue({
-                  text: getRandomDialogue(t),
-                  speaker: 'NPC'
-                })
-                setCurrentDialogueIsland(ISLANDS.ISLAND_1)
-                setClickedNpcPosition({ left: '50%', bottom: '35%', size: '160px' })
-                setShowDialogue(true)
+                setSelectedNpcForIPad({ id: 'npc7_restored', image: '/island/npc/npc7.png' })
+                setShowIPadModal(true)
               }
             },
             {
@@ -2853,13 +2904,8 @@ const IslandMap = ({ onExit }) => {
               size: '250px',
               position: { right: '10%', bottom: '5%' },
               onClick: () => {
-                setCurrentDialogue({
-                  text: getRandomDialogue(t),
-                  speaker: 'NPC'
-                })
-                setCurrentDialogueIsland(ISLANDS.ISLAND_1)
-                setClickedNpcPosition({ right: '10%', bottom: '5%', size: '250px' })
-                setShowDialogue(true)
+                setSelectedNpcForIPad({ id: 'npc11_restored', image: '/island/npc/npc11.png' })
+                setShowIPadModal(true)
               }
             }
           ]
@@ -2871,13 +2917,8 @@ const IslandMap = ({ onExit }) => {
               size: '200px',
               position: { left: '5%', top: '10%' },
               onClick: () => {
-                setCurrentDialogue({
-                  text: getRandomDialogue(t),
-                  speaker: 'NPC'
-                })
-                setCurrentDialogueIsland(ISLANDS.ISLAND_2)
-                setClickedNpcPosition({ left: '5%', top: '10%', size: '200px' })
-                setShowDialogue(true)
+                setSelectedNpcForIPad({ id: 'npc2_restored', image: '/island/npc/npc2.png' })
+                setShowIPadModal(true)
               }
             },
             {
@@ -2886,13 +2927,8 @@ const IslandMap = ({ onExit }) => {
               size: '200px',
               position: { right: '20%', bottom: '20%' },
               onClick: () => {
-                setCurrentDialogue({
-                  text: getRandomDialogue(t),
-                  speaker: 'NPC'
-                })
-                setCurrentDialogueIsland(ISLANDS.ISLAND_2)
-                setClickedNpcPosition({ right: '20%', bottom: '20%', size: '200px' })
-                setShowDialogue(true)
+                setSelectedNpcForIPad({ id: 'npc21_restored', image: '/island/npc/npc21.png' })
+                setShowIPadModal(true)
               }
             }
           ]
@@ -2904,13 +2940,8 @@ const IslandMap = ({ onExit }) => {
               size: '200px',
               position: { right: '5%', bottom: '10%' },
               onClick: () => {
-                setCurrentDialogue({
-                  text: getRandomDialogue(t),
-                  speaker: 'NPC'
-                })
-                setCurrentDialogueIsland(ISLANDS.ISLAND_3)
-                setClickedNpcPosition({ right: '5%', bottom: '10%', size: '200px' })
-                setShowDialogue(true)
+                setSelectedNpcForIPad({ id: 'npc3_restored', image: '/island/npc/npc3.png' })
+                setShowIPadModal(true)
               }
             },
             {
@@ -2919,13 +2950,8 @@ const IslandMap = ({ onExit }) => {
               size: '150px',
               position: { left: '10%', bottom: '5%' },
               onClick: () => {
-                setCurrentDialogue({
-                  text: getRandomDialogue(t),
-                  speaker: 'NPC'
-                })
-                setCurrentDialogueIsland(ISLANDS.ISLAND_3)
-                setClickedNpcPosition({ left: '10%', bottom: '5%', size: '150px' })
-                setShowDialogue(true)
+                setSelectedNpcForIPad({ id: 'npc15_restored', image: '/island/npc/npc15.png' })
+                setShowIPadModal(true)
               }
             },
             {
@@ -2934,28 +2960,18 @@ const IslandMap = ({ onExit }) => {
               size: '200px',
               position: { right: '10%', top: '10%' },
               onClick: () => {
-                setCurrentDialogue({
-                  text: getRandomDialogue(t),
-                  speaker: 'NPC'
-                })
-                setCurrentDialogueIsland(ISLANDS.ISLAND_3)
-                setClickedNpcPosition({ right: '10%', top: '10%', size: '200px' })
-                setShowDialogue(true)
+                setSelectedNpcForIPad({ id: 'npc18_restored', image: '/island/npc/npc18.png' })
+                setShowIPadModal(true)
               }
             },
             {
               id: 'npc19_restored',
               image: '/island/npc/npc19.png',
               size: '250px',
-              position: { left: '10%', top: '15%' }, // 调整为左边10%，顶部15%
+              position: { left: '10%', top: '15%' },
               onClick: () => {
-                setCurrentDialogue({
-                  text: getRandomDialogue(t),
-                  speaker: 'NPC'
-                })
-                setCurrentDialogueIsland(ISLANDS.ISLAND_3)
-                setClickedNpcPosition({ left: '10%', top: '15%', size: '250px' })
-                setShowDialogue(true)
+                setSelectedNpcForIPad({ id: 'npc19_restored', image: '/island/npc/npc19.png' })
+                setShowIPadModal(true)
               }
             }
           ]
@@ -2991,12 +3007,13 @@ const IslandMap = ({ onExit }) => {
             return Object.values(missionNpcs)
           }
         } else {
-          // In phase2, don't show initial dialogue NPCs
-          if (phase2Active) {
+          // In phase2 or after phase2 completion, don't show initial dialogue NPCs
+          if (phase2Active || phase2Completed) {
             return []
           }
           // Original NPC (only in phase 1)
           return [{
+            id: 'npc1_initial',
             image: '/island/npc/npc1.png',
             style: { height: '350px', right: '15%', bottom: '15%' },
             onClick: () => handleNpcClick(ISLANDS.ISLAND_1)
@@ -3014,12 +3031,13 @@ const IslandMap = ({ onExit }) => {
             return Object.values(island2Npcs)
           }
         } else {
-          // In phase2, don't show initial dialogue NPCs
-          if (phase2Active) {
+          // In phase2 or after phase2 completion, don't show initial dialogue NPCs
+          if (phase2Active || phase2Completed) {
             return []
           }
           // Original NPC (only in phase 1)
           return [{
+            id: 'npc2_initial',
             image: '/island/npc/npc2.png',
             style: { height: '300px', left: '15%', bottom: '10%' },
             onClick: () => handleNpcClick(ISLANDS.ISLAND_2)
@@ -3037,18 +3055,23 @@ const IslandMap = ({ onExit }) => {
             return Object.values(island3Npcs)
           }
         } else {
-          // In phase2, don't show initial dialogue NPCs
-          if (phase2Active) {
+          // In phase2 or after phase2 completion, don't show initial dialogue NPCs
+          if (phase2Active || phase2Completed) {
             return []
           }
           // Original NPC (only in phase 1)
           return [{
+            id: 'npc3_initial',
             image: '/island/npc/npc3.png',
             style: { height: '300px', left: '15%', bottom: '30%' },
             onClick: () => handleNpcClick(ISLANDS.ISLAND_3)
           }]
         }
       case ISLANDS.MAIN_ISLAND:
+        // In phase2 or after phase2 completion, don't show initial dialogue NPCs on main island
+        if (phase2Active || phase2Completed) {
+          return []
+        }
         return [{
           id: 'sparky_main',
           image: '/island/npc/sparky.gif',
@@ -4364,7 +4387,7 @@ const IslandMap = ({ onExit }) => {
               onClick={(e) => {
                 e.stopPropagation()
                 
-                // If NPC has a custom onClick handler (like Sparky), use it
+                // If NPC has a custom onClick handler (like Sparky or restored NPCs), use it
                 if (npc.onClick) {
                   npc.onClick()
                   return
@@ -4373,6 +4396,7 @@ const IslandMap = ({ onExit }) => {
                 // Otherwise, handle mission NPCs
                 if (!npc.id) return
                 
+                // Regular mission handling
                 if (currentIsland === ISLANDS.ISLAND_1) {
                   handleMissionNpcClick(npc.id)
                 } else if (currentIsland === ISLANDS.ISLAND_2) {
@@ -5540,6 +5564,17 @@ const IslandMap = ({ onExit }) => {
             `}
           </style>
         </div>
+      )}
+
+      {/* iPad Co-Creation Modal */}
+      {showIPadModal && (
+        <IPadCoCreationModal
+          onClose={() => {
+            setShowIPadModal(false)
+            setSelectedNpcForIPad(null)
+          }}
+          onSave={handleIPadSave}
+        />
       )}
     </div>
   )

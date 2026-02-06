@@ -70,79 +70,85 @@ const PhotosApp = ({ onClose }) => {
         background: '#000',
         display: 'flex',
         flexDirection: 'column',
-        position: 'relative',
-        overflowY: 'auto'
+        position: 'relative'
       }}>
-        {/* Top Bar */}
+        {/* Scrollable Content Area */}
         <div style={{
-          position: 'sticky',
-          top: 0,
-          left: 0,
-          right: 0,
-          height: '96px',
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.4))',
-          zIndex: 20,
-          display: 'flex',
-          alignItems: 'flex-end',
-          paddingBottom: '16px',
-          paddingLeft: '16px',
-          paddingRight: '16px',
-          justifyContent: 'space-between',
-          backdropFilter: 'blur(10px)'
+          flex: 1,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          paddingBottom: '112px' // Space for bottom bar (80px) + HomeBar (32px)
         }}>
-          <button 
-            onClick={() => setViewingPhotoId(null)}
-            style={{
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '16px'
-            }}
-          >
-            <ChevronLeft size={30} />
-          </button>
+          {/* Top Bar */}
           <div style={{
-            color: '#fff',
-            fontWeight: '600',
-            fontSize: '14px',
-            textShadow: '0 1px 3px rgba(0,0,0,0.5)'
+            position: 'sticky',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '96px',
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.8), rgba(0,0,0,0.4))',
+            zIndex: 20,
+            display: 'flex',
+            alignItems: 'flex-end',
+            paddingBottom: '16px',
+            paddingLeft: '16px',
+            paddingRight: '16px',
+            justifyContent: 'space-between',
+            backdropFilter: 'blur(10px)'
           }}>
-            {viewingPhoto.date} • {viewingPhoto.time}
+            <button 
+              onClick={() => setViewingPhotoId(null)}
+              style={{
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '16px'
+              }}
+            >
+              <ChevronLeft size={30} />
+            </button>
+            <div style={{
+              color: '#fff',
+              fontWeight: '600',
+              fontSize: '14px',
+              textShadow: '0 1px 3px rgba(0,0,0,0.5)'
+            }}>
+              {viewingPhoto.date} • {viewingPhoto.time}
+            </div>
+            <button style={{ opacity: 0 }}>
+              <ChevronLeft size={30} />
+            </button>
           </div>
-          <button style={{ opacity: 0 }}>
-            <ChevronLeft size={30} />
-          </button>
-        </div>
 
-        {/* Image Container */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '16px',
-          minHeight: '300px'
-        }}>
-          <img 
-            src={viewingPhoto.url} 
-            style={{
-              maxWidth: '100%',
-              maxHeight: '400px',
-              objectFit: 'contain',
-              borderRadius: '8px'
-            }}
-            alt="Detail"
-          />
-        </div>
+          {/* Image Container */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+            minHeight: '300px'
+          }}>
+            <img 
+              src={viewingPhoto.url} 
+              style={{
+                maxWidth: '100%',
+                maxHeight: '400px',
+                objectFit: 'contain',
+                borderRadius: '8px'
+              }}
+              alt="Detail"
+            />
+          </div>
 
-        {/* Photo Information Card */}
-        <div style={{
-          padding: '16px',
-          paddingBottom: '100px'
-        }}>
+          {/* Photo Information Card */}
+          <div style={{
+            padding: '16px',
+            paddingBottom: '16px' // Reduced padding since we have space below
+          }}>
           <div style={{
             background: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(20px)',
@@ -192,16 +198,20 @@ const PhotosApp = ({ onClose }) => {
                   fontWeight: '600',
                   background: viewingPhoto.type === 'healthy' ? 'rgba(34, 197, 94, 0.2)' : 
                               viewingPhoto.type === 'unhealthy' ? 'rgba(239, 68, 68, 0.2)' : 
+                              viewingPhoto.type === 'creative' ? 'rgba(147, 51, 234, 0.2)' :
                               'rgba(251, 191, 36, 0.2)',
                   color: viewingPhoto.type === 'healthy' ? '#4ade80' : 
                          viewingPhoto.type === 'unhealthy' ? '#f87171' : 
+                         viewingPhoto.type === 'creative' ? '#c084fc' :
                          '#fbbf24',
                   border: `1px solid ${viewingPhoto.type === 'healthy' ? 'rgba(34, 197, 94, 0.3)' : 
                                        viewingPhoto.type === 'unhealthy' ? 'rgba(239, 68, 68, 0.3)' : 
+                                       viewingPhoto.type === 'creative' ? 'rgba(147, 51, 234, 0.3)' :
                                        'rgba(251, 191, 36, 0.3)'}`
                 }}>
                   {viewingPhoto.type === 'healthy' ? '✓ Healthy' : 
                    viewingPhoto.type === 'unhealthy' ? '✗ Unhealthy' : 
+                   viewingPhoto.type === 'creative' ? '✨ Creative' :
                    '? Uncertain'}
                 </div>
               </div>
@@ -286,22 +296,27 @@ const PhotosApp = ({ onClose }) => {
             )}
           </div>
         </div>
+        {/* End of Scrollable Content */}
+        </div>
 
-        {/* Bottom Action Bar */}
+        {/* Bottom Action Bar - Fixed at bottom of phone screen, above HomeBar */}
         <div style={{
-          position: 'fixed',
-          bottom: 0,
+          position: 'absolute',
+          bottom: '32px', // Above HomeBar (32px height)
           left: 0,
           right: 0,
           height: '80px',
-          background: 'rgba(0, 0, 0, 0.9)',
+          background: 'rgba(0, 0, 0, 0.95)',
           backdropFilter: 'blur(20px)',
-          zIndex: 20,
+          WebkitBackdropFilter: 'blur(20px)',
+          zIndex: 30,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-around',
-          paddingBottom: '16px',
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)'
+          paddingTop: '8px',
+          paddingBottom: '8px',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 -4px 12px rgba(0, 0, 0, 0.3)'
         }}>
           <button style={{
             background: 'none',
