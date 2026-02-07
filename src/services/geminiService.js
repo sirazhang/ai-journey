@@ -27,7 +27,7 @@ export const sendMessageToGemini = async (
     })
 
     const response = await fetch(
-      getGeminiUrl('gemini-2.5-flash'),
+      getGeminiUrl('gemini-3-flash'),
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -91,7 +91,7 @@ export const generateIdea = async () => {
     Only return the story starter text, nothing else.`
 
     const response = await fetch(
-      getGeminiUrl('gemini-2.5-flash'),
+      getGeminiUrl('gemini-3-flash'),
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -162,7 +162,7 @@ export const polishStory = async (userStory) => {
     Only return the polished story, nothing else.`
 
     const response = await fetch(
-      getGeminiUrl('gemini-2.5-flash'),
+      getGeminiUrl('gemini-3-flash'),
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -203,7 +203,7 @@ export const polishStory = async (userStory) => {
 }
 
 // Generate enhanced image from canvas drawing
-// Uses Gemini 2.5 Flash Image model for image generation
+// Tries gemini-3-pro-preview first, falls back to gemini-2.5-flash-image
 export const generateMagicImage = async (drawingBase64, story, additionalPrompt = '') => {
   try {
     // Remove data URL header if present
@@ -226,29 +226,64 @@ export const generateMagicImage = async (drawingBase64, story, additionalPrompt 
     
     ${promptContext}`
 
+    const requestBody = {
+      contents: [{
+        parts: [
+          {
+            inlineData: {
+              mimeType: "image/png",
+              data: cleanBase64
+            }
+          },
+          { text: prompt }
+        ]
+      }],
+      generationConfig: {
+        temperature: 0.9,
+        topK: 40,
+        topP: 0.95,
+      }
+    }
+
+    // Try gemini-3-pro-preview first
+    try {
+      console.log('Attempting image generation with gemini-3-pro-preview...')
+      const response = await fetch(
+        getGeminiUrl('gemini-3-pro-preview'),
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody)
+        }
+      )
+
+      if (response.ok) {
+        const data = await response.json()
+        
+        // Extract image from response
+        if (data.candidates && data.candidates[0]?.content?.parts) {
+          for (const part of data.candidates[0].content.parts) {
+            if (part.inlineData && part.inlineData.data) {
+              console.log('Image generated successfully with gemini-3-pro-preview')
+              return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`
+            }
+          }
+        }
+      } else {
+        console.warn(`gemini-3-pro-preview failed with status ${response.status}, trying fallback...`)
+      }
+    } catch (error) {
+      console.warn('gemini-3-pro-preview error, trying fallback:', error.message)
+    }
+
+    // Fallback to gemini-2.5-flash-image
+    console.log('Attempting image generation with gemini-2.5-flash-image (fallback)...')
     const response = await fetch(
       getGeminiUrl('gemini-2.5-flash-image'),
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [
-              {
-                inlineData: {
-                  mimeType: "image/png",
-                  data: cleanBase64
-                }
-              },
-              { text: prompt }
-            ]
-          }],
-          generationConfig: {
-            temperature: 0.9,
-            topK: 40,
-            topP: 0.95,
-          }
-        })
+        body: JSON.stringify(requestBody)
       }
     )
 
@@ -269,6 +304,7 @@ export const generateMagicImage = async (drawingBase64, story, additionalPrompt 
     if (data.candidates && data.candidates[0]?.content?.parts) {
       for (const part of data.candidates[0].content.parts) {
         if (part.inlineData && part.inlineData.data) {
+          console.log('Image generated successfully with gemini-2.5-flash-image')
           return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`
         }
       }

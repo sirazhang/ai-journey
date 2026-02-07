@@ -938,7 +938,7 @@ const DesertMap = ({ onExit }) => {
       
       try {
         // Call Gemini API
-        const response = await fetch(getGeminiUrl('gemini-2.0-flash-exp'), {
+        const response = await fetch(getGeminiUrl('gemini-3-flash'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -2223,7 +2223,7 @@ const DesertMap = ({ onExit }) => {
       
       // Use gemini-2.5-flash model
       const response = await fetch(
-        getGeminiUrl('gemini-2.5-flash'),
+        getGeminiUrl('gemini-3-flash'),
         {
           method: 'POST',
           headers: {

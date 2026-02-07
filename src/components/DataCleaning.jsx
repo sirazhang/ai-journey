@@ -2028,7 +2028,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
       
       try {
         // Call Gemini API
-        const response = await fetch(getGeminiUrl('gemini-2.0-flash-exp'), {
+        const response = await fetch(getGeminiUrl('gemini-3-flash'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -2134,7 +2134,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
       
       // Use gemini-2.5-flash model (same as Desert)
       const response = await fetch(
-        getGeminiUrl('gemini-2.5-flash'),
+        getGeminiUrl('gemini-3-flash'),
         {
           method: 'POST',
           headers: {
