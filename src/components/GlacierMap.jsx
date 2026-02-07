@@ -3122,9 +3122,10 @@ const GlacierMap = ({ onExit }) => {
       setShowPuzzle(false)
       setShowExercise(false)
       setShowNpc6Dialogue(false)
-      setShowNpc6Creativity(false)
-      setShowNpc6CoCreation(false)
-      setShowNpc9Memory(false)
+      setShowCreativityChallenge(false)
+      setShowCoCreation(false)
+      setShowNpc9Dialogue(false)
+      setShowMemoryChallenge(false)
       setShowNpc9Sharing(false)
       // When returning from rooftop:
       // - Elevator arrow should remain visible (controlled by showElevatorArrow state)
