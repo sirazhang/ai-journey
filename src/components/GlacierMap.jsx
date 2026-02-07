@@ -1034,7 +1034,7 @@ const GlacierMap = ({ onExit }) => {
   const [isNpc9Generating, setIsNpc9Generating] = useState(false) // Track if generating response
   
   // Data Center and Privacy Task states
-  const [showDataCenterArrow, setShowDataCenterArrow] = useState(false)
+  const [showDataCenterArrow, setShowDataCenterArrow] = useState(savedProgress?.showDataCenterArrow || false)
   const [showFillBlankTask, setShowFillBlankTask] = useState(false)
   const [showFillBlankComplete, setShowFillBlankComplete] = useState(false) // Show completion dialogue
   const [fillBlankProgress, setFillBlankProgress] = useState(0) // 0-5
@@ -1128,6 +1128,7 @@ const GlacierMap = ({ onExit }) => {
       hasSeenInsideIntro,
       rooftopCompletedTasks,
       showArrow, // Save arrow state
+      showDataCenterArrow, // Save data center arrow state
       isComplete: currentScene === 'complete',
     }
     saveProgress(progress)
@@ -1141,7 +1142,7 @@ const GlacierMap = ({ onExit }) => {
         localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
       }
     }
-  }, [currentScene, completedCases, showSummaryDialogue, showElevatorArrow, courtSummaryCompleted, hasSeenInsideIntro, rooftopCompletedTasks, showArrow])
+  }, [currentScene, completedCases, showSummaryDialogue, showElevatorArrow, courtSummaryCompleted, hasSeenInsideIntro, rooftopCompletedTasks, showArrow, showDataCenterArrow])
 
   // 使用useMemo来避免每次渲染都重新创建dialogues
   const dialogueSequences = useMemo(() => getDialogueSequences(t), [t])
@@ -5319,14 +5320,14 @@ const GlacierMap = ({ onExit }) => {
             position: 'absolute',
             zIndex: 30,
             cursor: (showElevatorArrow && rooftopCompletedTasks.length < 3) ? 'default' : 
-                    (rooftopCompletedTasks.length === 3 && courtSummaryCompleted) ? 'pointer' :
-                    (!showElevatorArrow) ? 'pointer' : 'default',
+                    (rooftopCompletedTasks.length === 3 && courtSummaryCompleted && !showDataCenterArrow) ? 'pointer' :
+                    (!showElevatorArrow && !showDataCenterArrow) ? 'pointer' : 'default',
             ...getMomoPosition(),
           }}
           onClick={handleMomoClick}
           onMouseOver={(e) => {
-            if ((!showElevatorArrow) || 
-                (rooftopCompletedTasks.length === 3 && courtSummaryCompleted)) {
+            if ((!showElevatorArrow && !showDataCenterArrow) || 
+                (rooftopCompletedTasks.length === 3 && courtSummaryCompleted && !showDataCenterArrow)) {
               e.currentTarget.style.transform = 'scale(1.05)'
             }
           }}
@@ -7164,10 +7165,10 @@ const GlacierMap = ({ onExit }) => {
         }}>
           <style>{`
             .exercise-text-area {
-              cursor: url('/glacier/icon/pen-cursor.png') 16 16, crosshair;
+              cursor: url(/glacier/icon/pen-cursor.png) 16 16, crosshair;
             }
             .exercise-text-area * {
-              cursor: url('/glacier/icon/pen-cursor.png') 16 16, crosshair;
+              cursor: url(/glacier/icon/pen-cursor.png) 16 16, crosshair;
             }
           `}</style>
           
