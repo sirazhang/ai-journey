@@ -1080,6 +1080,7 @@ const GlacierMap = ({ onExit }) => {
   const [creativityAiAnswer, setCreativityAiAnswer] = useState('')
   const [creativityShowAnswer, setCreativityShowAnswer] = useState(false)
   const [isGeneratingCreativity, setIsGeneratingCreativity] = useState(false)
+  const [npcQuestionsGenerated, setNpcQuestionsGenerated] = useState({}) // Track which NPCs have generated questions
 
   // Background music
   useEffect(() => {
@@ -2091,17 +2092,26 @@ const GlacierMap = ({ onExit }) => {
   
   const checkPrivacySelection = (selection) => {
     const currentDoc = privacyDocuments[privacyTaskDocument - 1]
-    const matchedItem = currentDoc.items.find(item => {
+    
+    // Find all matched items in the selection
+    const matchedItems = currentDoc.items.filter(item => {
       if (item.isMultiPart) {
         return item.parts.some(part => selection.includes(part))
       }
       return selection.includes(item.text) || selection.includes(item.hint)
     })
     
-    if (matchedItem && !privacyFoundItems.includes(matchedItem.id)) {
-      playMarkSound()
-      setPrivacyFoundItems([...privacyFoundItems, matchedItem.id])
-    } else if (!matchedItem) {
+    if (matchedItems.length > 0) {
+      // Mark all matched items that haven't been found yet
+      const newFoundItems = matchedItems
+        .filter(item => !privacyFoundItems.includes(item.id))
+        .map(item => item.id)
+      
+      if (newFoundItems.length > 0) {
+        playMarkSound()
+        setPrivacyFoundItems([...privacyFoundItems, ...newFoundItems])
+      }
+    } else {
       playWrongSound()
     }
   }
@@ -2154,11 +2164,15 @@ const GlacierMap = ({ onExit }) => {
   
   // Creativity Card handlers
   const handleCompleteNpcClick = async (npcId) => {
-    // First show the NPC dialogue
-    setShowCompleteNpcDialogue(showCompleteNpcDialogue === npcId ? null : npcId)
+    // Toggle NPC dialogue
+    const isClosing = showCompleteNpcDialogue === npcId
+    setShowCompleteNpcDialogue(isClosing ? null : npcId)
     
-    // If dialogue is being shown (not closed), trigger creativity card after a delay
-    if (showCompleteNpcDialogue !== npcId) {
+    // If dialogue is being shown (not closed) and question hasn't been generated for this NPC
+    if (!isClosing && !npcQuestionsGenerated[npcId]) {
+      // Mark this NPC as having generated a question
+      setNpcQuestionsGenerated(prev => ({ ...prev, [npcId]: true }))
+      
       setTimeout(async () => {
         // Randomly choose card type
         const cardType = Math.random() > 0.5 ? 'why' : 'whatif'
@@ -7166,10 +7180,10 @@ const GlacierMap = ({ onExit }) => {
         }}>
           <style>{`
             .exercise-text-area {
-              cursor: url(/glacier/icon/pen-cursor.png) 16 16, crosshair;
+              cursor: url(/glacier/icon/pen-cursor.png) 16 16, crosshair !important;
             }
             .exercise-text-area * {
-              cursor: url(/glacier/icon/pen-cursor.png) 16 16, crosshair;
+              cursor: url(/glacier/icon/pen-cursor.png) 16 16, crosshair !important;
             }
           `}</style>
           
@@ -8257,10 +8271,19 @@ const GlacierMap = ({ onExit }) => {
           display: 'flex',
           gap: '30px',
           zIndex: 200,
-          cursor: `url(/glacier/icon/marker.png) 12 12, crosshair`,
         }}>
+          <style>{`
+            .privacy-task-container {
+              cursor: url(/glacier/icon/marker.png) 12 12, crosshair !important;
+            }
+            .privacy-task-container * {
+              cursor: url(/glacier/icon/marker.png) 12 12, crosshair !important;
+            }
+          `}</style>
           {/* Left: Document Content */}
-          <div style={{
+          <div 
+            className="privacy-task-container"
+            style={{
             flex: 1,
             background: 'rgba(255, 255, 255, 0.9)',
             borderRadius: '20px',
