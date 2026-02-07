@@ -1215,6 +1215,34 @@ const DataCleaning = ({ onComplete, onExit }) => {
     
     setTrainingCompleteQuizAnswered(true)
     
+    // Save wrong answer to errorRecords
+    if (!isCorrect) {
+      const savedUser = localStorage.getItem('aiJourneyUser')
+      if (savedUser) {
+        const userData = JSON.parse(savedUser)
+        if (!userData.errorRecords) {
+          userData.errorRecords = []
+        }
+        
+        const question = TRAINING_COMPLETE_QUIZ.question
+        const userAnswer = TRAINING_COMPLETE_QUIZ.options[optionIndex].text
+        const correctAnswer = TRAINING_COMPLETE_QUIZ.options.find(o => o.correct).text
+        
+        userData.errorRecords.push({
+          timestamp: Date.now(),
+          region: 'Jungle',
+          question: question,
+          userAnswer: userAnswer,
+          correctAnswer: correctAnswer,
+          subject: `Jungle Quiz - Wrong Answer`,
+          preview: `You selected: ${userAnswer.substring(0, 50)}...`,
+          content: `Question: ${question}\n\nYour Answer: ${userAnswer}\n\nCorrect Answer: ${correctAnswer}\n\nFeedback: ${TRAINING_COMPLETE_QUIZ.incorrectResponse}`
+        })
+        
+        localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+      }
+    }
+    
     // Add response message
     const responseMessage = { type: 'message', text: response }
     setRangerMessages(prev => [...prev, responseMessage])
@@ -1268,6 +1296,34 @@ const DataCleaning = ({ onComplete, onExit }) => {
     
     const currentQuestion = QUIZ_DATA[quizStep]
     const selectedOption = currentQuestion.options[optionIndex]
+    
+    // Save wrong answer to errorRecords
+    if (!isCorrect) {
+      const savedUser = localStorage.getItem('aiJourneyUser')
+      if (savedUser) {
+        const userData = JSON.parse(savedUser)
+        if (!userData.errorRecords) {
+          userData.errorRecords = []
+        }
+        
+        const question = currentQuestion.question
+        const userAnswer = selectedOption.text
+        const correctAnswer = currentQuestion.options.find(o => o.correct).text
+        
+        userData.errorRecords.push({
+          timestamp: Date.now(),
+          region: 'Jungle',
+          question: question,
+          userAnswer: userAnswer,
+          correctAnswer: correctAnswer,
+          subject: `Jungle Quiz - Wrong Answer`,
+          preview: `You selected: ${userAnswer.substring(0, 50)}...`,
+          content: `Question: ${question}\n\nYour Answer: ${userAnswer}\n\nCorrect Answer: ${correctAnswer}\n\nFeedback: ${currentQuestion.incorrectResponse}`
+        })
+        
+        localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+      }
+    }
     
     // Record the answer
     setSelectedAnswers(prev => ({

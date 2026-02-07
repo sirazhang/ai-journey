@@ -1527,6 +1527,33 @@ const GlacierMap = ({ onExit }) => {
       // Mark this option as wrong (for red border)
       setWrongQuizOption(option.id)
       
+      // Save wrong answer to errorRecords
+      const savedUser = localStorage.getItem('aiJourneyUser')
+      if (savedUser) {
+        const userData = JSON.parse(savedUser)
+        if (!userData.errorRecords) {
+          userData.errorRecords = []
+        }
+        
+        // Get the current quiz question from summaryDialogueSequence
+        const currentDialogue = summaryDialogueSequence[summaryDialogueIndex]
+        const question = currentDialogue.text
+        const correctOption = currentDialogue.options?.find(o => o.correct)
+        
+        userData.errorRecords.push({
+          timestamp: Date.now(),
+          region: 'Glacier',
+          question: question,
+          userAnswer: option.text,
+          correctAnswer: correctOption?.text || 'N/A',
+          subject: `Glacier Quiz - Wrong Answer`,
+          preview: `You selected: ${option.text.substring(0, 50)}...`,
+          content: `Question: ${question}\n\nYour Answer: ${option.text}\n\nCorrect Answer: ${correctOption?.text || 'N/A'}\n\nFeedback: Try again! Think carefully about the answer.`
+        })
+        
+        localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+      }
+      
       // Show error feedback but keep quiz visible for retry
       setSummaryDialogueHistory(prev => [...prev, { 
         speaker: 'momo', 

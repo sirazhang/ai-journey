@@ -1812,6 +1812,12 @@ const DesertMap = ({ onExit }) => {
     // Map answer letter to index for wrong answer highlighting
     const answerIndex = answer === 'A' ? 0 : answer === 'B' ? 1 : 2
     
+    const quizOptions = [
+      { letter: 'A', text: "A. Data Cleaning", correct: false },
+      { letter: 'B', text: "B. Data Labeling", correct: true },
+      { letter: 'C', text: "C. Data Mining", correct: false }
+    ]
+    
     if (isCorrect) {
       // Play correct sound and clear wrong answer state
       playCorrectSound()
@@ -1827,6 +1833,33 @@ const DesertMap = ({ onExit }) => {
       // Play wrong sound and highlight wrong answer
       playWrongSound()
       setWrongAnswerIndex(answerIndex)
+      
+      // Save wrong answer to errorRecords
+      const savedUser = localStorage.getItem('aiJourneyUser')
+      if (savedUser) {
+        const userData = JSON.parse(savedUser)
+        if (!userData.errorRecords) {
+          userData.errorRecords = []
+        }
+        
+        const question = "What do we call the process of telling AI 'this is right, that is wrong'?"
+        const userAnswer = quizOptions[answerIndex].text
+        const correctAnswer = quizOptions.find(o => o.correct).text
+        
+        userData.errorRecords.push({
+          timestamp: Date.now(),
+          region: 'Desert',
+          question: question,
+          userAnswer: userAnswer,
+          correctAnswer: correctAnswer,
+          subject: `Desert Quiz - Wrong Answer`,
+          preview: `You selected: ${userAnswer.substring(0, 50)}...`,
+          content: `Question: ${question}\n\nYour Answer: ${userAnswer}\n\nCorrect Answer: ${correctAnswer}\n\nFeedback: Data Labeling is the process of teaching AI by providing labeled examples. This is the foundation of Supervised Learning.`
+        })
+        
+        localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+      }
+      
       // Keep quiz visible with error message
       setCurrentDialogue({
         ...currentDialogue,
@@ -1974,6 +2007,18 @@ const DesertMap = ({ onExit }) => {
 
   // Mission 3 Quiz handling
   const handleMission3QuizAnswer = (answerIndex, isCorrect) => {
+    const quiz1Options = [
+      { text: "A. Because the iron sheet changed shape.", correct: false },
+      { text: "B. Because context (the weather) changes how we interpret an action.", correct: true },
+      { text: "C. Because the worker yelled at me.", correct: false }
+    ]
+    
+    const quiz2Options = [
+      { text: "A. AI is always right.", correct: false },
+      { text: "B. AI needs human context and common sense to make good decisions.", correct: true },
+      { text: "C. AI should work alone.", correct: false }
+    ]
+    
     if (mission3Phase === 'quiz1') {
       if (isCorrect) {
         // Play correct sound and move to feedback
@@ -1985,6 +2030,32 @@ const DesertMap = ({ onExit }) => {
         // Play wrong sound and highlight wrong answer
         playWrongSound()
         setWrongAnswerIndex(answerIndex)
+        
+        // Save wrong answer to errorRecords
+        const savedUser = localStorage.getItem('aiJourneyUser')
+        if (savedUser) {
+          const userData = JSON.parse(savedUser)
+          if (!userData.errorRecords) {
+            userData.errorRecords = []
+          }
+          
+          const question = "Why did the meaning of the 'Iron Sheet' change completely?"
+          const userAnswer = quiz1Options[answerIndex].text
+          const correctAnswer = quiz1Options.find(o => o.correct).text
+          
+          userData.errorRecords.push({
+            timestamp: Date.now(),
+            region: 'Desert',
+            question: question,
+            userAnswer: userAnswer,
+            correctAnswer: correctAnswer,
+            subject: `Desert Quiz - Wrong Answer`,
+            preview: `You selected: ${userAnswer.substring(0, 50)}...`,
+            content: `Question: ${question}\n\nYour Answer: ${userAnswer}\n\nCorrect Answer: ${correctAnswer}\n\nFeedback: Context is crucial for AI to interpret data correctly. The same action can have different meanings in different situations.`
+          })
+          
+          localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+        }
       }
     } else if (mission3Phase === 'quiz2') {
       if (isCorrect) {
@@ -1998,6 +2069,32 @@ const DesertMap = ({ onExit }) => {
         // Play wrong sound and highlight wrong answer
         playWrongSound()
         setWrongAnswerIndex(answerIndex)
+        
+        // Save wrong answer to errorRecords
+        const savedUser = localStorage.getItem('aiJourneyUser')
+        if (savedUser) {
+          const userData = JSON.parse(savedUser)
+          if (!userData.errorRecords) {
+            userData.errorRecords = []
+          }
+          
+          const question = "If you hadn't helped me, I would have attacked them. What does this teach us about AI?"
+          const userAnswer = quiz2Options[answerIndex].text
+          const correctAnswer = quiz2Options.find(o => o.correct).text
+          
+          userData.errorRecords.push({
+            timestamp: Date.now(),
+            region: 'Desert',
+            question: question,
+            userAnswer: userAnswer,
+            correctAnswer: correctAnswer,
+            subject: `Desert Quiz - Wrong Answer`,
+            preview: `You selected: ${userAnswer.substring(0, 50)}...`,
+            content: `Question: ${question}\n\nYour Answer: ${userAnswer}\n\nCorrect Answer: ${correctAnswer}\n\nFeedback: AI systems need human oversight and contextual understanding to make appropriate decisions in complex situations.`
+          })
+          
+          localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
+        }
       }
     }
   }
