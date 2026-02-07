@@ -1397,7 +1397,7 @@ const IslandMap = ({ onExit }) => {
     
     try {
       const response = await fetch(
-        getGeminiUrl('gemini-3-flash'),
+        getGeminiUrl('gemini-3-flash-preview'),
         {
           method: 'POST',
           headers: {
@@ -1518,7 +1518,7 @@ const IslandMap = ({ onExit }) => {
       
       try {
         // Call Gemini API - use gemini-2.5-flash (more stable than experimental model)
-        const response = await fetch(getGeminiUrl('gemini-3-flash'), {
+        const response = await fetch(getGeminiUrl('gemini-3-flash-preview'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

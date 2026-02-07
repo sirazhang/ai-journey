@@ -796,8 +796,12 @@ const DataCleaning = ({ onComplete, onExit }) => {
       return
     }
 
-    // Add current dialogue to history
-    setDialogueHistory(prev => [...prev, rangerDialogues[rangerDialogueIndex]])
+    // Clear displayed text FIRST to prevent duplication
+    const currentDialogue = rangerDialogues[rangerDialogueIndex]
+    setDisplayedText('')
+    
+    // Then add current dialogue to history
+    setDialogueHistory(prev => [...prev, currentDialogue])
 
     if (rangerDialogueIndex < rangerDialogues.length - 1) {
       setRangerDialogueIndex(prev => prev + 1)
@@ -2028,7 +2032,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
       
       try {
         // Call Gemini API
-        const response = await fetch(getGeminiUrl('gemini-3-flash'), {
+        const response = await fetch(getGeminiUrl('gemini-3-flash-preview'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -2134,7 +2138,7 @@ const DataCleaning = ({ onComplete, onExit }) => {
       
       // Use gemini-2.5-flash model (same as Desert)
       const response = await fetch(
-        getGeminiUrl('gemini-3-flash'),
+        getGeminiUrl('gemini-3-flash-preview'),
         {
           method: 'POST',
           headers: {

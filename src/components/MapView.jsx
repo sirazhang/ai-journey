@@ -331,7 +331,7 @@ const MapView = ({ onRegionClick }) => {
       
       try {
         // Call Gemini API
-        const response = await fetch(getGeminiUrl('gemini-3-flash'), {
+        const response = await fetch(getGeminiUrl('gemini-3-flash-preview'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -1888,7 +1888,7 @@ const GlacierMap = ({ onExit }) => {
       
       try {
         // Call Gemini API
-        const response = await fetch(getGeminiUrl('gemini-3-flash'), {
+        const response = await fetch(getGeminiUrl('gemini-3-flash-preview'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -2191,7 +2191,7 @@ const GlacierMap = ({ onExit }) => {
         ? 'Generate a creative "Why" question about everyday objects. The question should be simple, curious, and encourage creative thinking. Format: "Why do [object] have/do [feature]?" Example: "Why do water bottles have bumpy lines on them?" Only return the question, nothing else.'
         : 'Generate a creative "What if" question that challenges conventional thinking. The question should be imaginative and thought-provoking. Format: "What if [subject] could [action]?" Example: "What if clouds could talk?" Only return the question, nothing else.'
       
-      const response = await fetch(getGeminiUrl('gemini-3-flash'), {
+      const response = await fetch(getGeminiUrl('gemini-3-flash-preview'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2226,7 +2226,7 @@ const GlacierMap = ({ onExit }) => {
     try {
       const prompt = `User's answer: ${creativityUserAnswer}\nQuestion: ${creativityQuestion}\n\nProvide a brief, encouraging feedback (2-3 sentences) that:\n1. Acknowledges their thinking\n2. Adds an interesting insight\n3. Encourages further curiosity`
       
-      const response = await fetch(getGeminiUrl('gemini-3-flash'), {
+      const response = await fetch(getGeminiUrl('gemini-3-flash-preview'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2257,7 +2257,7 @@ const GlacierMap = ({ onExit }) => {
     try {
       const prompt = `Question: ${creativityQuestion}\n\nProvide a clear, educational answer (3-4 sentences) that explains:\n1. The practical reason\n2. The design principle\n3. An interesting fact`
       
-      const response = await fetch(getGeminiUrl('gemini-3-flash'), {
+      const response = await fetch(getGeminiUrl('gemini-3-flash-preview'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -2387,7 +2387,7 @@ const GlacierMap = ({ onExit }) => {
       // Call Gemini API for response
       try {
         const response = await fetch(
-          getGeminiUrl('gemini-3-flash'),
+          getGeminiUrl('gemini-3-flash-preview'),
           {
             method: 'POST',
             headers: {
@@ -2576,7 +2576,7 @@ const GlacierMap = ({ onExit }) => {
       // Call Gemini API for response
       try {
         const response = await fetch(
-          getGeminiUrl('gemini-3-flash'),
+          getGeminiUrl('gemini-3-flash-preview'),
           {
             method: 'POST',
             headers: {
@@ -2972,7 +2972,7 @@ const GlacierMap = ({ onExit }) => {
       const statementText = courtCases[npcId].statementParts.join(' ')
       
       const response = await fetch(
-        getGeminiUrl('gemini-3-flash'),
+        getGeminiUrl('gemini-3-flash-preview'),
         {
           method: 'POST',
           headers: {

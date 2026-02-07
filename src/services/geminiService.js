@@ -1,6 +1,58 @@
 // Gemini API Service for NPC Chat
 import { getGeminiUrl } from '../config/api'
 
+// Helper function: Call Gemini API with automatic fallback
+// Tries gemini-3-flash-preview first, falls back to gemini-2.0-flash-exp
+const callGeminiWithFallback = async (requestBody) => {
+  // Try gemini-3-flash-preview first
+  try {
+    console.log('🔄 Attempting API call with gemini-3-flash-preview...')
+    const response = await fetch(
+      getGeminiUrl('gemini-3-flash-preview'),
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      }
+    )
+
+    if (response.ok) {
+      const data = await response.json()
+      console.log('✅ API call successful with gemini-3-flash-preview')
+      return { success: true, data }
+    } else {
+      console.warn(`⚠️ gemini-3-flash-preview failed with status ${response.status}, trying fallback...`)
+    }
+  } catch (error) {
+    console.warn('⚠️ gemini-3-flash-preview error, trying fallback:', error.message)
+  }
+
+  // Fallback to gemini-2.0-flash-exp
+  try {
+    console.log('🔄 Attempting API call with gemini-2.0-flash-exp (fallback)...')
+    const response = await fetch(
+      getGeminiUrl('gemini-2.0-flash-exp'),
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody)
+      }
+    )
+
+    if (response.ok) {
+      const data = await response.json()
+      console.log('✅ API call successful with gemini-2.0-flash-exp')
+      return { success: true, data }
+    } else {
+      console.error(`❌ gemini-2.0-flash-exp also failed with status ${response.status}`)
+      return { success: false, error: `API failed with status ${response.status}` }
+    }
+  } catch (error) {
+    console.error('❌ Both API calls failed:', error.message)
+    return { success: false, error: error.message }
+  }
+}
+
 export const sendMessageToGemini = async (
   message,
   history,
@@ -26,27 +78,27 @@ export const sendMessageToGemini = async (
       parts: [{ text: message }]
     })
 
-    const response = await fetch(
-      getGeminiUrl('gemini-3-flash'),
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: contents,
-          systemInstruction: {
-            parts: [{ text: systemInstruction }]
-          },
-          generationConfig: {
-            temperature: 0.9,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 1024,
-          }
-        })
+    const requestBody = {
+      contents: contents,
+      systemInstruction: {
+        parts: [{ text: systemInstruction }]
+      },
+      generationConfig: {
+        temperature: 0.9,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 1024,
       }
-    )
+    }
 
-    const data = await response.json()
+    // Use fallback helper
+    const result = await callGeminiWithFallback(requestBody)
+    
+    if (!result.success) {
+      return "I'm having trouble connecting right now. Please try again in a moment."
+    }
+
+    const data = result.data
     
     if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
       return data.candidates[0].content.parts[0].text
@@ -64,146 +116,93 @@ export const sendMessageToGemini = async (
 
 // Generate a story starter and random shape
 export const generateIdea = async () => {
-  try {
-    const shapes = ['circle', 'heart', 'square', 'triangle', 'star']
-    const randomShape = shapes[Math.floor(Math.random() * shapes.length)]
-    
-    const themes = [
-      "space exploration", "magical forest", "underwater city", 
-      "superhero academy", "friendly monsters", "robot helpers", 
-      "flying castles", "secret garden", "talking animals", "candy land"
-    ]
-    const randomTheme = themes[Math.floor(Math.random() * themes.length)]
+  const shapes = ['circle', 'heart', 'square', 'triangle', 'star']
+  const randomShape = shapes[Math.floor(Math.random() * shapes.length)]
+  
+  const themes = [
+    "space exploration", "magical forest", "underwater city", 
+    "superhero academy", "friendly monsters", "robot helpers", 
+    "flying castles", "secret garden", "talking animals", "candy land"
+  ]
+  const randomTheme = themes[Math.floor(Math.random() * themes.length)]
 
-    const prompt = `Generate a creative story starter (1-2 sentences) for a child's drawing activity. 
-    The story should be imaginative and open-ended. 
-    The theme is: ${randomTheme}.
-    The child sees a simple outline of a ${randomShape} on the screen.
-    
-    CRITICAL RULES:
-    1. It MUST be an incomplete sentence ending with "...".
-    2. It MUST be very short (under 10 words).
-    3. Do NOT write a full story. Just the start.
-    
-    Example: "Deep in the ocean, a blue heart..."
-    Example: "On top of the hill, a square box..."
-    
-    Only return the story starter text, nothing else.`
+  const prompt = `Generate a creative story starter (1-2 sentences) for a child's drawing activity. 
+  The story should be imaginative and open-ended. 
+  The theme is: ${randomTheme}.
+  The child sees a simple outline of a ${randomShape} on the screen.
+  
+  CRITICAL RULES:
+  1. It MUST be an incomplete sentence ending with "...".
+  2. It MUST be very short (under 10 words).
+  3. Do NOT write a full story. Just the start.
+  
+  Example: "Deep in the ocean, a blue heart..."
+  Example: "On top of the hill, a square box..."
+  
+  Only return the story starter text, nothing else.`
 
-    const response = await fetch(
-      getGeminiUrl('gemini-3-flash'),
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: prompt }]
-          }],
-          generationConfig: {
-            temperature: 1.2,
-            maxOutputTokens: 100,
-          }
-        })
-      }
-    )
-
-    // Check for rate limit error
-    if (response.status === 429) {
-      console.warn('API rate limit exceeded (429). Using fallback idea.')
-      return {
-        shape: randomShape,
-        storyStarter: `Once upon a time, there was a magical ${randomShape} that...`
-      }
+  const requestBody = {
+    contents: [{
+      parts: [{ text: prompt }]
+    }],
+    generationConfig: {
+      temperature: 1.2,
+      maxOutputTokens: 100,
     }
+  }
 
-    if (!response.ok) {
-      console.warn(`API request failed with status ${response.status}. Using fallback idea.`)
-      return {
-        shape: randomShape,
-        storyStarter: `Once upon a time, there was a magical ${randomShape} that...`
-      }
-    }
+  // Use fallback helper
+  const result = await callGeminiWithFallback(requestBody)
+  
+  if (result.success && result.data.candidates && result.data.candidates[0]?.content?.parts?.[0]?.text) {
+    const storyStarter = result.data.candidates[0].content.parts[0].text.trim()
+    return { shape: randomShape, storyStarter }
+  }
 
-    const data = await response.json()
-    
-    if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-      const storyStarter = data.candidates[0].content.parts[0].text.trim()
-      return { shape: randomShape, storyStarter }
-    }
-
-    // Fallback
-    return {
-      shape: randomShape,
-      storyStarter: `Once upon a time, there was a magical ${randomShape} that...`
-    }
-  } catch (error) {
-    console.error('generateIdea error:', error)
-    // Fallback
-    const shapes = ['circle', 'heart', 'square', 'triangle', 'star']
-    const randomShape = shapes[Math.floor(Math.random() * shapes.length)]
-    return {
-      shape: randomShape,
-      storyStarter: `Once upon a time, there was a magical ${randomShape} that...`
-    }
+  // Final fallback
+  console.warn('⚠️ All API calls failed for generateIdea, using fallback story')
+  return {
+    shape: randomShape,
+    storyStarter: `Once upon a time, there was a magical ${randomShape} that...`
   }
 }
 
 // Polish user's story text
 export const polishStory = async (userStory) => {
-  try {
-    const prompt = `A child wrote this story fragment: "${userStory}". 
-    Complete the sentence and end the story.
-    
-    CRITICAL RULES:
-    1. Keep it extremely short (max 2 sentences total).
-    2. Use very simple words for a 5-year-old.
-    3. Make it magical or funny.
-    
-    Only return the polished story, nothing else.`
+  const prompt = `A child wrote this story fragment: "${userStory}". 
+  Complete the sentence and end the story.
+  
+  CRITICAL RULES:
+  1. Keep it extremely short (max 2 sentences total).
+  2. Use very simple words for a 5-year-old.
+  3. Make it magical or funny.
+  
+  Only return the polished story, nothing else.`
 
-    const response = await fetch(
-      getGeminiUrl('gemini-3-flash'),
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: prompt }]
-          }],
-          generationConfig: {
-            temperature: 0.9,
-            maxOutputTokens: 200,
-          }
-        })
-      }
-    )
-
-    // Check for rate limit error
-    if (response.status === 429) {
-      console.warn('API rate limit exceeded (429). Returning original story.')
-      return userStory
+  const requestBody = {
+    contents: [{
+      parts: [{ text: prompt }]
+    }],
+    generationConfig: {
+      temperature: 0.9,
+      maxOutputTokens: 200,
     }
-
-    if (!response.ok) {
-      console.warn(`API request failed with status ${response.status}. Returning original story.`)
-      return userStory
-    }
-
-    const data = await response.json()
-    
-    if (data.candidates && data.candidates[0]?.content?.parts?.[0]?.text) {
-      return data.candidates[0].content.parts[0].text.trim()
-    }
-
-    return userStory
-  } catch (error) {
-    console.error('polishStory error:', error)
-    return userStory
   }
+
+  // Use fallback helper
+  const result = await callGeminiWithFallback(requestBody)
+  
+  if (result.success && result.data.candidates && result.data.candidates[0]?.content?.parts?.[0]?.text) {
+    return result.data.candidates[0].content.parts[0].text.trim()
+  }
+
+  // Final fallback - return original story
+  console.warn('⚠️ All API calls failed for polishStory, returning original')
+  return userStory
 }
 
 // Generate enhanced image from canvas drawing
-// Tries gemini-3-pro-preview first, falls back to gemini-2.5-flash-image
+// Tries gemini-3-pro-image-preview first, falls back to gemini-2.5-flash-image
 export const generateMagicImage = async (drawingBase64, story, additionalPrompt = '') => {
   try {
     // Remove data URL header if present
@@ -245,11 +244,11 @@ export const generateMagicImage = async (drawingBase64, story, additionalPrompt 
       }
     }
 
-    // Try gemini-3-pro-preview first
+    // Try gemini-3-pro-image-preview first (highest quality)
     try {
-      console.log('Attempting image generation with gemini-3-pro-preview...')
+      console.log('Attempting image generation with gemini-3-pro-image-preview...')
       const response = await fetch(
-        getGeminiUrl('gemini-3-pro-preview'),
+        getGeminiUrl('gemini-3-pro-image-preview'),
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -264,16 +263,16 @@ export const generateMagicImage = async (drawingBase64, story, additionalPrompt 
         if (data.candidates && data.candidates[0]?.content?.parts) {
           for (const part of data.candidates[0].content.parts) {
             if (part.inlineData && part.inlineData.data) {
-              console.log('Image generated successfully with gemini-3-pro-preview')
+              console.log('✅ Image generated successfully with gemini-3-pro-image-preview')
               return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`
             }
           }
         }
       } else {
-        console.warn(`gemini-3-pro-preview failed with status ${response.status}, trying fallback...`)
+        console.warn(`⚠️ gemini-3-pro-image-preview failed with status ${response.status}, trying fallback...`)
       }
     } catch (error) {
-      console.warn('gemini-3-pro-preview error, trying fallback:', error.message)
+      console.warn('⚠️ gemini-3-pro-image-preview error, trying fallback:', error.message)
     }
 
     // Fallback to gemini-2.5-flash-image
@@ -289,12 +288,12 @@ export const generateMagicImage = async (drawingBase64, story, additionalPrompt 
 
     // Check for rate limit error
     if (response.status === 429) {
-      console.warn('API rate limit exceeded (429). Returning original drawing.')
+      console.warn('⚠️ API rate limit exceeded (429). Returning original drawing.')
       return drawingBase64
     }
 
     if (!response.ok) {
-      console.warn(`API request failed with status ${response.status}. Returning original drawing.`)
+      console.warn(`⚠️ API request failed with status ${response.status}. Returning original drawing.`)
       return drawingBase64
     }
 
@@ -304,14 +303,14 @@ export const generateMagicImage = async (drawingBase64, story, additionalPrompt 
     if (data.candidates && data.candidates[0]?.content?.parts) {
       for (const part of data.candidates[0].content.parts) {
         if (part.inlineData && part.inlineData.data) {
-          console.log('Image generated successfully with gemini-2.5-flash-image')
+          console.log('✅ Image generated successfully with gemini-2.5-flash-image')
           return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`
         }
       }
     }
 
     // If no image generated, return original drawing
-    console.warn('No image generated by API, returning original drawing')
+    console.warn('⚠️ No image generated by API, returning original drawing')
     return drawingBase64
   } catch (error) {
     console.error('generateMagicImage error:', error)
