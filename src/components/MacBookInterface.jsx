@@ -39,6 +39,17 @@ const MacBookInterface = ({ onClose }) => {
     }
   }
 
+  const getWindowPosition = (id) => {
+    // Define different positions for different apps to avoid overlap
+    const positions = {
+      workbench: { top: '10%', left: '5%', width: '45%', height: '75%' },
+      browser: { top: '10%', right: '5%', width: '45%', height: '75%' },
+      maps: { top: '15%', left: '10%', width: '40%', height: '70%' },
+      calendar: { top: '15%', right: '10%', width: '40%', height: '70%' }
+    }
+    return positions[id] || { top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80%', height: '70%' }
+  }
+
   const getZIndex = (id) => {
     return activeApp === id ? 50 : 10
   }
@@ -194,11 +205,6 @@ const MacBookInterface = ({ onClose }) => {
     },
     window: {
       position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      width: '80%',
-      height: '70%',
       background: '#fff',
       borderRadius: '12px',
       boxShadow: '0 20px 60px rgba(0, 0, 0, 0.4)',
@@ -206,6 +212,7 @@ const MacBookInterface = ({ onClose }) => {
       flexDirection: 'column',
       overflow: 'hidden',
       pointerEvents: 'auto',
+      transition: 'box-shadow 0.2s',
     },
     windowHeader: {
       height: '40px',
@@ -294,9 +301,19 @@ const MacBookInterface = ({ onClose }) => {
 
   const Window = ({ app }) => {
     const AppComponent = app.component
+    const position = getWindowPosition(app.id)
+    const isActive = activeApp === app.id
+    
     return (
       <div 
-        style={{...styles.window, zIndex: getZIndex(app.id)}}
+        style={{
+          ...styles.window, 
+          ...position,
+          zIndex: getZIndex(app.id),
+          boxShadow: isActive 
+            ? '0 20px 60px rgba(0, 0, 0, 0.4)' 
+            : '0 10px 30px rgba(0, 0, 0, 0.2)'
+        }}
         onClick={() => setActiveApp(app.id)}
       >
         <div style={styles.windowHeader}>
