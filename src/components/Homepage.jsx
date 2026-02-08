@@ -308,8 +308,22 @@ const Homepage = ({ onStart, onContinue, onSignIn, onStartOver }) => {
   }
 
   return (
-    <div style={styles.container}>
-      <style>{styles.keyframes}</style>
+    <div style={styles.container} className="homepage-container">
+      <style>{`
+        ${styles.keyframes}
+        
+        /* Homepage cursor override - use 32x32 cursor for better browser support */
+        .homepage-container,
+        .homepage-container * {
+          cursor: url(/icon/spaceship-cursor.png) 16 16, pointer !important;
+        }
+        
+        /* Ensure cursor shows on all interactive elements */
+        .homepage-container button,
+        .homepage-container a {
+          cursor: url(/icon/spaceship-cursor.png) 16 16, pointer !important;
+        }
+      `}</style>
       <img 
         src={allRegionsComplete ? "/background/home_color.gif" : "/background/home.gif"}
         alt="Background" 

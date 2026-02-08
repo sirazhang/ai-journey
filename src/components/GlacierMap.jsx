@@ -3,6 +3,7 @@ import useTypingSound from '../hooks/useTypingSound'
 import useSoundEffects from '../hooks/useSoundEffects'
 import { useLanguage } from '../contexts/LanguageContext'
 import { getGeminiUrl } from '../config/api'
+import RooftopDesktopInterface from './RooftopDesktopInterface'
 
 // Summary dialogue sequence
 const summaryDialogueSequence = [
@@ -956,6 +957,9 @@ const GlacierMap = ({ onExit }) => {
   const [hasSeenInsideIntro, setHasSeenInsideIntro] = useState(savedProgress?.hasSeenInsideIntro || false) // Track if user has seen initial inside dialogue
   
   // Rooftop states
+  const [showRooftopDesktop, setShowRooftopDesktop] = useState(false)
+  const [selectedRooftopNpc, setSelectedRooftopNpc] = useState(null)
+  
   const [showNpc5Dialogue, setShowNpc5Dialogue] = useState(false)
   const [npc5DialogueIndex, setNpc5DialogueIndex] = useState(0)
   const [npc5DialogueHistory, setNpc5DialogueHistory] = useState([])
@@ -1681,6 +1685,11 @@ const GlacierMap = ({ onExit }) => {
     
     // Check if this button should start the challenge
     if (currentDialogue.isButton && currentDialogue.startChallenge) {
+      // Mark dialogue task as complete
+      if (!rooftopCompletedTasks.includes('npc6_dialogue')) {
+        setRooftopCompletedTasks(prev => [...prev, 'npc6_dialogue'])
+      }
+      
       // Randomly select 2 challenges from the pool
       const shuffled = [...creativityChallengesPool].sort(() => Math.random() - 0.5)
       const selected = shuffled.slice(0, 2)
@@ -1886,9 +1895,12 @@ const GlacierMap = ({ onExit }) => {
             setUserInputs([])
             setShowHint(false)
           } else {
-            // All challenges completed
+            // All challenges completed - mark creativity task complete
             setShowCreativityChallenge(false)
             setNpc6Completed(true)
+            if (!rooftopCompletedTasks.includes('npc6_creativity')) {
+              setRooftopCompletedTasks(prev => [...prev, 'npc6_creativity'])
+            }
             // Start co-creation task
             setTimeout(() => {
               setShowCoCreation(true)
@@ -2409,9 +2421,9 @@ const GlacierMap = ({ onExit }) => {
           // Move to second formula
           setCurrentFormulaIndex(1)
         } else {
-          // All formulas completed
+          // All formulas completed - mark co-creation task complete
           setCoCreationCompleted(true)
-          setRooftopCompletedTasks(prev => [...prev, 'npc6'])
+          setRooftopCompletedTasks(prev => [...prev, 'npc6_cocreation'])
           
           // Close co-creation task after a delay
           setTimeout(() => {
@@ -2469,13 +2481,15 @@ const GlacierMap = ({ onExit }) => {
       // Show NPC response
       setNpc9ShowResponse(true)
       
-      // Close dialogue after showing response
+      // Close dialogue after showing response - mark dialogue task complete
       setTimeout(() => {
         setShowNpc9Sharing(false)
         setNpc9ShowResponse(false)
         setNpc9UserInput('')
         setNpc9Response('')
-        setRooftopCompletedTasks(prev => [...prev, 'npc9'])
+        if (!rooftopCompletedTasks.includes('npc9_dialogue')) {
+          setRooftopCompletedTasks(prev => [...prev, 'npc9_dialogue'])
+        }
       }, 2000)
     }
   }
@@ -2518,10 +2532,9 @@ const GlacierMap = ({ onExit }) => {
       setShowTeachingDialogue(false)
       setUserExplanation('')
       setSubmittedExplanation('')
-      // Mark as completed when starting puzzle (user has engaged with NPC5)
-      setNpc5Completed(true)
-      if (!rooftopCompletedTasks.includes('npc5')) {
-        setRooftopCompletedTasks(prev => [...prev, 'npc5'])
+      // Mark dialogue task as completed
+      if (!rooftopCompletedTasks.includes('npc5_dialogue')) {
+        setRooftopCompletedTasks(prev => [...prev, 'npc5_dialogue'])
       }
       return
     }
@@ -2538,11 +2551,7 @@ const GlacierMap = ({ onExit }) => {
       setShowTeachingDialogue(false)
       setUserExplanation('')
       setSubmittedExplanation('')
-      // Mark as completed when starting puzzle (user has engaged with NPC5)
-      setNpc5Completed(true)
-      if (!rooftopCompletedTasks.includes('npc5')) {
-        setRooftopCompletedTasks(prev => [...prev, 'npc5'])
-      }
+      // Dialogue already marked complete above
       return
     }
     
@@ -2668,8 +2677,11 @@ const GlacierMap = ({ onExit }) => {
           setCurrentPuzzle(2)
           setPuzzleTimer(300) // Reset timer to 5 minutes
         } else {
-          // Puzzle 2 completed - move to exercises
+          // Puzzle 2 completed - mark puzzle task complete and move to exercises
           console.log('Puzzle 2 completed, moving to exercises')
+          if (!rooftopCompletedTasks.includes('npc5_puzzle')) {
+            setRooftopCompletedTasks(prev => [...prev, 'npc5_puzzle'])
+          }
           setShowPuzzle(false)
           setShowNpc5Dialogue(false)
           setShowExercise(true)
@@ -2770,11 +2782,11 @@ const GlacierMap = ({ onExit }) => {
               setSelectedErrors([])
               setShowExerciseFeedback(false)
             } else {
-              // All exercises completed
+              // All exercises completed - mark exercise task complete
               setShowExercise(false)
               setNpc5Completed(true)
-              if (!rooftopCompletedTasks.includes('npc5')) {
-                setRooftopCompletedTasks(prev => [...prev, 'npc5'])
+              if (!rooftopCompletedTasks.includes('npc5_exercise')) {
+                setRooftopCompletedTasks(prev => [...prev, 'npc5_exercise'])
               }
             }
           }, 2000)
@@ -4597,8 +4609,9 @@ const GlacierMap = ({ onExit }) => {
       left: '50%',
       transform: 'translate(-50%, -50%)',
       zIndex: 3000,
-      width: '350px',
-      height: '350px',
+      height: '450px',
+      width: 'auto',
+      objectFit: 'contain',
     },
     dialogueButtons: {
       display: 'flex',
@@ -5673,17 +5686,41 @@ const GlacierMap = ({ onExit }) => {
       {/* Rooftop Progress Circles */}
       {currentScene === 'rooftop' && (
         <div style={styles.progressContainer}>
-          {['npc5', 'npc6', 'npc9'].map((npcId, index) => (
-            <div
-              key={npcId}
-              style={{
-                ...styles.progressCircle,
-                ...(rooftopCompletedTasks.includes(npcId) ? styles.progressCircleCompleted : {}),
-              }}
-            >
-              {rooftopCompletedTasks.includes(npcId) ? '✓' : '?'}
-            </div>
-          ))}
+          {[
+            { id: 'npc5', name: 'Librarian', tasks: ['npc5_puzzle', 'npc5_exercise'] },
+            { id: 'npc6', name: 'Artist', tasks: ['npc6_creativity', 'npc6_cocreation'] },
+            { id: 'npc9', name: 'Worker', tasks: ['npc9_memory_blocks', 'npc9_memory_footprint', 'npc9_sharing'] }
+          ].map((npc, index) => {
+            const allTasksComplete = npc.tasks.every(taskId => rooftopCompletedTasks.includes(taskId))
+            return (
+              <div
+                key={npc.id}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <div
+                  style={{
+                    ...styles.progressCircle,
+                    ...(allTasksComplete ? styles.progressCircleCompleted : {}),
+                  }}
+                >
+                  {allTasksComplete ? '✓' : '?'}
+                </div>
+                <div style={{
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  color: allTasksComplete ? '#10b981' : '#6b7280',
+                  textAlign: 'center',
+                }}>
+                  {npc.name}
+                </div>
+              </div>
+            )
+          })}
         </div>
       )}
 
@@ -6795,21 +6832,43 @@ const GlacierMap = ({ onExit }) => {
         </div>
       )}
 
+      {/* All Tasks Complete Message */}
+      {currentScene === 'rooftop' && rooftopCompletedTasks.length === 7 && (
+        <div style={{
+          position: 'absolute',
+          left: 'calc(250px + 200px + 20px)',
+          top: '150px',
+          width: '400px',
+          minHeight: '100px',
+          background: 'rgba(240, 248, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(100, 149, 237, 0.4)',
+          borderRadius: '20px',
+          padding: '25px 30px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 20px rgba(100, 149, 237, 0.2)',
+          zIndex: 1000,
+        }}>
+          <div style={{
+            fontSize: '18px',
+            fontWeight: '600',
+            color: '#1f2937',
+            lineHeight: '1.6',
+            textAlign: 'center',
+          }}>
+            All Tasks Complete!<br/>
+            Go downstairs and talk to Momo
+          </div>
+        </div>
+      )}
+
       {/* Rooftop NPC 5 */}
       {currentScene === 'rooftop' && (
         <div 
           style={styles.npc5}
           onClick={() => {
-            // Allow click to restart if not completed or if puzzle is not showing
-            if (!npc5Completed || !showPuzzle) {
-              handleNpc5Click()
-            }
-          }}
-          onMouseOver={() => {
-            // Auto-show on hover only if not completed and not already showing
-            if (!showNpc5Dialogue && !npc5Completed && !showPuzzle) {
-              handleNpc5Click()
-            }
+            setSelectedRooftopNpc('npc5')
+            setShowRooftopDesktop(true)
           }}
         >
           <img 
@@ -6824,22 +6883,21 @@ const GlacierMap = ({ onExit }) => {
       {currentScene === 'rooftop' && (
         <div 
           style={styles.npc6}
-          onMouseOver={() => {
-            if (!showNpc6Dialogue && !npc6Completed) {
-              handleNpc6Click()
-            }
+          onClick={() => {
+            setSelectedRooftopNpc('npc6')
+            setShowRooftopDesktop(true)
           }}
         >
           <img 
             src="/glacier/npc/npc6.png"
             alt="NPC 6"
-            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            style={{ width: '100%', height: '100%', objectFit: 'contain', cursor: 'pointer' }}
           />
         </div>
       )}
 
-      {/* NPC 5 Dialogue */}
-      {showNpc5Dialogue && (
+      {/* NPC 5 Dialogue - REMOVED: Info now in Notes */}
+      {false && showNpc5Dialogue && (
         <div style={styles.npc5DialogueContainer}>
           {/* Completion message */}
           {npc5DialogueIndex === -1 ? (
@@ -6916,8 +6974,8 @@ const GlacierMap = ({ onExit }) => {
         </div>
       )}
 
-      {/* NPC 6 Dialogue */}
-      {showNpc6Dialogue && (
+      {/* NPC 6 Dialogue - REMOVED: Info now in Notes */}
+      {false && showNpc6Dialogue && (
         <div style={styles.npc6DialogueContainer}>
           {/* Completion message */}
           {npc6DialogueIndex === -1 ? (
@@ -6994,7 +7052,49 @@ const GlacierMap = ({ onExit }) => {
 
       {/* Creativity Challenge */}
       {showCreativityChallenge && selectedChallenges.length > 0 && (
-        <div style={styles.creativityContainer}>
+        <div style={{
+          ...styles.creativityContainer,
+          width: '700px',
+          maxHeight: '80vh',
+          zIndex: showRooftopDesktop ? 2000 : 3000,
+        }}>
+          {/* Close Button */}
+          <button
+            onClick={() => {
+              setShowCreativityChallenge(false)
+              setCurrentChallenge(0)
+              setUserInputs([])
+            }}
+            style={{
+              position: 'absolute',
+              top: '15px',
+              right: '15px',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: '#fff',
+              fontSize: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+              zIndex: 10,
+            }}
+            onMouseOver={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.2)'
+              e.target.style.transform = 'scale(1.1)'
+            }}
+            onMouseOut={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.1)'
+              e.target.style.transform = 'scale(1)'
+            }}
+          >
+            ×
+          </button>
+          
           {/* Timer */}
           <div style={{
             ...styles.creativityTimer,
@@ -7128,7 +7228,53 @@ const GlacierMap = ({ onExit }) => {
 
       {/* Co-Creation Task */}
       {showCoCreation && (
-        <div style={styles.coCreationContainer}>
+        <div style={{
+          ...styles.coCreationContainer,
+          width: '80vw',
+          maxWidth: '1000px',
+          maxHeight: '80vh',
+          zIndex: showRooftopDesktop ? 2000 : 3000,
+        }}>
+          {/* Close Button */}
+          <button
+            onClick={() => {
+              setShowCoCreation(false)
+              setCoCreationFormulas([
+                { element: null, result: null, completed: false },
+                { element: null, result: null, completed: false }
+              ])
+              setCurrentFormulaIndex(0)
+            }}
+            style={{
+              position: 'absolute',
+              top: '15px',
+              right: '15px',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'rgba(0, 0, 0, 0.3)',
+              border: '1px solid rgba(0, 0, 0, 0.2)',
+              color: '#333',
+              fontSize: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+              zIndex: 10,
+            }}
+            onMouseOver={(e) => {
+              e.target.style.background = 'rgba(0, 0, 0, 0.4)'
+              e.target.style.transform = 'scale(1.1)'
+            }}
+            onMouseOut={(e) => {
+              e.target.style.background = 'rgba(0, 0, 0, 0.3)'
+              e.target.style.transform = 'scale(1)'
+            }}
+          >
+            ×
+          </button>
+          
           <style>{`
             @keyframes shake {
               0%, 100% { transform: translateX(0); }
@@ -7255,10 +7401,9 @@ const GlacierMap = ({ onExit }) => {
             zIndex: 50,
             transition: 'transform 0.2s',
           }}
-          onMouseOver={() => {
-            if (!showNpc9Dialogue && !npc9Completed) {
-              handleNpc9Click()
-            }
+          onClick={() => {
+            setSelectedRooftopNpc('npc9')
+            setShowRooftopDesktop(true)
           }}
         >
           <img 
@@ -7269,8 +7414,8 @@ const GlacierMap = ({ onExit }) => {
         </div>
       )}
 
-      {/* NPC 9 Dialogue */}
-      {showNpc9Dialogue && (
+      {/* NPC 9 Dialogue - REMOVED: Info now in Notes */}
+      {false && showNpc9Dialogue && (
         <div style={{
           position: 'absolute',
           left: 'calc(750px + 200px)',
@@ -7362,15 +7507,16 @@ const GlacierMap = ({ onExit }) => {
         </div>
       )}
 
-      {/* Memory Challenge */}
+      {/* Memory Challenge - Show on desktop background when rooftop desktop is open */}
       {showMemoryChallenge && (
         <div style={{
           position: 'fixed',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: memoryPhase === 'footstepRecall' ? '70vw' : '800px',
-          maxHeight: '90vh',
+          width: memoryPhase === 'footstepRecall' ? '60vw' : '700px',
+          maxWidth: memoryPhase === 'footstepRecall' ? '900px' : '700px',
+          maxHeight: '80vh',
           background: 'rgba(20, 20, 30, 0.95)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
@@ -7380,9 +7526,46 @@ const GlacierMap = ({ onExit }) => {
           display: 'flex',
           flexDirection: 'column',
           boxShadow: '0 12px 48px rgba(0, 0, 0, 0.6)',
-          zIndex: 3000,
+          zIndex: showRooftopDesktop ? 2000 : 3000,
           overflow: 'auto',
         }}>
+          {/* Close Button */}
+          <button
+            onClick={() => {
+              setShowMemoryChallenge(false)
+              setMemoryPhase('snowPath')
+              setSnowPathRound(0)
+            }}
+            style={{
+              position: 'absolute',
+              top: '15px',
+              right: '15px',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: '#fff',
+              fontSize: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+              zIndex: 10,
+            }}
+            onMouseOver={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.2)'
+              e.target.style.transform = 'scale(1.1)'
+            }}
+            onMouseOut={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.1)'
+              e.target.style.transform = 'scale(1)'
+            }}
+          >
+            ×
+          </button>
+          
           {/* Header */}
           <div style={{
             display: 'flex',
@@ -7560,7 +7743,49 @@ const GlacierMap = ({ onExit }) => {
 
       {/* Puzzle Interface */}
       {showPuzzle && (
-        <div style={styles.puzzleContainer}>
+        <div style={{
+          ...styles.puzzleContainer,
+          width: '80vw',
+          maxWidth: '1200px',
+          height: '70vh',
+          zIndex: showRooftopDesktop ? 2000 : 3000,
+        }}>
+          {/* Close Button */}
+          <button
+            onClick={() => {
+              setShowPuzzle(false)
+              setCurrentPuzzle(1)
+            }}
+            style={{
+              position: 'absolute',
+              top: '15px',
+              right: '15px',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: '#fff',
+              fontSize: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+              zIndex: 10,
+            }}
+            onMouseOver={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.2)'
+              e.target.style.transform = 'scale(1.1)'
+            }}
+            onMouseOut={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.1)'
+              e.target.style.transform = 'scale(1)'
+            }}
+          >
+            ×
+          </button>
+          
           {/* Left Panel - 25% */}
           <div style={styles.puzzleLeftPanel}>
             {/* Timer - only show when not in teaching mode */}
@@ -7827,7 +8052,48 @@ const GlacierMap = ({ onExit }) => {
         return (
         <div style={{
           ...styles.puzzleContainer,
+          width: '80vw',
+          maxWidth: '1200px',
+          height: '70vh',
+          zIndex: showRooftopDesktop ? 2000 : 3000,
         }}>
+          {/* Close Button */}
+          <button
+            onClick={() => {
+              setShowExercise(false)
+              setCurrentExercise(1)
+              setSelectedErrors([])
+            }}
+            style={{
+              position: 'absolute',
+              top: '15px',
+              right: '15px',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: '#fff',
+              fontSize: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+              zIndex: 10,
+            }}
+            onMouseOver={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.2)'
+              e.target.style.transform = 'scale(1.1)'
+            }}
+            onMouseOut={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.1)'
+              e.target.style.transform = 'scale(1)'
+            }}
+          >
+            ×
+          </button>
+          
           <style>{`
             .exercise-text-area {
               cursor: url(/glacier/icon/pen-cursor.png) 16 16, crosshair !important;
@@ -8028,7 +8294,50 @@ const GlacierMap = ({ onExit }) => {
 
       {/* NPC9 Sharing Dialogue */}
       {showNpc9Sharing && (
-        <div style={styles.npc9SharingContainer}>
+        <div style={{
+          ...styles.npc9SharingContainer,
+          width: '65%',
+          maxWidth: '750px',
+          maxHeight: '75vh',
+          zIndex: showRooftopDesktop ? 2000 : 3000,
+        }}>
+          {/* Close Button */}
+          <button
+            onClick={() => {
+              setShowNpc9Sharing(false)
+              setNpc9UserInput('')
+              setNpc9ShowResponse(false)
+            }}
+            style={{
+              position: 'absolute',
+              top: '15px',
+              right: '15px',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              background: 'rgba(255, 255, 255, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: '#fff',
+              fontSize: '20px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+              zIndex: 10,
+            }}
+            onMouseOver={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.2)'
+              e.target.style.transform = 'scale(1.1)'
+            }}
+            onMouseOut={(e) => {
+              e.target.style.background = 'rgba(255, 255, 255, 0.1)'
+              e.target.style.transform = 'scale(1)'
+            }}
+          >
+            ×
+          </button>
+          
           <div style={styles.npc9SharingTitle}>
             Share your memory secret here.
           </div>
@@ -9068,16 +9377,20 @@ const GlacierMap = ({ onExit }) => {
                       padding: '24px',
                       overflow: 'auto',
                       background: 'white',
-                      cursor: 'url(/glacier/icon/marker.png) 12 12, crosshair',
                     }}
-                    onMouseDown={handlePrivacyMouseDown}
-                    onMouseMove={handlePrivacyMouseMove}
-                    onMouseUp={handlePrivacyMouseUp}
                   >
-                    <div style={{fontFamily: "'Roboto Mono', monospace", fontSize: '13px', lineHeight: '1.8', color: '#333'}}>
-                      <div style={{fontSize: '20px', fontWeight: 'bold', marginBottom: '8px', color: '#111'}}>
-                        {privacyDocuments[privacyTaskDocument - 1].title}
-                      </div>
+                    <div 
+                      style={{
+                        fontFamily: "'Roboto Mono', monospace", 
+                        fontSize: '13px', 
+                        lineHeight: '1.8', 
+                        color: '#333',
+                        cursor: 'url(/glacier/icon/marker.png) 12 12, crosshair',
+                      }}
+                      onMouseDown={handlePrivacyMouseDown}
+                      onMouseMove={handlePrivacyMouseMove}
+                      onMouseUp={handlePrivacyMouseUp}
+                    >
                       <div style={{fontSize: '20px', fontWeight: 'bold', marginBottom: '8px', color: '#111'}}>
                         {privacyDocuments[privacyTaskDocument - 1].title}
                       </div>
@@ -9408,7 +9721,7 @@ const GlacierMap = ({ onExit }) => {
             right: '50px',
           }),
           width: '30%',
-          height: '65%',
+          maxHeight: '80%',
           background: creativityCardType === 'why' 
             ? 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)'
             : 'linear-gradient(135deg, #fed7aa 0%, #fdba74 100%)',
@@ -9418,6 +9731,9 @@ const GlacierMap = ({ onExit }) => {
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
           zIndex: 200,
           fontFamily: 'Inter, system-ui, sans-serif',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'auto',
         }}>
           {/* Header */}
           <div style={{
@@ -9425,6 +9741,7 @@ const GlacierMap = ({ onExit }) => {
             justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '16px',
+            flexShrink: 0,
           }}>
             <div style={{
               display: 'flex',
@@ -9479,10 +9796,11 @@ const GlacierMap = ({ onExit }) => {
               background: 'white',
               borderRadius: '12px',
               marginBottom: '16px',
+              flexShrink: 0,
             }}>
               <p style={{
                 margin: 0,
-                fontSize: '16px',
+                fontSize: '18px',
                 fontWeight: '700',
                 color: '#1f2937',
                 lineHeight: '1.8',
@@ -9542,112 +9860,105 @@ const GlacierMap = ({ onExit }) => {
               )}
               
               {/* Action Buttons - Show Save button after feedback, otherwise show Get Feedback and Skip */}
-              {creativityAiFeedback ? (
-                <button
-                  onClick={handleCreativitySave}
-                  disabled={isGeneratingCreativity}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    width: '100%',
-                    padding: '12px',
-                    background: creativityCardType === 'why' ? '#3b82f6' : '#f97316',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '16px',
-                    fontWeight: '600',
-                    cursor: isGeneratingCreativity ? 'not-allowed' : 'pointer',
-                    opacity: isGeneratingCreativity ? 0.5 : 1,
-                  }}
-                >
-                  <img 
-                    src="/desert/icon/save.svg" 
-                    alt="Save"
-                    style={{ width: '20px', height: '20px', filter: 'brightness(0) invert(1)' }}
-                  />
-                  Save
-                </button>
-              ) : (
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: '12px',
-                }}>
+              <div style={{ marginTop: 'auto', paddingTop: '16px' }}>
+                {creativityAiFeedback ? (
                   <button
-                    onClick={handleCreativityGetFeedback}
-                    disabled={!creativityUserAnswer.trim() || isGeneratingCreativity}
+                    onClick={handleCreativitySave}
+                    disabled={isGeneratingCreativity}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
+                      justifyContent: 'center',
                       gap: '8px',
-                      padding: '10px 16px',
+                      width: '100%',
+                      padding: '12px',
                       background: creativityCardType === 'why' ? '#3b82f6' : '#f97316',
                       color: 'white',
                       border: 'none',
                       borderRadius: '8px',
-                      fontSize: '14px',
+                      fontSize: '16px',
                       fontWeight: '600',
-                      cursor: creativityUserAnswer.trim() && !isGeneratingCreativity ? 'pointer' : 'not-allowed',
-                      opacity: creativityUserAnswer.trim() && !isGeneratingCreativity ? 1 : 0.5,
+                      cursor: isGeneratingCreativity ? 'not-allowed' : 'pointer',
+                      opacity: isGeneratingCreativity ? 0.5 : 1,
                     }}
                   >
                     <img 
-                      src="/glacier/icon/feedback.png" 
-                      alt="Feedback"
-                      style={{ width: '16px', height: '16px' }}
+                      src="/desert/icon/save.svg" 
+                      alt="Save"
+                      style={{ width: '20px', height: '20px', filter: 'brightness(0) invert(1)' }}
                     />
-                    {isGeneratingCreativity ? 'Generating...' : 'Get Feedback'}
+                    Save
                   </button>
-                  
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                  }}>
-                    <span style={{
-                      fontSize: '10px',
-                      color: creativityCardType === 'why' ? '#1e40af' : '#c2410c',
-                      fontWeight: '500',
-                    }}>
-                      Thinking is the best way to learn!
-                    </span>
-                    <div style={{
-                      width: '1px',
-                      height: '16px',
-                      background: 'white',
-                    }} />
+                ) : (
+                  <>
                     <button
-                      onClick={handleCreativitySkipToAnswer}
-                      disabled={isGeneratingCreativity}
+                      onClick={handleCreativityGetFeedback}
+                      disabled={!creativityUserAnswer.trim() || isGeneratingCreativity}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '4px',
-                        padding: '8px 12px',
-                        background: 'transparent',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        width: '100%',
+                        padding: '12px',
+                        background: creativityCardType === 'why' ? '#3b82f6' : '#f97316',
                         color: 'white',
                         border: 'none',
                         borderRadius: '8px',
-                        fontSize: '12px',
+                        fontSize: '16px',
                         fontWeight: '600',
-                        cursor: isGeneratingCreativity ? 'not-allowed' : 'pointer',
-                        opacity: isGeneratingCreativity ? 0.5 : 1,
+                        cursor: creativityUserAnswer.trim() && !isGeneratingCreativity ? 'pointer' : 'not-allowed',
+                        opacity: creativityUserAnswer.trim() && !isGeneratingCreativity ? 1 : 0.5,
+                        marginBottom: '12px',
                       }}
                     >
-                      Skip to answer
                       <img 
-                        src="/glacier/icon/skip.png" 
-                        alt="Skip"
-                        style={{ width: '16px', height: '16px', filter: 'brightness(0) invert(1)' }}
+                        src="/glacier/icon/feedback.png" 
+                        alt="Feedback"
+                        style={{ width: '18px', height: '18px' }}
                       />
+                      {isGeneratingCreativity ? 'Generating...' : 'Get Feedback'}
                     </button>
-                  </div>
-                </div>
-              )}
+                    
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '8px',
+                    }}>
+                      <span style={{
+                        fontSize: '11px',
+                        color: creativityCardType === 'why' ? '#1e40af' : '#c2410c',
+                        fontWeight: '500',
+                        textAlign: 'center',
+                      }}>
+                        Thinking is the best way to learn!
+                      </span>
+                      <button
+                        onClick={handleCreativitySkipToAnswer}
+                        disabled={isGeneratingCreativity}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          padding: '8px 16px',
+                          background: 'rgba(255, 255, 255, 0.5)',
+                          color: creativityCardType === 'why' ? '#1e40af' : '#c2410c',
+                          border: 'none',
+                          borderRadius: '8px',
+                          fontSize: '13px',
+                          fontWeight: '600',
+                          cursor: isGeneratingCreativity ? 'not-allowed' : 'pointer',
+                          opacity: isGeneratingCreativity ? 0.5 : 1,
+                        }}
+                      >
+                        Skip to answer
+                        <span style={{ fontSize: '16px' }}>→</span>
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </>
           ) : (
             <>
@@ -9706,6 +10017,95 @@ const GlacierMap = ({ onExit }) => {
             </>
           )}
         </div>
+      )}
+
+      {/* Rooftop Desktop Interface */}
+      {showRooftopDesktop && selectedRooftopNpc && (
+        <RooftopDesktopInterface
+          npcId={selectedRooftopNpc}
+          npcData={{
+            onTaskStart: (task) => {
+              // No dialogue tasks anymore - all info is in Notes
+            },
+            // Pass memory challenge states
+            showMemoryChallenge,
+            memoryPhase,
+            snowPathRound,
+            snowPathFootprints,
+            snowPathUserSelections,
+            snowPathMemorizing,
+            snowPathTimer,
+            footstepRound,
+            footstepCurrentHighlight,
+            footstepUserSequence,
+            // Pass handlers to open tasks
+            openPuzzle: () => {
+              setShowPuzzle(true)
+              setCurrentPuzzle(1)
+              setPuzzleTimer(300)
+            },
+            openExercise: () => {
+              setShowExercise(true)
+              setCurrentExercise(1)
+              setSelectedErrors([])
+              setShowExerciseFeedback(false)
+            },
+            openCreativity: () => {
+              const shuffled = [...creativityChallengesPool].sort(() => Math.random() - 0.5)
+              const selected = shuffled.slice(0, 2)
+              setSelectedChallenges(selected)
+              setShowCreativityChallenge(true)
+              setCurrentChallenge(0)
+              setChallengeTimer(120)
+            },
+            openCoCreation: () => {
+              setShowCoCreation(true)
+              setCoCreationFormulas([
+                { element: null, result: null, completed: false },
+                { element: null, result: null, completed: false }
+              ])
+              setCurrentFormulaIndex(0)
+              setCoCreationCompleted(false)
+            },
+            openMemoryBlocks: () => {
+              console.log('Opening Memory Blocks (Snow Path)')
+              setShowMemoryChallenge(true)
+              setMemoryPhase('snowPath')
+              setSnowPathRound(0)
+              initializeSnowPathRound(0)
+            },
+            openMemoryFootprint: () => {
+              console.log('Opening Memory Footprint (Footstep Recall)')
+              setShowMemoryChallenge(true)
+              setMemoryPhase('footstepRecall')
+              setFootstepRound(0)
+              initializeFootstepRound(0)
+            },
+            openSharing: () => {
+              console.log('Opening NPC9 Sharing')
+              setShowNpc9Sharing(true)
+              setNpc9UserInput('')
+              setNpc9ShowResponse(false)
+            },
+          }}
+          completedTasks={rooftopCompletedTasks}
+          onTaskComplete={(taskId) => {
+            if (!rooftopCompletedTasks.includes(taskId)) {
+              setRooftopCompletedTasks(prev => [...prev, taskId])
+            }
+          }}
+          onClose={() => {
+            setShowRooftopDesktop(false)
+            setSelectedRooftopNpc(null)
+            // Close any open tasks
+            setShowMemoryChallenge(false)
+            setShowPuzzle(false)
+            setShowExercise(false)
+            setShowCreativityChallenge(false)
+            setShowCoCreation(false)
+            setShowNpc9Sharing(false)
+          }}
+        />
       )}
       
     </div>
