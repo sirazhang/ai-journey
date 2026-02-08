@@ -5686,244 +5686,866 @@ const GlacierMap = ({ onExit }) => {
         </div>
       )}
 
-      {/* Case Modal */}
+      {/* Case Modal - Terminal Style */}
       {selectedNpc && (
         <div
           style={{
-            ...styles.caseModal,
-            ...(caseStep === 1 ? styles.caseModalStep1 : styles.caseModalStep2),
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: '#0a0a0c',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: caseStep === 1 ? '40px' : '20px',
+            zIndex: 2000,
+            transition: 'all 1s ease',
           }}
         >
-          <button style={styles.closeButton} onClick={closeCaseModal}>
-            ×
-          </button>
+          {/* Background Ambience */}
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            pointerEvents: 'none',
+            overflow: 'hidden',
+            opacity: 0.2,
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: '-10%',
+              left: '-10%',
+              width: '40%',
+              height: '40%',
+              background: '#1e3a8a',
+              borderRadius: '50%',
+              filter: 'blur(120px)',
+            }} />
+            <div style={{
+              position: 'absolute',
+              bottom: '-10%',
+              right: '-10%',
+              width: '40%',
+              height: '40%',
+              background: '#581c87',
+              borderRadius: '50%',
+              filter: 'blur(120px)',
+            }} />
+          </div>
 
-          {caseStep === 1 ? (
-            // Step 1: Event Description
-            <>
-              <div style={styles.caseTitle}>
-                {courtCases[selectedNpc].eventDescription}
-              </div>
-              <div style={styles.caseGifContainer}>
-                <img
-                  src={courtCases[selectedNpc].gif}
-                  alt="Case Event"
-                  style={styles.caseGif}
-                />
-                <div style={styles.caseTimer}>
-                  {formatCaseTimer(caseTimer)}
-                </div>
-              </div>
-              <button
-                style={styles.nextButton}
-                onClick={handleNextStep}
-                onMouseOver={(e) => {
-                  e.target.style.background = 'rgba(255, 255, 255, 1)'
-                  e.target.style.transform = 'scale(1.05)'
-                }}
-                onMouseOut={(e) => {
-                  e.target.style.background = 'rgba(255, 255, 255, 0.9)'
-                  e.target.style.transform = 'scale(1)'
-                }}
-              >
-                NEXT
-              </button>
-            </>
-          ) : (
-            // Step 2: NPC Statement - Cyberpunk Style
-            <>
-              {/* Case Header - Absolute positioned at top center */}
-              <div style={styles.caseHeader}>
-                {t('language') === 'zh' ? '案件' : 'Case'} #{courtCases[selectedNpc].caseNumber} · {
-                  t('language') === 'zh' 
-                    ? courtCases[selectedNpc].caseTitle.zh 
-                    : courtCases[selectedNpc].caseTitle.en
-                }
-              </div>
-              
-              <div style={styles.step2Container}>
-                {/* Left Column: NPC + Role + Play Button */}
-                <div style={styles.step2LeftColumn}>
-                  {/* NPC Image Container with Play Button */}
+          <div style={{
+            width: '100%',
+            maxWidth: caseStep === 1 ? '1400px' : '1200px',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: caseStep === 1 ? '64px' : '0',
+            zIndex: 10,
+            transition: 'all 0.7s ease',
+          }}>
+            
+            {/* The Display Monitor Area */}
+            <div style={{
+              transition: 'all 1s ease',
+              width: caseStep === 1 ? '70%' : '100%',
+              maxWidth: caseStep === 1 ? '1400px' : '1200px',
+            }}>
+              {/* Monitor Container */}
+              <div style={{ position: 'relative' }}>
+                {/* Outer Bezel */}
+                <div style={{
+                  width: '100%',
+                  background: '#1c1c1e',
+                  borderRadius: '16px',
+                  padding: '16px',
+                  boxShadow: '0 0 60px rgba(0, 0, 0, 0.8)',
+                  borderBottom: '12px solid #131315',
+                }}>
+                  {/* Screen Area */}
                   <div style={{
                     position: 'relative',
-                    display: 'inline-block',
-                  }}>
-                    <img
-                      src={courtCases[selectedNpc].npcImage}
-                      alt={selectedNpc}
-                      style={{
-                        width: 'auto',
-                        height: '480px', // 从500px减少到480px，上移20px
-                        maxWidth: 'none',
-                        objectFit: 'contain',
-                      }}
-                    />
-                    
-                    {/* Play Button Overlay */}
-                    <button
-                      onClick={() => handlePlayStatement(selectedNpc)}
-                      disabled={isGeneratingAudio || isPlayingAudio}
-                      style={{
-                        position: 'absolute',
-                        bottom: '30%',
-                        left: '50%',
-                        transform: 'translate(-50%, 50%)',
-                        width: '80px',
-                        height: '80px',
-                        background: 'none',
-                        border: 'none',
-                        cursor: isGeneratingAudio || isPlayingAudio ? 'not-allowed' : 'pointer',
-                        opacity: isGeneratingAudio ? 0.5 : (isPlayingAudio ? 0.7 : 1),
-                        transition: 'all 0.3s ease',
-                        padding: 0,
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isGeneratingAudio && !isPlayingAudio) {
-                          e.currentTarget.style.transform = 'translate(-50%, 50%) scale(1.1)'
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translate(-50%, 50%) scale(1)'
-                      }}
-                    >
-                      <img 
-                        src="/glacier/icon/play.png"
-                        alt="Play"
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'contain',
-                          filter: isPlayingAudio ? 'brightness(0.7)' : 'none',
-                        }}
-                      />
-                    </button>
-                  </div>
-                  
-                  {/* NPC Role Info - Roboto font, smaller, single line, tight below NPC */}
-                  <div style={{
-                    fontSize: '11px',
-                    color: '#e0e0e0',
-                    fontFamily: "'Roboto', sans-serif",
-                    fontWeight: 400,
-                    textAlign: 'center',
-                    lineHeight: 1.2,
-                    padding: '0',
-                    marginTop: '5px', // 紧贴NPC下方
-                    width: '280px',
-                    whiteSpace: 'nowrap', // 强制一行显示
+                    width: '100%',
+                    aspectRatio: '16 / 9',
+                    background: '#050505',
+                    borderRadius: '8px',
                     overflow: 'hidden',
-                    textOverflow: 'ellipsis',
+                    border: '2px solid #333',
+                    boxShadow: 'inset 0 0 20px rgba(0, 0, 0, 0.5)',
                   }}>
-                    {t('language') === 'zh' 
-                      ? courtCases[selectedNpc].npcRole.zh 
-                      : courtCases[selectedNpc].npcRole.en
-                    }
+                    {/* Internal Overlays - Only show in Step 1 */}
+                    {caseStep === 1 && (
+                      <div style={{
+                        position: 'absolute',
+                        inset: 0,
+                        pointerEvents: 'none',
+                        zIndex: 10,
+                        padding: '24px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                      }}>
+                        {/* Top info */}
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{
+                              width: '12px',
+                              height: '12px',
+                              background: '#dc2626',
+                              borderRadius: '50%',
+                              animation: 'pulse 2s infinite',
+                              boxShadow: '0 0 8px rgba(220, 38, 38, 0.8)',
+                            }} />
+                            <span style={{
+                              color: 'white',
+                              fontSize: '12px',
+                              fontWeight: 'bold',
+                              letterSpacing: '0.2em',
+                              opacity: 0.8,
+                            }}>REC</span>
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                            <div style={{
+                              fontSize: '12px',
+                              color: '#ef4444',
+                              fontWeight: 'bold',
+                              letterSpacing: '0.2em',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                            }}>
+                              SYS. ALERT <div style={{
+                                width: '8px',
+                                height: '8px',
+                                background: '#ef4444',
+                                borderRadius: '50%',
+                              }} />
+                            </div>
+                            <div style={{
+                              background: 'rgba(0, 0, 0, 0.5)',
+                              padding: '8px 16px',
+                              border: '1px solid rgba(255, 255, 255, 0.2)',
+                              color: 'white',
+                              fontFamily: 'monospace',
+                              fontSize: '20px',
+                              letterSpacing: '0.2em',
+                              fontWeight: 'bold',
+                            }}>
+                              {formatCaseTimer(caseTimer)}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Bottom info */}
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-end',
+                        }}>
+                          <div style={{
+                            fontSize: '10px',
+                            color: '#fb923c',
+                            opacity: 0.6,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '2px',
+                            lineHeight: 1.2,
+                            fontFamily: 'monospace',
+                          }}>
+                            <div>COORD: 45.22.91</div>
+                            <div>TEMP: -104°C</div>
+                            <div>STATUS: CRITICAL</div>
+                          </div>
+                          <div style={{
+                            fontSize: '10px',
+                            color: '#6b7280',
+                            fontWeight: 'bold',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.2em',
+                          }}>
+                            AI-OS SYSTEMS
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Step 2 Overlay - System Active and Timer */}
+                    {caseStep === 2 && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '24px',
+                        left: '24px',
+                        right: '24px',
+                        pointerEvents: 'none',
+                        zIndex: 10,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                      }}>
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#60a5fa',
+                          fontWeight: 'bold',
+                          letterSpacing: '0.1em',
+                          textTransform: 'uppercase',
+                        }}>
+                          System Active
+                        </div>
+                        <div style={{
+                          background: 'rgba(0, 0, 0, 0.5)',
+                          padding: '8px 16px',
+                          border: '1px solid rgba(96, 165, 250, 0.3)',
+                          color: '#60a5fa',
+                          fontFamily: 'monospace',
+                          fontSize: '14px',
+                          letterSpacing: '0.1em',
+                        }}>
+                          {new Date().toLocaleTimeString('en-US', { hour12: false })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Actual Content Wrapper */}
+                    {caseStep === 1 ? (
+                      // Step 1: Transmission Content
+                      <div style={{
+                        position: 'relative',
+                        width: '100%',
+                        height: '100%',
+                        zIndex: 0,
+                      }}>
+                        {/* Video Background */}
+                        <div style={{
+                          position: 'absolute',
+                          inset: 0,
+                          opacity: 0.4,
+                        }}>
+                          <div style={{
+                            width: '100%',
+                            height: '100%',
+                            background: 'linear-gradient(135deg, #1e3a8a 0%, #000 50%, #7f1d1d 100%)',
+                            animation: 'pulse 4s infinite',
+                          }} />
+                        </div>
+                        
+                        {/* GIF Content */}
+                        <img
+                          src={courtCases[selectedNpc].gif}
+                          alt="Case Event"
+                          style={{
+                            position: 'absolute',
+                            inset: 0,
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            opacity: 0.8,
+                          }}
+                        />
+                        
+                        {/* Text Overlay */}
+                        <div style={{
+                          position: 'absolute',
+                          inset: 0,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'flex-end',
+                        }}>
+                          {/* Message at Bottom */}
+                          <div style={{
+                            padding: '32px',
+                          }}>
+                            <div style={{
+                              maxWidth: '700px',
+                              width: '100%',
+                              background: 'rgba(10, 10, 12, 0.7)',
+                              borderLeft: '2px solid #ef4444',
+                              padding: '24px',
+                              backdropFilter: 'blur(8px)',
+                              position: 'relative',
+                              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+                            }}>
+                              <p style={{
+                                color: 'white',
+                                fontSize: '18px',
+                                lineHeight: 1.6,
+                                fontFamily: 'sans-serif',
+                                fontWeight: 300,
+                                letterSpacing: '0.02em',
+                                margin: 0,
+                              }}>
+                                {courtCases[selectedNpc].eventDescription}
+                              </p>
+
+                              <div style={{
+                                display: 'flex',
+                                gap: '16px',
+                                marginTop: '24px',
+                              }}>
+                                <div style={{
+                                  flex: 1,
+                                  height: '4px',
+                                  background: '#1f2937',
+                                  overflow: 'hidden',
+                                  position: 'relative',
+                                }}>
+                                  <div style={{
+                                    height: '100%',
+                                    background: '#3b82f6',
+                                    animation: 'progress 10s linear infinite',
+                                  }} />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Footer Meta - LIVE TRANSMISSION */}
+                          <div style={{
+                            padding: '16px',
+                            display: 'flex',
+                            justifyContent: 'center',
+                          }}>
+                            <div style={{
+                              fontSize: '10px',
+                              color: 'white',
+                              letterSpacing: '0.5em',
+                              fontWeight: 'bold',
+                              opacity: 0.3,
+                            }}>LIVE TRANSMISSION // SECTOR 07</div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      // Step 2: NPC Statement - Keep original design
+                      <div style={{
+                        width: '100%',
+                        height: '100%',
+                        background: 'rgba(20, 20, 30, 0.95)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '20px',
+                      }}>
+                        <div style={{
+                          width: '100%',
+                          maxWidth: '1200px',
+                        }}>
+                          {/* Close Button */}
+                          <button 
+                            style={{
+                              position: 'absolute',
+                              top: '15px',
+                              right: '20px',
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              zIndex: 10,
+                              padding: 0,
+                              width: '32px',
+                              height: '32px',
+                            }}
+                            onClick={closeCaseModal}
+                          >
+                            <img 
+                              src="/glacier/icon/close.png"
+                              alt="Close"
+                              style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain',
+                              }}
+                            />
+                          </button>
+                          
+                          <div style={styles.step2Container}>
+                            {/* Left Column: NPC + Role + Play Button */}
+                            <div style={styles.step2LeftColumn}>
+                              <div style={{
+                                position: 'relative',
+                                display: 'inline-block',
+                              }}>
+                                <img
+                                  src={courtCases[selectedNpc].npcImage}
+                                  alt={selectedNpc}
+                                  style={{
+                                    width: 'auto',
+                                    height: '480px',
+                                    maxWidth: 'none',
+                                    objectFit: 'contain',
+                                  }}
+                                />
+                                
+                                <button
+                                  onClick={() => handlePlayStatement(selectedNpc)}
+                                  disabled={isGeneratingAudio || isPlayingAudio}
+                                  style={{
+                                    position: 'absolute',
+                                    bottom: '30%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, 50%)',
+                                    width: '80px',
+                                    height: '80px',
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: isGeneratingAudio || isPlayingAudio ? 'not-allowed' : 'pointer',
+                                    opacity: isGeneratingAudio ? 0.5 : (isPlayingAudio ? 0.7 : 1),
+                                    transition: 'all 0.3s ease',
+                                    padding: 0,
+                                  }}
+                                  onMouseEnter={(e) => {
+                                    if (!isGeneratingAudio && !isPlayingAudio) {
+                                      e.currentTarget.style.transform = 'translate(-50%, 50%) scale(1.1)'
+                                    }
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.transform = 'translate(-50%, 50%) scale(1)'
+                                  }}
+                                >
+                                  <img 
+                                    src="/glacier/icon/play.png"
+                                    alt="Play"
+                                    style={{
+                                      width: '100%',
+                                      height: '100%',
+                                      objectFit: 'contain',
+                                      filter: isPlayingAudio ? 'brightness(0.7)' : 'none',
+                                    }}
+                                  />
+                                </button>
+                              </div>
+                              
+                              {/* Horizontal line */}
+                              <div style={{
+                                width: '280px',
+                                height: '1px',
+                                background: '#60a5fa',
+                                opacity: 0.3,
+                                marginTop: '10px',
+                                marginBottom: '10px',
+                              }} />
+                              
+                              <div style={{
+                                fontSize: '11px',
+                                color: '#e0e0e0',
+                                fontFamily: "'Roboto', sans-serif",
+                                fontWeight: 400,
+                                textAlign: 'center',
+                                lineHeight: 1.2,
+                                padding: '0',
+                                width: '280px',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                              }}>
+                                {t('language') === 'zh' 
+                                  ? courtCases[selectedNpc].npcRole.zh 
+                                  : courtCases[selectedNpc].npcRole.en
+                                }
+                              </div>
+                            </div>
+                            
+                            {/* Right Column: Content */}
+                            <div style={styles.step2RightColumn}>
+                              {/* Header Section with Sound Icon on the right */}
+                              <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'flex-start',
+                                marginBottom: '16px',
+                              }}>
+                                <div>
+                                  {/* Title */}
+                                  <div style={{
+                                    fontSize: '16px',
+                                    fontWeight: 'bold',
+                                    color: '#fff',
+                                    fontFamily: "'Orbitron', sans-serif",
+                                    marginBottom: '8px',
+                                    letterSpacing: '0.1em',
+                                  }}>
+                                    NPC STATEMENT
+                                  </div>
+                                  
+                                  {/* Case Info - Blue, smaller font */}
+                                  <div style={{
+                                    fontSize: '10px',
+                                    color: '#60a5fa',
+                                    fontFamily: "'Roboto', sans-serif",
+                                    letterSpacing: '0.05em',
+                                  }}>
+                                    {t('language') === 'zh' ? '案件' : 'Case'} #{courtCases[selectedNpc].caseNumber} · {
+                                      t('language') === 'zh' 
+                                        ? courtCases[selectedNpc].caseTitle.zh 
+                                        : courtCases[selectedNpc].caseTitle.en
+                                    }
+                                  </div>
+                                </div>
+                                
+                                {/* Sound Icon - Right side, larger */}
+                                <img 
+                                  src="/glacier/icon/sound.png"
+                                  alt="Sound"
+                                  style={{
+                                    width: '48px',
+                                    height: '48px',
+                                    objectFit: 'contain',
+                                    opacity: 0.8,
+                                    marginLeft: '20px',
+                                  }}
+                                />
+                              </div>
+                              
+                              <div style={styles.statementBox}>
+                                {courtCases[selectedNpc].statementParts.map((part, index) => (
+                                  <div 
+                                    key={index}
+                                    style={{
+                                      ...styles.statementLine,
+                                      opacity: statementProgress > index ? 1 : 0,
+                                      transform: statementProgress > index ? 'translateY(0)' : 'translateY(10px)',
+                                      transition: 'all 0.5s ease',
+                                    }}
+                                  >
+                                    <span style={styles.statementPrefix}>&gt;</span>
+                                    {part}
+                                  </div>
+                                ))}
+                              </div>
+                              
+                              {statementProgress >= 3 && (
+                                <div style={styles.verdictPending}>
+                                  <img 
+                                    src="/glacier/icon/statement.png"
+                                    alt="Verdict"
+                                    style={styles.verdictIcon}
+                                  />
+                                  [VERDICT PENDING]
+                                </div>
+                              )}
+                              
+                              {statementProgress >= 3 && (
+                                <div style={{
+                                  ...styles.claimQuote,
+                                  fontFamily: "'Inter', sans-serif",
+                                  borderLeft: '2px solid #60a5fa',
+                                  paddingLeft: '16px',
+                                }}>
+                                  "{courtCases[selectedNpc].claim}"
+                                </div>
+                              )}
+                              
+                              {statementProgress >= 3 && (
+                                <div style={styles.judgmentButtonsContainer}>
+                                  <button
+                                    style={{
+                                      ...styles.approvedButton,
+                                      color: '#2ecc71',
+                                      animation: shakeApprovedButton ? 'shake 0.5s' : 'none',
+                                    }}
+                                    onClick={() => handleJudgment('accepted')}
+                                    onMouseOver={(e) => {
+                                      if (!shakeApprovedButton) {
+                                        e.currentTarget.style.boxShadow = '0 0 45px rgba(46, 204, 113, 0.7)'
+                                        e.currentTarget.style.transform = 'scale(1.05)'
+                                        e.currentTarget.style.background = 'rgba(46, 204, 113, 0.4)'
+                                      }
+                                    }}
+                                    onMouseOut={(e) => {
+                                      if (!shakeApprovedButton) {
+                                        e.currentTarget.style.boxShadow = '0 0 25px rgba(46, 204, 113, 0.5)'
+                                        e.currentTarget.style.transform = 'scale(1)'
+                                        e.currentTarget.style.background = 'rgba(46, 204, 113, 0.3)'
+                                      }
+                                    }}
+                                  >
+                                    <img
+                                      src="/desert/icon/correct.png"
+                                      alt="Approved"
+                                      style={styles.judgmentIcon}
+                                    />
+                                    APPROVED
+                                  </button>
+                                  <button
+                                    style={{
+                                      ...styles.rejectedButton,
+                                      color: '#e74c3c',
+                                    }}
+                                    onClick={() => handleJudgment('rejected')}
+                                    onMouseOver={(e) => {
+                                      e.currentTarget.style.boxShadow = '0 0 45px rgba(231, 76, 60, 0.7)'
+                                      e.currentTarget.style.transform = 'scale(1.05)'
+                                      e.currentTarget.style.background = 'rgba(231, 76, 60, 0.4)'
+                                    }}
+                                    onMouseOut={(e) => {
+                                      e.currentTarget.style.boxShadow = '0 0 25px rgba(231, 76, 60, 0.5)'
+                                      e.currentTarget.style.transform = 'scale(1)'
+                                      e.currentTarget.style.background = 'rgba(231, 76, 60, 0.3)'
+                                    }}
+                                  >
+                                    <img
+                                      src="/desert/icon/wrong.png"
+                                      alt="Rejected"
+                                      style={styles.judgmentIcon}
+                                    />
+                                    REJECTED
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-                
-                {/* Right Column: Content */}
-                <div style={styles.step2RightColumn}>
-                  {/* Title - No Icon */}
-                  <div style={styles.statementTitle}>
-                    NPC STATEMENT
-                  </div>
-                  
-                  {/* Statement Box */}
-                  <div style={styles.statementBox}>
-                    {courtCases[selectedNpc].statementParts.map((part, index) => (
-                      <div 
-                        key={index}
+                {/* Monitor Stand */}
+                <div style={{
+                  margin: '0 auto',
+                  width: '192px',
+                  height: '48px',
+                  background: '#1c1c1e',
+                  borderBottomLeftRadius: '12px',
+                  borderBottomRightRadius: '12px',
+                  marginTop: '-4px',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+                }} />
+              </div>
+            </div>
+
+            {/* The Handheld Remote Area - Only visible in Step 1 */}
+            {caseStep === 1 && (
+              <div style={{
+                flexShrink: 0,
+                marginTop: '80px',
+                transition: 'all 0.5s ease',
+                opacity: caseStep === 1 ? 1 : 0,
+                transform: caseStep === 1 ? 'translateX(0)' : 'translateX(80px)',
+                pointerEvents: caseStep === 1 ? 'auto' : 'none',
+              }}>
+                {/* Remote Body */}
+                <div style={{
+                  position: 'relative',
+                }}>
+                  <div style={{
+                    width: '192px',
+                    height: '320px',
+                    background: '#1a1f2e',
+                    borderRadius: '40px',
+                    border: '4px solid #2d3548',
+                    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.8)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    padding: '24px',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxSizing: 'border-box',
+                  }}>
+                    
+                    <div style={{
+                      fontSize: '10px',
+                      color: '#60a5fa',
+                      fontWeight: 'bold',
+                      letterSpacing: '0.3em',
+                      marginBottom: '32px',
+                      opacity: 0.7,
+                    }}>CONTROL</div>
+
+                    {/* Power / Close Button Area */}
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '8px',
+                      marginBottom: '40px',
+                    }}>
+                      <button 
+                        onClick={handleNextStep}
                         style={{
-                          ...styles.statementLine,
-                          opacity: statementProgress > index ? 1 : 0,
-                          transform: statementProgress > index ? 'translateY(0)' : 'translateY(10px)',
-                          transition: 'all 0.5s ease',
+                          width: '56px',
+                          height: '56px',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.3s ease',
+                          boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.3)',
+                          background: '#7f1d1d',
+                          border: '2px solid #991b1b',
+                          opacity: 0.9,
+                          cursor: 'pointer',
+                          padding: 0,
                         }}
-                      >
-                        <span style={styles.statementPrefix}>&gt;</span>
-                        {part}
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Verdict Pending with Icon - Larger */}
-                  {statementProgress >= 3 && (
-                    <div style={styles.verdictPending}>
-                      <img 
-                        src="/glacier/icon/statement.png"
-                        alt="Verdict"
-                        style={styles.verdictIcon}
-                      />
-                      [VERDICT PENDING]
-                    </div>
-                  )}
-                  
-                  {/* Claim Quote */}
-                  {statementProgress >= 3 && (
-                    <div style={styles.claimQuote}>
-                      "{courtCases[selectedNpc].claim}"
-                    </div>
-                  )}
-                  
-                  {/* Judgment Buttons */}
-                  {statementProgress >= 3 && (
-                    <div style={styles.judgmentButtonsContainer}>
-                      <button
-                        style={{
-                          ...styles.approvedButton,
-                          animation: shakeApprovedButton ? 'shake 0.5s' : 'none',
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.opacity = '1'
+                          e.currentTarget.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.6)'
                         }}
-                        onClick={() => handleJudgment('accepted')}
-                        onMouseOver={(e) => {
-                          if (!shakeApprovedButton) {
-                            e.currentTarget.style.boxShadow = '0 0 45px rgba(76, 175, 80, 0.7)'
-                            e.currentTarget.style.transform = 'scale(1.05)'
-                            e.currentTarget.style.background = 'rgba(76, 175, 80, 0.4)'
-                          }
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.opacity = '0.9'
+                          e.currentTarget.style.boxShadow = 'inset 0 2px 4px rgba(0, 0, 0, 0.3)'
                         }}
-                        onMouseOut={(e) => {
-                          if (!shakeApprovedButton) {
-                            e.currentTarget.style.boxShadow = '0 0 25px rgba(76, 175, 80, 0.5)'
-                            e.currentTarget.style.transform = 'scale(1)'
-                            e.currentTarget.style.background = 'rgba(76, 175, 80, 0.3)'
-                          }
+                        onMouseDown={(e) => {
+                          e.currentTarget.style.transform = 'scale(0.95)'
                         }}
-                      >
-                        <img
-                          src="/desert/icon/correct.png"
-                          alt="Approved"
-                          style={styles.judgmentIcon}
-                        />
-                        APPROVED
-                      </button>
-                      <button
-                        style={styles.rejectedButton}
-                        onClick={() => handleJudgment('rejected')}
-                        onMouseOver={(e) => {
-                          e.currentTarget.style.boxShadow = '0 0 45px rgba(244, 67, 54, 0.7)'
-                          e.currentTarget.style.transform = 'scale(1.05)'
-                          e.currentTarget.style.background = 'rgba(244, 67, 54, 0.4)'
-                        }}
-                        onMouseOut={(e) => {
-                          e.currentTarget.style.boxShadow = '0 0 25px rgba(244, 67, 54, 0.5)'
+                        onMouseUp={(e) => {
                           e.currentTarget.style.transform = 'scale(1)'
-                          e.currentTarget.style.background = 'rgba(244, 67, 54, 0.3)'
                         }}
                       >
-                        <img
-                          src="/desert/icon/wrong.png"
-                          alt="Rejected"
-                          style={styles.judgmentIcon}
+                        <img 
+                          src="/glacier/icon/close.png"
+                          alt="Close"
+                          style={{
+                            width: '28px',
+                            height: '28px',
+                            objectFit: 'contain',
+                          }}
                         />
-                        REJECTED
                       </button>
+                      <div style={{
+                        fontSize: '8px',
+                        color: '#ef4444',
+                        fontWeight: 'bold',
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        animation: 'pulse 2s infinite',
+                      }}>Watch then Close</div>
                     </div>
-                  )}
+
+                    {/* Static Nav Cluster */}
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(3, 1fr)',
+                      gap: '8px',
+                      width: '100%',
+                      padding: '0 8px',
+                      marginBottom: '16px',
+                      opacity: 0.4,
+                    }}>
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} style={{
+                          width: '40px',
+                          height: '32px',
+                          background: '#2d3548',
+                          borderRadius: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#6b7280',
+                        }}>
+                          <div style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: '#4b5563',
+                          }} />
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Info Screen */}
+                    <div style={{
+                      width: '100%',
+                      background: '#131722',
+                      borderRadius: '8px',
+                      padding: '8px',
+                      marginBottom: '16px',
+                      border: '1px solid #2d3548',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}>
+                      <div style={{
+                        width: '100%',
+                        height: '4px',
+                        background: '#1e3a8a',
+                        borderRadius: '9999px',
+                        overflow: 'hidden',
+                      }}>
+                        <div style={{
+                          width: '66%',
+                          height: '100%',
+                          background: '#60a5fa',
+                        }} />
+                      </div>
+                      <span style={{
+                        fontSize: '7px',
+                        color: '#93c5fd',
+                        fontWeight: 'bold',
+                        letterSpacing: '0.2em',
+                        textTransform: 'uppercase',
+                      }}>Signal Lock</span>
+                    </div>
+
+                    {/* Status Dots */}
+                    <div style={{
+                      display: 'flex',
+                      gap: '16px',
+                      marginTop: 'auto',
+                      marginBottom: '8px',
+                      opacity: 0.3,
+                    }}>
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} style={{
+                          width: '4px',
+                          height: '4px',
+                          background: '#60a5fa',
+                          borderRadius: '50%',
+                        }} />
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </>
-          )}
+            )}
+          </div>
+
+          {/* Subtle UI Decorations */}
+          <div style={{
+            position: 'fixed',
+            top: '32px',
+            left: '32px',
+            fontSize: '10px',
+            color: '#3b82f6',
+            fontWeight: 'bold',
+            letterSpacing: '0.4em',
+            opacity: 0.3,
+            userSelect: 'none',
+          }}>
+            CHRONOS-OS // TERMINAL_SESSION_ACTIVE
+          </div>
+
+          <div style={{
+            position: 'fixed',
+            bottom: '16px',
+            fontSize: '8px',
+            color: '#374151',
+            textTransform: 'uppercase',
+            letterSpacing: '0.2em',
+            opacity: 0.2,
+          }}>
+            Terminal v2.4.0-Stable // Unauthorized Access Prohibited
+          </div>
+
+          {/* CSS Animations */}
+          <style>{`
+            @keyframes progress {
+              0% { transform: translateX(-100%); }
+              100% { transform: translateX(100%); }
+            }
+            @keyframes pulse {
+              0%, 100% { opacity: 1; }
+              50% { opacity: 0.5; }
+            }
+            @keyframes ping {
+              0% { transform: scale(1); opacity: 1; }
+              75%, 100% { transform: scale(2); opacity: 0; }
+            }
+          `}</style>
         </div>
       )}
 
@@ -8604,7 +9226,8 @@ const GlacierMap = ({ onExit }) => {
             top: '100px',
             right: '50px',
           }),
-          width: '400px',
+          width: '30%',
+          height: '65%',
           background: creativityCardType === 'why' 
             ? 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)'
             : 'linear-gradient(135deg, #fed7aa 0%, #fdba74 100%)',
@@ -8638,7 +9261,7 @@ const GlacierMap = ({ onExit }) => {
                 color: creativityCardType === 'why' ? '#1e40af' : '#c2410c',
                 fontFamily: creativityCardType === 'whatif' ? 'Comic Sans MS, cursive' : 'Inter, system-ui, sans-serif',
               }}>
-                {creativityCardType === 'why' ? 'WHY? DARE WHY' : 'WHAT IF?'}
+                {creativityCardType === 'why' ? 'DAILY WHY' : 'WHAT IF?'}
               </span>
             </div>
             <button
@@ -8673,7 +9296,6 @@ const GlacierMap = ({ onExit }) => {
             <div style={{
               padding: '16px',
               background: 'white',
-              border: `2px dashed ${creativityCardType === 'why' ? '#3b82f6' : '#f97316'}`,
               borderRadius: '12px',
               marginBottom: '16px',
             }}>
@@ -8682,6 +9304,7 @@ const GlacierMap = ({ onExit }) => {
                 fontSize: '16px',
                 fontWeight: '700',
                 color: '#1f2937',
+                lineHeight: '1.8',
                 textDecoration: `underline wavy ${creativityCardType === 'why' ? '#3b82f6' : '#f97316'}`,
                 textUnderlineOffset: '4px',
               }}>
@@ -8712,7 +9335,7 @@ const GlacierMap = ({ onExit }) => {
                   width: '100%',
                   minHeight: '100px',
                   padding: '12px',
-                  border: `2px solid ${creativityCardType === 'why' ? '#3b82f6' : '#f97316'}`,
+                  border: `1px solid ${creativityCardType === 'why' ? '#3b82f6' : '#f97316'}`,
                   borderRadius: '8px',
                   fontSize: '14px',
                   fontFamily: 'Inter, system-ui, sans-serif',

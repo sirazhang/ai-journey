@@ -4110,37 +4110,51 @@ const IslandMap = ({ onExit }) => {
     // New Conversation Test Card Styles
     conversationTestCard: {
       position: 'absolute',
-      top: '10%',
-      left: '20%',
-      width: '60%',
-      height: 'calc(80% + 50px)', // 增加50px高度
+      top: '8%',
+      left: '7.5%',
+      width: '85%',
+      height: 'calc(84%)',
       zIndex: 100,
       background: 'white',
-      borderRadius: '15px',
-      boxShadow: '0 15px 50px rgba(0,0,0,0.3)',
+      borderRadius: '20px',
+      boxShadow: '0 25px 80px rgba(0,0,0,0.4), 0 10px 30px rgba(0,0,0,0.3), 0 5px 15px rgba(0,0,0,0.2)',
       display: 'flex',
       flexDirection: 'column',
     },
     conversationTestHeader: {
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px',
+      justifyContent: 'space-between',
+      padding: '16px 24px',
       borderBottom: '2px solid #e0e0e0',
       position: 'relative',
+      background: 'linear-gradient(to bottom, #ffffff, #f8f9fa)',
     },
     conversationTestTitle: {
       display: 'flex',
       alignItems: 'center',
-      gap: '10px',
+      gap: '12px',
       fontFamily: "'Rajdhani', sans-serif",
-      fontSize: '24px',
+      fontSize: '18px',
       fontWeight: 700,
-      color: '#333',
+      color: '#2c3e50',
+      textTransform: 'uppercase',
+      letterSpacing: '1px',
+    },
+    conversationTestSystemStatus: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      fontFamily: "'Rajdhani', sans-serif",
+      fontSize: '12px',
+      fontWeight: 600,
+      color: '#10b981',
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
     },
     conversationTestIcon: {
-      width: '30px',
-      height: '30px',
+      width: '24px',
+      height: '24px',
     },
     conversationTestClose: {
       position: 'absolute',
@@ -4179,13 +4193,14 @@ const IslandMap = ({ onExit }) => {
       alignItems: 'flex-end',
     },
     conversationMessageYouBubble: {
-      background: '#4f7f30',
+      background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
       color: 'white',
-      padding: '10px 15px',
-      borderRadius: '12px',
+      padding: '12px 18px',
+      borderRadius: '16px',
       maxWidth: '70%',
       fontFamily: "'Rajdhani', sans-serif",
       wordWrap: 'break-word',
+      boxShadow: '0 2px 8px rgba(22, 163, 74, 0.3)',
     },
     conversationMessageYouTime: {
       fontSize: '11px',
@@ -4266,45 +4281,93 @@ const IslandMap = ({ onExit }) => {
     conversationTestButtons: {
       display: 'flex',
       flexDirection: 'column',
-      gap: '15px',
-      padding: '0 20px 20px 20px',
-      marginTop: '-20px', // 向上移动按钮
+      gap: '16px',
+      padding: '0',
+      marginTop: '0',
+    },
+    conversationTestButtonsHeader: {
+      fontFamily: "'Rajdhani', sans-serif",
+      fontSize: '11px',
+      fontWeight: 700,
+      color: '#6b7280',
+      textTransform: 'uppercase',
+      letterSpacing: '1.5px',
+      textAlign: 'center',
+      marginBottom: '8px',
+    },
+    conversationTestButtonsFooter: {
+      fontFamily: "'Rajdhani', sans-serif",
+      fontSize: '10px',
+      fontWeight: 500,
+      color: '#9ca3af',
+      fontStyle: 'italic',
+      textAlign: 'center',
+      marginTop: '8px',
     },
     conversationTestButtonWorker: {
       display: 'flex',
-      flexDirection: 'column',
+      flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '15px',
-      border: '3px solid #4CAF50',
+      gap: '12px',
+      padding: '16px 20px',
+      border: '3px solid #10b981',
       borderRadius: '12px',
-      background: 'white',
+      background: 'linear-gradient(to bottom, #ffffff, #f0fdf4)',
       cursor: 'pointer',
       transition: 'all 0.3s',
+      width: '100%',
     },
     conversationTestButtonGenAI: {
       display: 'flex',
-      flexDirection: 'column',
+      flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '15px',
-      border: '3px solid #F44336',
+      gap: '12px',
+      padding: '16px 20px',
+      border: '3px solid #ef4444',
       borderRadius: '12px',
-      background: 'white',
+      background: 'linear-gradient(to bottom, #ffffff, #fef2f2)',
       cursor: 'pointer',
       transition: 'all 0.3s',
+      width: '100%',
     },
     conversationTestButtonIcon: {
-      width: '60px',
-      height: '60px',
-      marginBottom: '8px',
+      width: '32px',
+      height: '32px',
     },
     conversationTestButtonText: {
-      fontFamily: "'Roboto', sans-serif",
-      fontSize: '14px',
+      fontFamily: "'Rajdhani', sans-serif",
+      fontSize: '16px',
       fontWeight: 700,
       textAlign: 'center',
-    }
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px',
+    },
+    conversationTestFooter: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '12px 24px',
+      background: '#1a1a1a',
+      borderTop: '1px solid #333',
+      borderRadius: '0 0 20px 20px',
+      fontFamily: "'Courier New', monospace",
+      fontSize: '11px',
+      color: '#10b981',
+    },
+    conversationTestFooterItem: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+    },
+    conversationTestFooterDot: {
+      width: '6px',
+      height: '6px',
+      borderRadius: '50%',
+      background: '#10b981',
+      animation: 'pulse 2s infinite',
+    },
   }
   return (
     <div style={styles.container}>
@@ -4329,6 +4392,11 @@ const IslandMap = ({ onExit }) => {
           @keyframes blink {
             0%, 100% { opacity: 0.2; }
             50% { opacity: 1; }
+          }
+          
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
           }
         `}
       </style>
@@ -5129,9 +5197,20 @@ const IslandMap = ({ onExit }) => {
         <div style={styles.conversationTestCard}>
           {/* Header */}
           <div style={styles.conversationTestHeader}>
-            <img src="/island/icon/worker.svg" alt="Worker" style={styles.conversationTestIcon} />
-            <div style={styles.conversationTestTitle}>Worker or GenAI?</div>
-            <img src="/island/icon/ai.svg" alt="AI" style={styles.conversationTestIcon} />
+            {/* Left: Title with icon and status */}
+            <div style={{display: 'flex', alignItems: 'center', gap: '16px'}}>
+              <div style={styles.conversationTestTitle}>
+                <img src="/island/icon/thinking.png" alt="Thinking" style={styles.conversationTestIcon} />
+                <span>WORKER OR GENAI?</span>
+              </div>
+              
+              {/* System Status */}
+              <div style={styles.conversationTestSystemStatus}>
+                ● SYSTEM ONLINE
+              </div>
+            </div>
+            
+            {/* Close button */}
             <button 
               style={styles.conversationTestClose}
               onClick={() => {
@@ -5267,6 +5346,10 @@ const IslandMap = ({ onExit }) => {
               {/* Judgment Buttons */}
               {showConvButtons && (
                 <div style={styles.conversationTestButtons}>
+                  <div style={styles.conversationTestButtonsHeader}>
+                    DECISION MATRIX
+                  </div>
+                  
                   <div 
                     style={{
                       ...styles.conversationTestButtonWorker,
@@ -5275,8 +5358,8 @@ const IslandMap = ({ onExit }) => {
                     onClick={() => handleConversationJudgment('worker')}
                     onMouseOver={(e) => {
                       if (!shakeWorkerBtn) {
-                        e.currentTarget.style.transform = 'scale(1.05)'
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(76, 175, 80, 0.3)'
+                        e.currentTarget.style.transform = 'scale(1.02)'
+                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(16, 185, 129, 0.4)'
                       }
                     }}
                     onMouseOut={(e) => {
@@ -5286,8 +5369,8 @@ const IslandMap = ({ onExit }) => {
                       }
                     }}
                   >
-                    <img src="/desert/icon/correct.png" alt="Worker" style={styles.conversationTestButtonIcon} />
-                    <div style={{...styles.conversationTestButtonText, color: '#4CAF50'}}>Verified as Worker</div>
+                    <img src="/island/icon/worker.png" alt="Worker" style={styles.conversationTestButtonIcon} />
+                    <div style={{...styles.conversationTestButtonText, color: '#10b981'}}>VERIFY WORKER</div>
                   </div>
                   
                   <div 
@@ -5298,8 +5381,8 @@ const IslandMap = ({ onExit }) => {
                     onClick={() => handleConversationJudgment('genai')}
                     onMouseOver={(e) => {
                       if (!shakeGenAIBtn) {
-                        e.currentTarget.style.transform = 'scale(1.05)'
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(244, 67, 54, 0.3)'
+                        e.currentTarget.style.transform = 'scale(1.02)'
+                        e.currentTarget.style.boxShadow = '0 6px 20px rgba(239, 68, 68, 0.4)'
                       }
                     }}
                     onMouseOut={(e) => {
@@ -5309,11 +5392,32 @@ const IslandMap = ({ onExit }) => {
                       }
                     }}
                   >
-                    <img src="/desert/icon/wrong.png" alt="GenAI" style={styles.conversationTestButtonIcon} />
-                    <div style={{...styles.conversationTestButtonText, color: '#F44336'}}>Identified as GenAI</div>
+                    <img src="/island/icon/ai.png" alt="GenAI" style={styles.conversationTestButtonIcon} />
+                    <div style={{...styles.conversationTestButtonText, color: '#ef4444'}}>IDENTIFY AI</div>
+                  </div>
+                  
+                  <div style={styles.conversationTestButtonsFooter}>
+                    Analyzer ready for classification
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+          
+          {/* Footer - Status Bar */}
+          <div style={styles.conversationTestFooter}>
+            <div style={styles.conversationTestFooterItem}>
+              <div style={styles.conversationTestFooterDot}></div>
+              <span>ENCRYPTION ACTIVE</span>
+            </div>
+            <div style={styles.conversationTestFooterItem}>
+              <span>LATENCY: 34MS</span>
+            </div>
+            <div style={styles.conversationTestFooterItem}>
+              <span>v.3.8.02_STABLE</span>
+            </div>
+            <div style={styles.conversationTestFooterItem}>
+              <span>NODE: PACIFIC-NORTH</span>
             </div>
           </div>
         </div>
@@ -5322,6 +5426,11 @@ const IslandMap = ({ onExit }) => {
       {/* Hand Stamp Animation */}
       {showHandStamp && (() => {
         console.log('Rendering hand stamp, phase:', handStampPhase)
+        
+        // Position adjustment based on actual testing
+        // Hand needs to move significantly to the right to reach profile card
+        // Profile card is in the top-right corner of the dialogue card
+        
         return (
           <img 
             src="/island/icon/hand.png"
@@ -5333,11 +5442,13 @@ const IslandMap = ({ onExit }) => {
               zIndex: 200,
               pointerEvents: 'none',
               willChange: 'top, bottom, left, right, opacity',
-              // Initial position - always set
+              // Initial position (bottom left) - starting point
               bottom: handStampPhase === 'moving' ? '5%' : 'auto',
               left: handStampPhase === 'moving' ? '30%' : 'auto',
-              top: handStampPhase !== 'moving' ? '15%' : 'auto',
-              right: handStampPhase !== 'moving' ? '3%' : 'auto',
+              // Target position (profile card center) - adjusted based on visual feedback
+              // Profile is in top-right, need to move hand much further right
+              top: handStampPhase !== 'moving' ? '20%' : 'auto',
+              right: handStampPhase !== 'moving' ? '5%' : 'auto',
               opacity: handStampPhase === 'fadeout' ? 0 : 1,
               // Smooth transition for all phases
               transition: handStampPhase === 'fadeout' 
