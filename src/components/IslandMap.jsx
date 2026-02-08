@@ -3068,8 +3068,9 @@ const IslandMap = ({ onExit }) => {
           }]
         }
       case ISLANDS.MAIN_ISLAND:
-        // In phase2 or after phase2 completion, don't show initial dialogue NPCs on main island
-        if (phase2Active || phase2Completed) {
+        // Show Sparky on main island except during phase2Active
+        // Sparky should be visible: before phase2, after phase2 completion, and after island restoration
+        if (phase2Active) {
           return []
         }
         return [{
@@ -5445,10 +5446,9 @@ const IslandMap = ({ onExit }) => {
               // Initial position (bottom left) - starting point
               bottom: handStampPhase === 'moving' ? '5%' : 'auto',
               left: handStampPhase === 'moving' ? '30%' : 'auto',
-              // Target position (profile card center) - adjusted based on visual feedback
-              // Profile is in top-right, need to move hand much further right
+              // Target position (profile card center) - moved to -5% from right (further right)
               top: handStampPhase !== 'moving' ? '20%' : 'auto',
-              right: handStampPhase !== 'moving' ? '5%' : 'auto',
+              right: handStampPhase !== 'moving' ? '-5%' : 'auto',
               opacity: handStampPhase === 'fadeout' ? 0 : 1,
               // Smooth transition for all phases
               transition: handStampPhase === 'fadeout' 

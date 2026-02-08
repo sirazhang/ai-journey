@@ -2025,7 +2025,8 @@ const DesertMap = ({ onExit }) => {
         playCorrectSound()
         setWrongAnswerIndex(null)
         setAlphaDialogueStep('quiz1_feedback')
-        setAlphaDialogueHistory(prev => [...prev, { type: 'user', text: 'Selected correct answer' }])
+        // Show the actual selected answer text
+        setAlphaDialogueHistory(prev => [...prev, { type: 'user', text: quiz1Options[answerIndex].text }])
       } else {
         // Play wrong sound and highlight wrong answer
         playWrongSound()
@@ -2064,7 +2065,8 @@ const DesertMap = ({ onExit }) => {
         setWrongAnswerIndex(null)
         setMission3Phase('complete')
         setAlphaDialogueStep('complete')
-        setAlphaDialogueHistory(prev => [...prev, { type: 'user', text: 'Selected correct answer' }])
+        // Show the actual selected answer text
+        setAlphaDialogueHistory(prev => [...prev, { type: 'user', text: quiz2Options[answerIndex].text }])
       } else {
         // Play wrong sound and highlight wrong answer
         playWrongSound()
@@ -2142,7 +2144,15 @@ const DesertMap = ({ onExit }) => {
       setShowMission4Discussion(false)
       // Wait 2 seconds before showing updated vote badges
       setTimeout(() => {
-        setMission4VotesVisible(true)
+        // Play hum sound before showing updated vote badges
+        const humSound = new Audio('/sound/hum.wav')
+        humSound.volume = volumeManager.getSoundEffectVolume()
+        humSound.play().catch(err => console.log('Hum sound play failed:', err))
+        
+        // Show badges after a short delay
+        setTimeout(() => {
+          setMission4VotesVisible(true)
+        }, 300)
       }, 2000)
     }, 1500)
   }
@@ -2200,7 +2210,15 @@ const DesertMap = ({ onExit }) => {
         clearInterval(typingInterval)
         // Show vote badges after typing completes
         setTimeout(() => {
-          setMission4VotesVisible(true)
+          // Play hum sound before showing vote badges
+          const humSound = new Audio('/sound/hum.wav')
+          humSound.volume = volumeManager.getSoundEffectVolume()
+          humSound.play().catch(err => console.log('Hum sound play failed:', err))
+          
+          // Show badges after a short delay
+          setTimeout(() => {
+            setMission4VotesVisible(true)
+          }, 300)
         }, 500)
       }
     }, 30)
@@ -4534,7 +4552,7 @@ const DesertMap = ({ onExit }) => {
             left: '50%',
             top: '40px',
             transform: 'translateX(-50%)',
-            background: 'rgba(244, 228, 188, 0.95)',
+            background: 'rgba(255, 255, 255, 0.5)',
             borderRadius: '20px',
             padding: '25px',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
