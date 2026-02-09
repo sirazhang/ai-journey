@@ -921,6 +921,7 @@ const GlacierMap = ({ onExit }) => {
   // Debug log for loaded progress
   if (savedProgress?.rooftopCompletedTasks) {
     console.log('Loaded rooftop completed tasks:', savedProgress.rooftopCompletedTasks.length, savedProgress.rooftopCompletedTasks)
+    console.log('Task details:', savedProgress.rooftopCompletedTasks.join(', '))
   }
   
   const [currentScene, setCurrentScene] = useState(savedProgress?.currentScene || 'hallway') // hallway, outside, inside, court, rooftop, reloading, complete
@@ -1711,11 +1712,6 @@ const GlacierMap = ({ onExit }) => {
     
     // Check if this button should start the challenge
     if (currentDialogue.isButton && currentDialogue.startChallenge) {
-      // Mark dialogue task as complete
-      if (!rooftopCompletedTasks.includes('npc6_dialogue')) {
-        setRooftopCompletedTasks(prev => [...prev, 'npc6_dialogue'])
-      }
-      
       // Randomly select 2 challenges from the pool
       const shuffled = [...creativityChallengesPool].sort(() => Math.random() - 0.5)
       const selected = shuffled.slice(0, 2)
@@ -2458,7 +2454,9 @@ const GlacierMap = ({ onExit }) => {
         } else {
           // All formulas completed - mark co-creation task complete
           setCoCreationCompleted(true)
-          setRooftopCompletedTasks(prev => [...prev, 'npc6_cocreation'])
+          if (!rooftopCompletedTasks.includes('npc6_cocreation')) {
+            setRooftopCompletedTasks(prev => [...prev, 'npc6_cocreation'])
+          }
           
           // Close co-creation task after a delay
           setTimeout(() => {
@@ -2567,10 +2565,6 @@ const GlacierMap = ({ onExit }) => {
       setShowTeachingDialogue(false)
       setUserExplanation('')
       setSubmittedExplanation('')
-      // Mark dialogue task as completed
-      if (!rooftopCompletedTasks.includes('npc5_dialogue')) {
-        setRooftopCompletedTasks(prev => [...prev, 'npc5_dialogue'])
-      }
       return
     }
     
