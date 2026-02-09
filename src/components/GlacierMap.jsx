@@ -1070,6 +1070,7 @@ const GlacierMap = ({ onExit }) => {
   
   // Rooftop Momo quiz states
   const [showRooftopQuiz, setShowRooftopQuiz] = useState(savedProgress?.showRooftopQuiz || false)
+  const [rooftopQuizCompleted, setRooftopQuizCompleted] = useState(savedProgress?.rooftopQuizCompleted || false) // Track if quiz has been completed
   const [rooftopQuizStep, setRooftopQuizStep] = useState('intro') // 'intro', 'quiz', 'calculating', 'result'
   const [currentQuizQuestion, setCurrentQuizQuestion] = useState(0)
   const [quizAnswers, setQuizAnswers] = useState([])
@@ -1155,6 +1156,7 @@ const GlacierMap = ({ onExit }) => {
       hasSeenInsideIntro,
       rooftopCompletedTasks: uniqueTasks, // Save deduplicated tasks
       showRooftopQuiz, // Save quiz state to prevent re-triggering
+      rooftopQuizCompleted, // Save quiz completion status
       showArrow, // Save arrow state
       showDataCenterArrow, // Save data center arrow state
       isComplete: currentScene === 'complete',
@@ -1180,11 +1182,17 @@ const GlacierMap = ({ onExit }) => {
       rooftopTasks: rooftopCompletedTasks,
       courtSummaryCompleted,
       showRooftopQuiz,
+      rooftopQuizCompleted,
       alreadyTriggered: rooftopQuizTriggeredRef.current,
-      allConditionsMet: currentScene === 'inside' && rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showRooftopQuiz && !rooftopQuizTriggeredRef.current
+      allConditionsMet: currentScene === 'inside' && rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showRooftopQuiz && !rooftopQuizCompleted && !rooftopQuizTriggeredRef.current
     }
     
     console.log('Checking rooftop quiz trigger:', debugInfo)
+    
+    if (rooftopQuizCompleted) {
+      console.log('❌ Quiz already completed - showing data center arrow instead')
+      return
+    }
     
     if (rooftopQuizTriggeredRef.current) {
       console.log('❌ Quiz already triggered in this session')
@@ -1207,7 +1215,7 @@ const GlacierMap = ({ onExit }) => {
       console.log('❌ Quiz already showing')
     }
     
-    if (currentScene === 'inside' && rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showRooftopQuiz && !rooftopQuizTriggeredRef.current) {
+    if (currentScene === 'inside' && rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showRooftopQuiz && !rooftopQuizCompleted && !rooftopQuizTriggeredRef.current) {
       console.log('✅ Auto-triggering rooftop quiz - all 7 tasks completed!')
       rooftopQuizTriggeredRef.current = true // Mark as triggered
       setTimeout(() => {
@@ -1217,7 +1225,7 @@ const GlacierMap = ({ onExit }) => {
         setQuizAnswers([])
       }, 500) // Small delay to ensure scene transition is complete
     }
-  }, [currentScene, rooftopCompletedTasks.length, courtSummaryCompleted, showRooftopQuiz])
+  }, [currentScene, rooftopCompletedTasks.length, courtSummaryCompleted, showRooftopQuiz, rooftopQuizCompleted])
 
   // 使用useMemo来避免每次渲染都重新创建dialogues
   const dialogueSequences = useMemo(() => getDialogueSequences(t), [t])
@@ -1556,8 +1564,8 @@ const GlacierMap = ({ onExit }) => {
       return
     }
     
-    // Stage 3: Rooftop summary quiz (only show if all 7 rooftop tasks completed AND in inside scene)
-    if (currentScene === 'inside' && rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showRooftopQuiz) {
+    // Stage 3: Rooftop summary quiz (only show if all 7 rooftop tasks completed AND quiz not completed yet)
+    if (currentScene === 'inside' && rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !rooftopQuizCompleted && !showRooftopQuiz) {
       setShowRooftopQuiz(true)
       setRooftopQuizStep('intro')
       setCurrentQuizQuestion(0)
@@ -2109,6 +2117,7 @@ const GlacierMap = ({ onExit }) => {
   
   const handleRooftopQuizClose = () => {
     setShowRooftopQuiz(false)
+    setRooftopQuizCompleted(true) // Mark quiz as completed
     setShowDataCenterArrow(true) // Show arrow to Data Center
   }
   
@@ -5453,14 +5462,14 @@ const GlacierMap = ({ onExit }) => {
             position: 'absolute',
             zIndex: 30,
             cursor: (showElevatorArrow && rooftopCompletedTasks.length < 7) ? 'default' : 
-                    (rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showDataCenterArrow) ? 'pointer' :
-                    (!showElevatorArrow && !showDataCenterArrow) ? 'pointer' : 'default',
+                    (rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !rooftopQuizCompleted) ? 'pointer' :
+                    (!showElevatorArrow && !rooftopQuizCompleted) ? 'pointer' : 'default',
             ...getMomoPosition(),
           }}
           onClick={handleMomoClick}
           onMouseOver={(e) => {
-            if ((!showElevatorArrow && !showDataCenterArrow) || 
-                (rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showDataCenterArrow)) {
+            if ((!showElevatorArrow && !rooftopQuizCompleted) || 
+                (rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !rooftopQuizCompleted)) {
               e.currentTarget.style.transform = 'scale(1.05)'
             }
           }}
@@ -6881,7 +6890,7 @@ const GlacierMap = ({ onExit }) => {
       )}
       
       {/* Data Center Arrow - show after rooftop quiz completion */}
-      {showDataCenterArrow && currentScene === 'inside' && (
+      {rooftopQuizCompleted && currentScene === 'inside' && (
         <div 
           style={{
             position: 'absolute',
@@ -6895,7 +6904,7 @@ const GlacierMap = ({ onExit }) => {
           }}
           onClick={() => {
             setCurrentScene('datacenter')
-            setShowDataCenterArrow(false)
+            // Don't hide arrow - it should remain visible when returning to inside
             setShowFillBlankTask(true)
           }}
           onMouseOver={(e) => e.target.style.transform = 'scale(1.1)'}
