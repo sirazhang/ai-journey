@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import useTypingSound from '../hooks/useTypingSound'
 import useSoundEffects from '../hooks/useSoundEffects'
 import { useLanguage } from '../contexts/LanguageContext'
@@ -924,6 +924,9 @@ const GlacierMap = ({ onExit }) => {
     console.log('Task details:', savedProgress.rooftopCompletedTasks.join(', '))
   }
   
+  // Ref to track if rooftop quiz has been triggered to prevent duplicate triggers
+  const rooftopQuizTriggeredRef = useRef(savedProgress?.showRooftopQuiz || false)
+  
   const [currentScene, setCurrentScene] = useState(savedProgress?.currentScene || 'hallway') // hallway, outside, inside, court, rooftop, reloading, complete
   const [showDialogue, setShowDialogue] = useState(!savedProgress || savedProgress.currentScene === 'hallway')
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0)
@@ -1066,7 +1069,7 @@ const GlacierMap = ({ onExit }) => {
   const [isGlitchTyping, setIsGlitchTyping] = useState(false) // Show typing indicator
   
   // Rooftop Momo quiz states
-  const [showRooftopQuiz, setShowRooftopQuiz] = useState(false)
+  const [showRooftopQuiz, setShowRooftopQuiz] = useState(savedProgress?.showRooftopQuiz || false)
   const [rooftopQuizStep, setRooftopQuizStep] = useState('intro') // 'intro', 'quiz', 'calculating', 'result'
   const [currentQuizQuestion, setCurrentQuizQuestion] = useState(0)
   const [quizAnswers, setQuizAnswers] = useState([])
@@ -1151,6 +1154,7 @@ const GlacierMap = ({ onExit }) => {
       courtSummaryCompleted,
       hasSeenInsideIntro,
       rooftopCompletedTasks: uniqueTasks, // Save deduplicated tasks
+      showRooftopQuiz, // Save quiz state to prevent re-triggering
       showArrow, // Save arrow state
       showDataCenterArrow, // Save data center arrow state
       isComplete: currentScene === 'complete',
@@ -1176,10 +1180,16 @@ const GlacierMap = ({ onExit }) => {
       rooftopTasks: rooftopCompletedTasks,
       courtSummaryCompleted,
       showRooftopQuiz,
-      allConditionsMet: currentScene === 'inside' && rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showRooftopQuiz
+      alreadyTriggered: rooftopQuizTriggeredRef.current,
+      allConditionsMet: currentScene === 'inside' && rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showRooftopQuiz && !rooftopQuizTriggeredRef.current
     }
     
     console.log('Checking rooftop quiz trigger:', debugInfo)
+    
+    if (rooftopQuizTriggeredRef.current) {
+      console.log('❌ Quiz already triggered in this session')
+      return
+    }
     
     if (!courtSummaryCompleted) {
       console.log('❌ Court summary not completed yet - need to complete court tasks first')
@@ -1197,8 +1207,9 @@ const GlacierMap = ({ onExit }) => {
       console.log('❌ Quiz already showing')
     }
     
-    if (currentScene === 'inside' && rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showRooftopQuiz) {
+    if (currentScene === 'inside' && rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showRooftopQuiz && !rooftopQuizTriggeredRef.current) {
       console.log('✅ Auto-triggering rooftop quiz - all 7 tasks completed!')
+      rooftopQuizTriggeredRef.current = true // Mark as triggered
       setTimeout(() => {
         setShowRooftopQuiz(true)
         setRooftopQuizStep('intro')
