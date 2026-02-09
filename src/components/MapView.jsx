@@ -132,7 +132,7 @@ const MapView = ({ onRegionClick }) => {
         
         // Task 3: Rooftop tasks (0-25%)
         if (data.rooftopCompletedTasks && data.rooftopCompletedTasks.length > 0) {
-          glacierPercent += (data.rooftopCompletedTasks.length / 3) * 25
+          glacierPercent += (data.rooftopCompletedTasks.length / 7) * 25
         }
         
         // Task 4: Rooftop summary / Complete (25%)

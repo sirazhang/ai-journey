@@ -1150,6 +1150,19 @@ const GlacierMap = ({ onExit }) => {
     }
   }, [currentScene, completedCases, showSummaryDialogue, showElevatorArrow, courtSummaryCompleted, hasSeenInsideIntro, rooftopCompletedTasks, showArrow, showDataCenterArrow])
 
+  // Auto-trigger rooftop quiz when returning to inside with all tasks complete
+  useEffect(() => {
+    if (currentScene === 'inside' && rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showRooftopQuiz) {
+      console.log('Auto-triggering rooftop quiz - all 7 tasks completed')
+      setTimeout(() => {
+        setShowRooftopQuiz(true)
+        setRooftopQuizStep('intro')
+        setCurrentQuizQuestion(0)
+        setQuizAnswers([])
+      }, 500) // Small delay to ensure scene transition is complete
+    }
+  }, [currentScene, rooftopCompletedTasks.length, courtSummaryCompleted, showRooftopQuiz])
+
   // 使用useMemo来避免每次渲染都重新创建dialogues
   const dialogueSequences = useMemo(() => getDialogueSequences(t), [t])
   const currentDialogues = dialogueSequences[currentScene] || []
@@ -1487,8 +1500,8 @@ const GlacierMap = ({ onExit }) => {
       return
     }
     
-    // Stage 3: Rooftop summary quiz (only show if all 3 rooftop tasks completed AND in inside scene)
-    if (currentScene === 'inside' && rooftopCompletedTasks.length === 3 && courtSummaryCompleted && !showRooftopQuiz) {
+    // Stage 3: Rooftop summary quiz (only show if all 7 rooftop tasks completed AND in inside scene)
+    if (currentScene === 'inside' && rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showRooftopQuiz) {
       setShowRooftopQuiz(true)
       setRooftopQuizStep('intro')
       setCurrentQuizQuestion(0)
@@ -3180,6 +3193,7 @@ const GlacierMap = ({ onExit }) => {
         setShowArrow(false) // Don't show court arrow if cases are complete
       }
     } else if (currentScene === 'rooftop') {
+      console.log('Leaving rooftop, completed tasks:', rooftopCompletedTasks.length, rooftopCompletedTasks)
       setCurrentScene('inside')
       setShowNpc5Dialogue(false)
       setShowPuzzle(false)
@@ -5389,15 +5403,15 @@ const GlacierMap = ({ onExit }) => {
           style={{
             position: 'absolute',
             zIndex: 30,
-            cursor: (showElevatorArrow && rooftopCompletedTasks.length < 3) ? 'default' : 
-                    (rooftopCompletedTasks.length === 3 && courtSummaryCompleted && !showDataCenterArrow) ? 'pointer' :
+            cursor: (showElevatorArrow && rooftopCompletedTasks.length < 7) ? 'default' : 
+                    (rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showDataCenterArrow) ? 'pointer' :
                     (!showElevatorArrow && !showDataCenterArrow) ? 'pointer' : 'default',
             ...getMomoPosition(),
           }}
           onClick={handleMomoClick}
           onMouseOver={(e) => {
             if ((!showElevatorArrow && !showDataCenterArrow) || 
-                (rooftopCompletedTasks.length === 3 && courtSummaryCompleted && !showDataCenterArrow)) {
+                (rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showDataCenterArrow)) {
               e.currentTarget.style.transform = 'scale(1.05)'
             }
           }}
@@ -6802,7 +6816,7 @@ const GlacierMap = ({ onExit }) => {
       })()}
 
       {/* Elevator Arrow - only show if rooftop tasks not completed */}
-      {showElevatorArrow && currentScene === 'inside' && rooftopCompletedTasks.length < 3 && (
+      {showElevatorArrow && currentScene === 'inside' && rooftopCompletedTasks.length < 7 && (
         <div 
           style={styles.elevatorArrow}
           onClick={handleElevatorArrowClick}
@@ -6918,7 +6932,7 @@ const GlacierMap = ({ onExit }) => {
             <>
               <div style={{ marginBottom: '15px', flex: 1 }}>
                 <div style={styles.dialogueText}>
-                  {rooftopCompletedTasks.length === 3 
+                  {rooftopCompletedTasks.length === 7 
                     ? "Let's go down and look for Momo." 
                     : "Oh, hello again! You know, my brain feels... awake."}
                 </div>
@@ -6996,7 +7010,7 @@ const GlacierMap = ({ onExit }) => {
             <>
               <div style={{ marginBottom: '15px', flex: 1 }}>
                 <div style={styles.dialogueText}>
-                  {rooftopCompletedTasks.length === 3 
+                  {rooftopCompletedTasks.length === 7 
                     ? "Let's go down and look for Momo." 
                     : "Thank you... I can feel it coming back. The spark. The vision. My hands remember now."}
                 </div>
@@ -7661,7 +7675,7 @@ const GlacierMap = ({ onExit }) => {
             <>
               <div style={{ marginBottom: '15px', flex: 1 }}>
                 <div style={styles.dialogueText}>
-                  {rooftopCompletedTasks.length === 3 
+                  {rooftopCompletedTasks.length === 7 
                     ? "Let's go down and look for Momo." 
                     : "Wow! My brain feels... rebooted! I can focus again. Thank you!"}
                 </div>
