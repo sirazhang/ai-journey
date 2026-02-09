@@ -1862,9 +1862,18 @@ const GlacierMap = ({ onExit }) => {
           setFootstepRound(footstepRound + 1)
           initializeFootstepRound(footstepRound + 1)
         } else {
-          // All challenges complete
+          // All challenges complete - mark memory tasks complete
           setShowMemoryChallenge(false)
           setNpc9Completed(true)
+          
+          // Mark both memory tasks as complete
+          if (!rooftopCompletedTasks.includes('npc9_memory_blocks')) {
+            setRooftopCompletedTasks(prev => [...prev, 'npc9_memory_blocks'])
+          }
+          if (!rooftopCompletedTasks.includes('npc9_memory_footprint')) {
+            setRooftopCompletedTasks(prev => [...prev, 'npc9_memory_footprint'])
+          }
+          
           console.log('NPC9 memory challenge completed, showing sharing dialogue in 1s')
           // Show sharing dialogue
           setTimeout(() => {
@@ -2481,14 +2490,14 @@ const GlacierMap = ({ onExit }) => {
       // Show NPC response
       setNpc9ShowResponse(true)
       
-      // Close dialogue after showing response - mark dialogue task complete
+      // Close dialogue after showing response - mark sharing task complete
       setTimeout(() => {
         setShowNpc9Sharing(false)
         setNpc9ShowResponse(false)
         setNpc9UserInput('')
         setNpc9Response('')
-        if (!rooftopCompletedTasks.includes('npc9_dialogue')) {
-          setRooftopCompletedTasks(prev => [...prev, 'npc9_dialogue'])
+        if (!rooftopCompletedTasks.includes('npc9_sharing')) {
+          setRooftopCompletedTasks(prev => [...prev, 'npc9_sharing'])
         }
       }, 2000)
     }
@@ -4210,48 +4219,53 @@ const GlacierMap = ({ onExit }) => {
     },
     npc9SharingTimestamp: {
       fontSize: '12px',
-      color: '#999',
-      marginTop: '8px',
+      color: '#94a3b8',
+      marginTop: '6px',
+      marginLeft: '12px',
     },
     npc9SharingUserLabel: {
       textAlign: 'right',
       fontSize: '12px',
-      color: '#a0d8ff',
+      color: '#94a3b8',
       marginBottom: '5px',
       fontWeight: '500',
     },
     npc9SharingHints: {
       display: 'flex',
       gap: '10px',
-      marginBottom: '10px',
+      marginBottom: '15px',
       alignItems: 'flex-start',
+      flexWrap: 'wrap',
     },
     npc9SharingHintTag: {
       padding: '8px 16px',
       borderRadius: '20px',
       fontSize: '13px',
-      background: 'rgba(160, 216, 255, 0.15)',
-      border: '1px solid rgba(160, 216, 255, 0.4)',
-      color: '#a0d8ff',
+      background: 'rgba(14, 165, 233, 0.15)',
+      border: '1px solid rgba(14, 165, 233, 0.3)',
+      color: '#0284c7',
       fontWeight: '500',
+      cursor: 'pointer',
+      transition: 'all 0.2s',
     },
     npc9SharingInputContainer: {
       display: 'flex',
       alignItems: 'center',
-      gap: '15px',
-      background: 'rgba(30, 50, 70, 0.6)',
-      borderRadius: '15px',
+      gap: '12px',
+      background: '#fff',
+      borderRadius: '20px',
       padding: '12px 20px',
-      border: '2px solid rgba(160, 216, 255, 0.4)',
+      border: '1px solid rgba(14, 165, 233, 0.2)',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
     },
     npc9SharingInput: {
       flex: 1,
       background: 'none',
       border: 'none',
-      color: '#fff',
-      fontSize: '16px',
+      color: '#1f2937',
+      fontSize: '15px',
       outline: 'none',
-      fontFamily: "'Roboto', sans-serif",
+      fontFamily: "'Inter', 'Roboto', sans-serif",
     },
     creativityHintModal: {
       position: 'absolute',
@@ -7054,46 +7068,54 @@ const GlacierMap = ({ onExit }) => {
       {showCreativityChallenge && selectedChallenges.length > 0 && (
         <div style={{
           ...styles.creativityContainer,
-          width: '700px',
-          maxHeight: '80vh',
+          width: '65vw',
+          maxWidth: '650px',
+          maxHeight: '75vh',
           zIndex: showRooftopDesktop ? 2000 : 3000,
         }}>
-          {/* Close Button */}
-          <button
-            onClick={() => {
-              setShowCreativityChallenge(false)
-              setCurrentChallenge(0)
-              setUserInputs([])
-            }}
-            style={{
-              position: 'absolute',
-              top: '15px',
-              right: '15px',
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              color: '#fff',
-              fontSize: '20px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s',
-              zIndex: 10,
-            }}
-            onMouseOver={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.2)'
-              e.target.style.transform = 'scale(1.1)'
-            }}
-            onMouseOut={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.1)'
-              e.target.style.transform = 'scale(1)'
-            }}
-          >
-            ×
-          </button>
+          {/* macOS Traffic Light Buttons */}
+          <div style={{
+            position: 'absolute',
+            top: '15px',
+            left: '15px',
+            display: 'flex',
+            gap: '8px',
+            zIndex: 10,
+          }}>
+            <button
+              onClick={() => {
+                setShowCreativityChallenge(false)
+                setCurrentChallenge(0)
+                setUserInputs([])
+              }}
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: '#ff5f57',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            />
+            <button
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: '#ffbd2e',
+                border: 'none',
+              }}
+            />
+            <button
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: '#28ca42',
+                border: 'none',
+              }}
+            />
+          </div>
           
           {/* Timer */}
           <div style={{
@@ -7230,50 +7252,56 @@ const GlacierMap = ({ onExit }) => {
       {showCoCreation && (
         <div style={{
           ...styles.coCreationContainer,
-          width: '80vw',
-          maxWidth: '1000px',
-          maxHeight: '80vh',
+          width: '75vw',
+          maxWidth: '950px',
+          maxHeight: '75vh',
           zIndex: showRooftopDesktop ? 2000 : 3000,
         }}>
-          {/* Close Button */}
-          <button
-            onClick={() => {
-              setShowCoCreation(false)
-              setCoCreationFormulas([
-                { element: null, result: null, completed: false },
-                { element: null, result: null, completed: false }
-              ])
-              setCurrentFormulaIndex(0)
-            }}
-            style={{
-              position: 'absolute',
-              top: '15px',
-              right: '15px',
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: 'rgba(0, 0, 0, 0.3)',
-              border: '1px solid rgba(0, 0, 0, 0.2)',
-              color: '#333',
-              fontSize: '20px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s',
-              zIndex: 10,
-            }}
-            onMouseOver={(e) => {
-              e.target.style.background = 'rgba(0, 0, 0, 0.4)'
-              e.target.style.transform = 'scale(1.1)'
-            }}
-            onMouseOut={(e) => {
-              e.target.style.background = 'rgba(0, 0, 0, 0.3)'
-              e.target.style.transform = 'scale(1)'
-            }}
-          >
-            ×
-          </button>
+          {/* macOS Traffic Light Buttons */}
+          <div style={{
+            position: 'absolute',
+            top: '15px',
+            left: '15px',
+            display: 'flex',
+            gap: '8px',
+            zIndex: 10,
+          }}>
+            <button
+              onClick={() => {
+                setShowCoCreation(false)
+                setCoCreationFormulas([
+                  { element: null, result: null, completed: false },
+                  { element: null, result: null, completed: false }
+                ])
+              }}
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: '#ff5f57',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            />
+            <button
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: '#ffbd2e',
+                border: 'none',
+              }}
+            />
+            <button
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: '#28ca42',
+                border: 'none',
+              }}
+            />
+          </div>
           
           <style>{`
             @keyframes shake {
@@ -7283,25 +7311,138 @@ const GlacierMap = ({ onExit }) => {
             }
           `}</style>
           
-          {/* NPC Dialogue */}
+          {/* NPC Dialogue - Bubble Style */}
           {!showSuccessMessage && !coCreationFormulas[0].completed && (
-            <div style={styles.coCreationDialogue}>
-              <img src="/glacier/npc/npc6.png" alt="NPC6" style={{ width: '80px', height: '80px' }} />
-              <div style={{ flex: 1 }}>
-                <p style={{ margin: 0, color: '#333', fontSize: '16px', lineHeight: 1.5 }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '12px',
+              marginBottom: '15px',
+              marginTop: '10px',
+            }}>
+              {/* NPC Avatar with white circle background */}
+              <div style={{
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                background: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+              }}>
+                <img 
+                  src="/glacier/npc/npc6.png" 
+                  alt="NPC6" 
+                  style={{ 
+                    width: '45px', 
+                    height: '45px',
+                    borderRadius: '50%',
+                  }} 
+                />
+              </div>
+              
+              {/* Speech Bubble */}
+              <div style={{
+                flex: 1,
+                background: '#fff',
+                borderRadius: '15px',
+                padding: '12px 16px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                position: 'relative',
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  left: '-8px',
+                  top: '15px',
+                  width: 0,
+                  height: 0,
+                  borderTop: '8px solid transparent',
+                  borderBottom: '8px solid transparent',
+                  borderRight: '8px solid #fff',
+                }}></div>
+                <p style={{ 
+                  margin: 0, 
+                  color: '#333', 
+                  fontSize: '13px', 
+                  lineHeight: 1.4,
+                }}>
                   Thanks! My brain is starting to unfreeze. I need to design a 'Creative Ice Cream,' but I'm stuck with this boring Vanilla.
                 </p>
               </div>
-              <img src="/glacier/mission/cream.png" alt="Ice Cream" style={{ width: '60px', height: '60px' }} />
+              
+              {/* Ice Cream Icon */}
+              <img 
+                src="/glacier/mission/cream.png" 
+                alt="Ice Cream" 
+                style={{ 
+                  width: '45px', 
+                  height: '45px',
+                  flexShrink: 0,
+                }} 
+              />
             </div>
           )}
           
           {/* Success Message */}
           {showSuccessMessage && (
-            <div style={styles.coCreationDialogue}>
-              <img src="/glacier/npc/npc6.png" alt="NPC6" style={{ width: '80px', height: '80px' }} />
-              <div style={{ flex: 1 }}>
-                <p style={{ margin: 0, color: '#4caf50', fontSize: '18px', fontWeight: 'bold', lineHeight: 1.5 }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '12px',
+              marginBottom: '15px',
+              marginTop: '10px',
+            }}>
+              {/* NPC Avatar with white circle background */}
+              <div style={{
+                width: '50px',
+                height: '50px',
+                borderRadius: '50%',
+                background: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+              }}>
+                <img 
+                  src="/glacier/npc/npc6.png" 
+                  alt="NPC6" 
+                  style={{ 
+                    width: '45px', 
+                    height: '45px',
+                    borderRadius: '50%',
+                  }} 
+                />
+              </div>
+              
+              {/* Speech Bubble */}
+              <div style={{
+                flex: 1,
+                background: '#fff',
+                borderRadius: '15px',
+                padding: '12px 16px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                position: 'relative',
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  left: '-8px',
+                  top: '15px',
+                  width: 0,
+                  height: 0,
+                  borderTop: '8px solid transparent',
+                  borderBottom: '8px solid transparent',
+                  borderRight: '8px solid #fff',
+                }}></div>
+                <p style={{ 
+                  margin: 0, 
+                  color: '#4caf50', 
+                  fontSize: '14px', 
+                  fontWeight: 'bold', 
+                  lineHeight: 1.4,
+                }}>
                   Wow! That's a brilliant idea! It looks amazing!
                 </p>
               </div>
@@ -7309,50 +7450,117 @@ const GlacierMap = ({ onExit }) => {
           )}
           
           {/* Instruction */}
-          <div style={styles.coCreationInstruction}>
+          <div style={{
+            textAlign: 'center',
+            color: '#a0d8ff',
+            fontSize: '14px',
+            marginBottom: '8px',
+          }}>
             Drag an element below to create a cool new ice cream flavor!
           </div>
           
           {/* Formulas Area */}
-          <div style={styles.coCreationFormulasArea}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '15px',
+            justifyContent: 'center',
+            marginBottom: '15px',
+          }}>
             {coCreationFormulas.map((formula, index) => (
               <div 
                 key={index} 
                 style={{
-                  ...styles.coCreationFormula,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '15px',
                   opacity: index === 0 ? 1 : (index === currentFormulaIndex ? 1 : 0.5)
                 }}
               >
                 {/* Ice Cream */}
-                <div style={styles.coCreationCard}>
-                  <img src="/glacier/mission/cream.png" alt="Ice Cream" style={{ width: '100px', height: '100px' }} />
+                <div style={{
+                  width: '120px',
+                  height: '120px',
+                  background: '#fff',
+                  borderRadius: '15px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                }}>
+                  <img src="/glacier/mission/cream.png" alt="Ice Cream" style={{ width: '90px', height: '90px' }} />
                 </div>
                 
                 {/* Plus Icon */}
-                <img src="/glacier/icon/add.png" alt="+" style={{ width: '40px', height: '40px' }} />
+                <img src="/glacier/icon/add.png" alt="+" style={{ width: '35px', height: '35px' }} />
                 
                 {/* Drop Zone or Element */}
                 {formula.element ? (
-                  <div style={styles.coCreationDropZone}>
+                  <div style={{
+                    width: '180px',
+                    height: '70px',
+                    border: '3px dashed rgba(160, 216, 255, 0.5)',
+                    borderRadius: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: "'Roboto Mono', monospace",
+                    fontSize: '16px',
+                    color: '#fff',
+                  }}>
                     {formula.element}
                   </div>
                 ) : (
-                  <div style={styles.coCreationDropZone}>
+                  <div style={{
+                    width: '180px',
+                    height: '70px',
+                    border: '3px dashed rgba(160, 216, 255, 0.5)',
+                    borderRadius: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontFamily: "'Roboto Mono', monospace",
+                    fontSize: '16px',
+                    color: '#fff',
+                  }}>
                     Drop Here
                   </div>
                 )}
                 
                 {/* Equal Icon */}
-                <img src="/glacier/icon/equal.png" alt="=" style={{ width: '40px', height: '40px' }} />
+                <img src="/glacier/icon/equal.png" alt="=" style={{ width: '35px', height: '35px' }} />
                 
                 {/* Result */}
                 {formula.result ? (
-                  <div style={styles.coCreationResultCard}>
-                    <img src={formula.result} alt="Result" style={{ width: '120px', height: '120px' }} />
+                  <div style={{
+                    width: '120px',
+                    height: '120px',
+                    background: '#f0d32d',
+                    border: '4px solid #a0d8ff',
+                    borderRadius: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                    animation: 'shake 0.5s',
+                  }}>
+                    <img src={formula.result} alt="Result" style={{ width: '110px', height: '110px' }} />
                   </div>
                 ) : (
-                  <div style={{ ...styles.coCreationCard, border: '3px dashed rgba(160, 216, 255, 0.5)', background: 'transparent' }}>
-                    <img src="/glacier/icon/picture.png" alt="?" style={{ width: '60px', height: '60px', opacity: 0.5 }} />
+                  <div style={{ 
+                    width: '120px',
+                    height: '120px',
+                    background: '#fff',
+                    borderRadius: '15px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
+                    border: '3px dashed rgba(160, 216, 255, 0.5)', 
+                    background: 'transparent' 
+                  }}>
+                    <img src="/glacier/icon/picture.png" alt="?" style={{ width: '50px', height: '50px', opacity: 0.5 }} />
                   </div>
                 )}
               </div>
@@ -7360,16 +7568,30 @@ const GlacierMap = ({ onExit }) => {
           </div>
           
           {/* Elements */}
-          <div style={styles.coCreationElementsArea}>
+          <div style={{
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '10px',
+            justifyContent: 'center',
+            padding: '10px 0',
+          }}>
             {coCreationElements.map((element, index) => (
               <button
                 key={element.id}
                 onClick={() => handleElementClick(element)}
                 style={{
-                  ...styles.coCreationElementTag,
+                  padding: '10px 20px',
+                  borderRadius: '20px',
+                  border: 'none',
+                  fontFamily: "'Roboto', sans-serif",
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  color: '#fff',
+                  cursor: coCreationCompleted ? 'default' : 'pointer',
+                  transition: 'transform 0.2s',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
                   background: index % 2 === 0 ? '#f0d32d' : '#ab3a2c',
                   opacity: coCreationCompleted ? 0.5 : 1,
-                  cursor: coCreationCompleted ? 'default' : 'pointer',
                 }}
                 onMouseOver={(e) => {
                   if (!coCreationCompleted) {
@@ -7514,57 +7736,64 @@ const GlacierMap = ({ onExit }) => {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: memoryPhase === 'footstepRecall' ? '60vw' : '700px',
-          maxWidth: memoryPhase === 'footstepRecall' ? '900px' : '700px',
-          maxHeight: '80vh',
+          width: memoryPhase === 'footstepRecall' ? '55vw' : '60vw',
+          maxWidth: memoryPhase === 'footstepRecall' ? '800px' : '850px',
+          maxHeight: '75vh',
           background: 'rgba(20, 20, 30, 0.95)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           border: 'none',
           borderRadius: '20px',
-          padding: '30px',
+          padding: '25px',
           display: 'flex',
           flexDirection: 'column',
           boxShadow: '0 12px 48px rgba(0, 0, 0, 0.6)',
           zIndex: showRooftopDesktop ? 2000 : 3000,
           overflow: 'auto',
         }}>
-          {/* Close Button */}
-          <button
-            onClick={() => {
-              setShowMemoryChallenge(false)
-              setMemoryPhase('snowPath')
-              setSnowPathRound(0)
-            }}
-            style={{
-              position: 'absolute',
-              top: '15px',
-              right: '15px',
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              color: '#fff',
-              fontSize: '20px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s',
-              zIndex: 10,
-            }}
-            onMouseOver={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.2)'
-              e.target.style.transform = 'scale(1.1)'
-            }}
-            onMouseOut={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.1)'
-              e.target.style.transform = 'scale(1)'
-            }}
-          >
-            ×
-          </button>
+          {/* macOS Traffic Light Buttons */}
+          <div style={{
+            position: 'absolute',
+            top: '15px',
+            left: '15px',
+            display: 'flex',
+            gap: '8px',
+            zIndex: 10,
+          }}>
+            <button
+              onClick={() => {
+                setShowMemoryChallenge(false)
+                setMemoryPhase('snowPath')
+                setSnowPathRound(0)
+              }}
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: '#ff5f57',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            />
+            <button
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: '#ffbd2e',
+                border: 'none',
+              }}
+            />
+            <button
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: '#28ca42',
+                border: 'none',
+              }}
+            />
+          </div>
           
           {/* Header */}
           <div style={{
@@ -7572,11 +7801,12 @@ const GlacierMap = ({ onExit }) => {
             justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '15px',
+            marginTop: '10px',
             flexShrink: 0,
           }}>
             <div style={{
               fontFamily: "'Roboto', sans-serif",
-              fontSize: '22px',
+              fontSize: '20px',
               fontWeight: '700',
               color: '#a0d8ff',
             }}>
@@ -7585,7 +7815,7 @@ const GlacierMap = ({ onExit }) => {
             {memoryPhase === 'snowPath' && (
               <div style={{
                 fontFamily: "'Roboto Mono', monospace",
-                fontSize: '50px',
+                fontSize: '42px',
                 fontWeight: '700',
                 color: snowPathTimer < 5 ? '#ff4444' : '#a0d8ff',
               }}>
@@ -7597,9 +7827,9 @@ const GlacierMap = ({ onExit }) => {
           {/* Instructions */}
           <div style={{
             fontFamily: "'Roboto', sans-serif",
-            fontSize: '14px',
+            fontSize: '13px',
             color: '#fff',
-            marginBottom: '15px',
+            marginBottom: '12px',
             textAlign: 'center',
             flexShrink: 0,
           }}>
@@ -7613,9 +7843,9 @@ const GlacierMap = ({ onExit }) => {
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '10px',
+              gap: '8px',
               width: '100%',
-              maxWidth: '500px',
+              maxWidth: '450px',
               margin: '0 auto',
               alignSelf: 'center',
               flex: '1 1 auto',
@@ -7647,7 +7877,7 @@ const GlacierMap = ({ onExit }) => {
                       <img 
                         src="/glacier/icon/footprint.svg"
                         alt="Footprint"
-                        style={{ width: '60%', height: '60%', objectFit: 'contain' }}
+                        style={{ width: '55%', height: '55%', objectFit: 'contain' }}
                       />
                     )}
                   </div>
@@ -7662,9 +7892,9 @@ const GlacierMap = ({ onExit }) => {
               display: 'grid',
               gridTemplateColumns: 'repeat(6, 1fr)',
               gridTemplateRows: 'repeat(2, 1fr)',
-              gap: '30px',
+              gap: '25px',
               flex: 1,
-              maxWidth: '90%',
+              maxWidth: '85%',
               margin: '0 auto',
               alignItems: 'center',
             }}>
@@ -7716,8 +7946,8 @@ const GlacierMap = ({ onExit }) => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            gap: '15px',
-            marginTop: '20px',
+            gap: '12px',
+            marginTop: '15px',
             flexShrink: 0,
           }}>
             {Array.from({ length: 3 }).map((_, index) => {
@@ -7728,8 +7958,8 @@ const GlacierMap = ({ onExit }) => {
                 <div
                   key={index}
                   style={{
-                    width: '18px',
-                    height: '18px',
+                    width: '16px',
+                    height: '16px',
                     borderRadius: '50%',
                     background: isComplete ? '#a0d8ff' : '#666566',
                     transition: 'all 0.3s',
@@ -7745,46 +7975,53 @@ const GlacierMap = ({ onExit }) => {
       {showPuzzle && (
         <div style={{
           ...styles.puzzleContainer,
-          width: '80vw',
-          maxWidth: '1200px',
-          height: '70vh',
+          width: '75vw',
+          maxWidth: '1100px',
+          height: '65vh',
           zIndex: showRooftopDesktop ? 2000 : 3000,
         }}>
-          {/* Close Button */}
-          <button
-            onClick={() => {
-              setShowPuzzle(false)
-              setCurrentPuzzle(1)
-            }}
-            style={{
-              position: 'absolute',
-              top: '15px',
-              right: '15px',
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              color: '#fff',
-              fontSize: '20px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s',
-              zIndex: 10,
-            }}
-            onMouseOver={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.2)'
-              e.target.style.transform = 'scale(1.1)'
-            }}
-            onMouseOut={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.1)'
-              e.target.style.transform = 'scale(1)'
-            }}
-          >
-            ×
-          </button>
+          {/* macOS Traffic Light Buttons */}
+          <div style={{
+            position: 'absolute',
+            top: '15px',
+            left: '15px',
+            display: 'flex',
+            gap: '8px',
+            zIndex: 10,
+          }}>
+            <button
+              onClick={() => {
+                setShowPuzzle(false)
+                setCurrentPuzzle(1)
+              }}
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: '#ff5f57',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            />
+            <button
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: '#ffbd2e',
+                border: 'none',
+              }}
+            />
+            <button
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: '#28ca42',
+                border: 'none',
+              }}
+            />
+          </div>
           
           {/* Left Panel - 25% */}
           <div style={styles.puzzleLeftPanel}>
@@ -8054,45 +8291,52 @@ const GlacierMap = ({ onExit }) => {
           ...styles.puzzleContainer,
           width: '80vw',
           maxWidth: '1200px',
-          height: '70vh',
+          height: '65vh',
           zIndex: showRooftopDesktop ? 2000 : 3000,
         }}>
-          {/* Close Button */}
-          <button
-            onClick={() => {
-              setShowExercise(false)
-              setCurrentExercise(1)
-              setSelectedErrors([])
-            }}
-            style={{
-              position: 'absolute',
-              top: '15px',
-              right: '15px',
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              color: '#fff',
-              fontSize: '20px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s',
-              zIndex: 10,
-            }}
-            onMouseOver={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.2)'
-              e.target.style.transform = 'scale(1.1)'
-            }}
-            onMouseOut={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.1)'
-              e.target.style.transform = 'scale(1)'
-            }}
-          >
-            ×
-          </button>
+          {/* macOS Traffic Light Buttons */}
+          <div style={{
+            position: 'absolute',
+            top: '15px',
+            left: '15px',
+            display: 'flex',
+            gap: '8px',
+            zIndex: 10,
+          }}>
+            <button
+              onClick={() => {
+                setShowExercise(false)
+                setCurrentExercise(1)
+                setSelectedErrors([])
+              }}
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: '#ff5f57',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            />
+            <button
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: '#ffbd2e',
+                border: 'none',
+              }}
+            />
+            <button
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: '#28ca42',
+                border: 'none',
+              }}
+            />
+          </div>
           
           <style>{`
             .exercise-text-area {
@@ -8296,61 +8540,130 @@ const GlacierMap = ({ onExit }) => {
       {showNpc9Sharing && (
         <div style={{
           ...styles.npc9SharingContainer,
-          width: '65%',
-          maxWidth: '750px',
-          maxHeight: '75vh',
+          width: '70%',
+          maxWidth: '850px',
+          maxHeight: '80vh',
+          background: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%)',
+          border: 'none',
           zIndex: showRooftopDesktop ? 2000 : 3000,
         }}>
-          {/* Close Button */}
-          <button
-            onClick={() => {
-              setShowNpc9Sharing(false)
-              setNpc9UserInput('')
-              setNpc9ShowResponse(false)
-            }}
-            style={{
-              position: 'absolute',
-              top: '15px',
-              right: '15px',
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              color: '#fff',
-              fontSize: '20px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s',
-              zIndex: 10,
-            }}
-            onMouseOver={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.2)'
-              e.target.style.transform = 'scale(1.1)'
-            }}
-            onMouseOut={(e) => {
-              e.target.style.background = 'rgba(255, 255, 255, 0.1)'
-              e.target.style.transform = 'scale(1)'
-            }}
-          >
-            ×
-          </button>
-          
-          <div style={styles.npc9SharingTitle}>
-            Share your memory secret here.
+          {/* macOS Window Header */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '20px',
+            paddingBottom: '15px',
+            borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
+          }}>
+            {/* Traffic Light Buttons */}
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => {
+                  setShowNpc9Sharing(false)
+                  setNpc9UserInput('')
+                  setNpc9ShowResponse(false)
+                }}
+                style={{
+                  width: '12px',
+                  height: '12px',
+                  borderRadius: '50%',
+                  background: '#ff5f57',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              />
+              <button
+                style={{
+                  width: '12px',
+                  height: '12px',
+                  borderRadius: '50%',
+                  background: '#ffbd2e',
+                  border: 'none',
+                }}
+              />
+              <button
+                style={{
+                  width: '12px',
+                  height: '12px',
+                  borderRadius: '50%',
+                  background: '#28ca42',
+                  border: 'none',
+                }}
+              />
+            </div>
+            
+            {/* Title */}
+            <div style={{
+              flex: 1,
+              textAlign: 'center',
+              fontSize: '16px',
+              fontWeight: '600',
+              color: '#64748b',
+            }}>
+              Share your memory secret here.
+            </div>
+            
+            {/* Spacer */}
+            <div style={{ width: '60px' }} />
           </div>
           
           {/* NPC Question */}
           {!npc9ShowResponse && (
-            <div style={styles.npc9SharingMessage}>
-              <img src="/glacier/npc/npc9.png" alt="NPC9" style={{ width: '80px', height: '80px', flexShrink: 0 }} />
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '15px', marginBottom: '20px' }}>
+              {/* NPC Avatar with white circle background */}
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                position: 'relative',
+              }}>
+                <img 
+                  src="/glacier/npc/npc9.png" 
+                  alt="NPC9" 
+                  style={{ 
+                    width: '70px', 
+                    height: '70px',
+                    borderRadius: '50%',
+                  }} 
+                />
+                {/* Online indicator */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: '2px',
+                  right: '2px',
+                  width: '16px',
+                  height: '16px',
+                  borderRadius: '50%',
+                  background: '#28ca42',
+                  border: '2px solid #fff',
+                }} />
+              </div>
+              
               <div style={{ flex: 1 }}>
-                <div style={styles.npc9SharingBubble}>
+                <div style={{
+                  background: '#fff',
+                  borderRadius: '18px',
+                  padding: '16px 20px',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                  fontSize: '15px',
+                  color: '#1f2937',
+                  lineHeight: '1.5',
+                }}>
                   Thanks for helping me finish the memory training! Do you have any secret memory hacks?
                 </div>
-                <div style={styles.npc9SharingTimestamp}>
+                <div style={{
+                  fontSize: '12px',
+                  color: '#94a3b8',
+                  marginTop: '6px',
+                  marginLeft: '12px',
+                }}>
                   {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
@@ -8360,32 +8673,85 @@ const GlacierMap = ({ onExit }) => {
           {/* User Response (if entered) */}
           {npc9ShowResponse && npc9UserInput && (
             <>
-              <div style={styles.npc9SharingMessage}>
-                <img src="/glacier/npc/npc9.png" alt="NPC9" style={{ width: '80px', height: '80px', flexShrink: 0 }} />
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '15px', marginBottom: '20px' }}>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  background: '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                  position: 'relative',
+                }}>
+                  <img 
+                    src="/glacier/npc/npc9.png" 
+                    alt="NPC9" 
+                    style={{ 
+                      width: '70px', 
+                      height: '70px',
+                      borderRadius: '50%',
+                    }} 
+                  />
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '2px',
+                    right: '2px',
+                    width: '16px',
+                    height: '16px',
+                    borderRadius: '50%',
+                    background: '#28ca42',
+                    border: '2px solid #fff',
+                  }} />
+                </div>
+                
                 <div style={{ flex: 1 }}>
-                  <div style={styles.npc9SharingBubble}>
+                  <div style={{
+                    background: '#fff',
+                    borderRadius: '18px',
+                    padding: '16px 20px',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                    fontSize: '15px',
+                    color: '#1f2937',
+                    lineHeight: '1.5',
+                  }}>
                     Thanks for helping me finish the memory training! Do you have any secret memory hacks?
                   </div>
-                  <div style={styles.npc9SharingTimestamp}>
+                  <div style={{
+                    fontSize: '12px',
+                    color: '#94a3b8',
+                    marginTop: '6px',
+                    marginLeft: '12px',
+                  }}>
                     {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
               </div>
               
-              <div>
-                <div style={styles.npc9SharingUserLabel}>You</div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+                <div style={{ maxWidth: '70%' }}>
                   <div style={{
-                    ...styles.npc9SharingBubble,
-                    background: 'rgba(30, 50, 70, 0.8)',
+                    background: '#0ea5e9',
+                    borderRadius: '18px',
+                    padding: '16px 20px',
+                    boxShadow: '0 2px 8px rgba(14, 165, 233, 0.3)',
+                    fontSize: '15px',
                     color: '#fff',
-                    maxWidth: '70%',
+                    lineHeight: '1.5',
                   }}>
                     {npc9UserInput}
                   </div>
-                </div>
-                <div style={{ ...styles.npc9SharingTimestamp, textAlign: 'right' }}>
-                  {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                  <div style={{
+                    fontSize: '12px',
+                    color: '#94a3b8',
+                    marginTop: '6px',
+                    marginRight: '12px',
+                    textAlign: 'right',
+                  }}>
+                    {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                  </div>
                 </div>
               </div>
             </>
@@ -8393,10 +8759,50 @@ const GlacierMap = ({ onExit }) => {
           
           {/* NPC Response */}
           {npc9ShowResponse && (
-            <div style={styles.npc9SharingMessage}>
-              <img src="/glacier/npc/npc9.png" alt="NPC9" style={{ width: '80px', height: '80px', flexShrink: 0 }} />
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '15px', marginBottom: '20px' }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                position: 'relative',
+              }}>
+                <img 
+                  src="/glacier/npc/npc9.png" 
+                  alt="NPC9" 
+                  style={{ 
+                    width: '70px', 
+                    height: '70px',
+                    borderRadius: '50%',
+                  }} 
+                />
+                <div style={{
+                  position: 'absolute',
+                  bottom: '2px',
+                  right: '2px',
+                  width: '16px',
+                  height: '16px',
+                  borderRadius: '50%',
+                  background: '#28ca42',
+                  border: '2px solid #fff',
+                }} />
+              </div>
+              
               <div style={{ flex: 1 }}>
-                <div style={styles.npc9SharingBubble}>
+                <div style={{
+                  background: '#fff',
+                  borderRadius: '18px',
+                  padding: '16px 20px',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                  fontSize: '15px',
+                  color: '#1f2937',
+                  lineHeight: '1.5',
+                }}>
                   {isNpc9Generating ? 'Thinking...' : (npc9Response || "I see... noted!")}
                 </div>
                 <div style={styles.npc9SharingTimestamp}>
@@ -8409,9 +8815,45 @@ const GlacierMap = ({ onExit }) => {
           {/* Hint Tags - Above Input */}
           {!npc9ShowResponse && (
             <div style={styles.npc9SharingHints}>
-              <div style={styles.npc9SharingHintTag}>Visualization</div>
-              <div style={styles.npc9SharingHintTag}>Use Mnemonics</div>
-              <div style={styles.npc9SharingHintTag}>Chunking</div>
+              <div 
+                style={styles.npc9SharingHintTag}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = 'rgba(14, 165, 233, 0.25)'
+                  e.currentTarget.style.borderColor = 'rgba(14, 165, 233, 0.5)'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = 'rgba(14, 165, 233, 0.15)'
+                  e.currentTarget.style.borderColor = 'rgba(14, 165, 233, 0.3)'
+                }}
+              >
+                Visualization
+              </div>
+              <div 
+                style={styles.npc9SharingHintTag}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = 'rgba(14, 165, 233, 0.25)'
+                  e.currentTarget.style.borderColor = 'rgba(14, 165, 233, 0.5)'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = 'rgba(14, 165, 233, 0.15)'
+                  e.currentTarget.style.borderColor = 'rgba(14, 165, 233, 0.3)'
+                }}
+              >
+                Use Mnemonics
+              </div>
+              <div 
+                style={styles.npc9SharingHintTag}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.background = 'rgba(14, 165, 233, 0.25)'
+                  e.currentTarget.style.borderColor = 'rgba(14, 165, 233, 0.5)'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.background = 'rgba(14, 165, 233, 0.15)'
+                  e.currentTarget.style.borderColor = 'rgba(14, 165, 233, 0.3)'
+                }}
+              >
+                Chunking
+              </div>
             </div>
           )}
           
@@ -8430,18 +8872,29 @@ const GlacierMap = ({ onExit }) => {
               <button
                 onClick={handleNpc9SharingSubmit}
                 style={{
-                  background: 'none',
+                  background: '#0ea5e9',
                   border: 'none',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   padding: '8px',
-                  transition: 'transform 0.2s',
+                  borderRadius: '50%',
+                  width: '36px',
+                  height: '36px',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 2px 8px rgba(14, 165, 233, 0.3)',
                 }}
-                onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.05)'
+                  e.currentTarget.style.background = '#0284c7'
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)'
+                  e.currentTarget.style.background = '#0ea5e9'
+                }}
               >
-                <img src="/glacier/icon/send.png" alt="Send" style={{ width: '28px', height: '28px' }} />
+                <img src="/glacier/icon/send.png" alt="Send" style={{ width: '20px', height: '20px', filter: 'brightness(0) invert(1)' }} />
               </button>
             </div>
           )}
