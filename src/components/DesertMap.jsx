@@ -860,7 +860,7 @@ const DesertMap = ({ onExit }) => {
     if (alphaDialogueStep === 'mission4_part1' && !alphaIsTyping) {
       const timer = setTimeout(() => {
         setAlphaDialogueStep('mission4_part2')
-        setAlphaDialogueHistory(prev => [...prev, { type: 'alpha', text: "One final task… and it's urgent.\n\nGo to the gate of the castle. For each leaf image, you'll see labels from three expert biologists: Healthy, Infected, or Uncertain." }])
+        setAlphaDialogueHistory(prev => [...prev, { type: 'alpha', text: "One final task… and it's urgent!\n\nGo to the gate of the castle. For each plant image, you'll see judgments from three experts: **Threat**, **Positive**, or **Neutral**—indicating whether introducing the species would help, harm, or make no difference." }])
       }, 2500)
       return () => clearTimeout(timer)
     }
@@ -1042,7 +1042,7 @@ const DesertMap = ({ onExit }) => {
     })
   }
 
-  // Format text with bold markdown (**text**)
+  // Format text with bold markdown (**text**) and colored keywords
   const formatTextWithBold = (text) => {
     if (!text) return text
     
@@ -1050,8 +1050,19 @@ const DesertMap = ({ onExit }) => {
     return parts.map((part, index) => {
       if (part.startsWith('**') && part.endsWith('**')) {
         const boldText = part.slice(2, -2)
+        
+        // Apply colors for specific keywords
+        let color = 'inherit'
+        if (boldText === 'Threat') {
+          color = '#ef4444' // Red
+        } else if (boldText === 'Positive') {
+          color = '#22c55e' // Green
+        } else if (boldText === 'Neutral') {
+          color = '#9ca3af' // Gray
+        }
+        
         return (
-          <strong key={index} style={{ fontWeight: 'bold' }}>
+          <strong key={index} style={{ fontWeight: 'bold', color }}>
             {boldText}
           </strong>
         )
@@ -5890,7 +5901,7 @@ const DesertMap = ({ onExit }) => {
                 <div style={styles.modernNpcMessage}>
                   <div style={styles.modernNpcSpeaker}>ALPHA:</div>
                   <p style={styles.modernNpcText}>
-                    {formatTextWithBold("One final task… and it's urgent.\n\nGo to the gate of the castle. For each leaf image, you'll see labels from three expert biologists: Healthy, Infected, or Uncertain.")}
+                    {formatTextWithBold("One final task… and it's urgent!\n\nGo to the gate of the castle. For each plant image, you'll see judgments from three experts: **Threat**, **Positive**, or **Neutral**—indicating whether introducing the species would help, harm, or make no difference.")}
                   </p>
                   <div style={styles.modernTimestamp}>{getCurrentTimestamp()}</div>
                 </div>
