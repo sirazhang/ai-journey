@@ -9910,7 +9910,7 @@ const GlacierMap = ({ onExit }) => {
                         fontSize: '13px', 
                         lineHeight: '1.8', 
                         color: '#333',
-                        cursor: 'url(/glacier/icon/marker.png) 12 12, crosshair',
+                        cursor: 'url(/glacier/icon/marker.png) 100 100, pointer',
                       }}
                       onMouseDown={handlePrivacyMouseDown}
                       onMouseMove={handlePrivacyMouseMove}
