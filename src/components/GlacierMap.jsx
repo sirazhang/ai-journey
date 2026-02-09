@@ -1131,6 +1131,18 @@ const GlacierMap = ({ onExit }) => {
 
   // Save progress whenever important states change
   useEffect(() => {
+    // Deduplicate rooftopCompletedTasks before saving
+    const uniqueTasks = [...new Set(rooftopCompletedTasks)]
+    
+    // Log if duplicates were found
+    if (uniqueTasks.length !== rooftopCompletedTasks.length) {
+      console.warn('⚠️ Removed duplicate tasks:', rooftopCompletedTasks.length - uniqueTasks.length)
+      console.log('Before:', rooftopCompletedTasks)
+      console.log('After:', uniqueTasks)
+      // Update state with deduplicated array
+      setRooftopCompletedTasks(uniqueTasks)
+    }
+    
     const progress = {
       currentScene,
       completedCases,
@@ -1138,7 +1150,7 @@ const GlacierMap = ({ onExit }) => {
       showElevatorArrow,
       courtSummaryCompleted,
       hasSeenInsideIntro,
-      rooftopCompletedTasks,
+      rooftopCompletedTasks: uniqueTasks, // Save deduplicated tasks
       showArrow, // Save arrow state
       showDataCenterArrow, // Save data center arrow state
       isComplete: currentScene === 'complete',
