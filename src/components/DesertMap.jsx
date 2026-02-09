@@ -3,6 +3,7 @@ import useSoundEffects from '../hooks/useSoundEffects'
 import useTypingSound from '../hooks/useTypingSound'
 import { useLanguage } from '../contexts/LanguageContext'
 import { getGeminiUrl } from '../config/api'
+import XenoLabInterface from './XenoLabInterface'
 
 // Add CSS animations
 const missionStyles = `
@@ -328,6 +329,9 @@ const DesertMap = ({ onExit }) => {
   const [currentAlphaStep, setCurrentAlphaStep] = useState(0)
   const [waitingForChoice, setWaitingForChoice] = useState(false)
   
+  // Add a flag to track if data has been loaded from localStorage
+  const [dataLoaded, setDataLoaded] = useState(false)
+  
   // Mission 1 states
   const [missionStarted, setMissionStarted] = useState(false)
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
@@ -464,45 +468,141 @@ const DesertMap = ({ onExit }) => {
     ]
   }
   
-  // Mission 4 data - Expert voting on leaf health
+  // Mission 4 data - Expert voting on leaf health with XENO-LAB interface
   const mission4Leaves = [
     {
       id: 1,
-      name: "Silverbark Frond",
-      description: "Glass-hard leaves that shatter when threatened, releasing mild toxin dust.",
+      name: "LEAF 1",
       image: '/desert/Mission/leaf1.png',
-      initialVotes: ['healthy', 'healthy', 'uncertain'], // Two agree on healthy
-      correctAnswer: 'healthy',
-      needsDiscussion: false
+      modelPath: '/desert/Mission/leaf1.html',
+      correctVerdict: 'positive',
+      needsDiscussion: false,
+      round1: {
+        structure: {
+          npc: 'Prickle',
+          verdict: 'positive',
+          text: 'The plant exhibits compact, succulent-like morphology with reduced leaf surface area—classic traits for minimizing water loss in arid climates. Its rigid, spiny exterior also deters herbivory, a critical advantage where resources are scarce and damage is costly.'
+        },
+        molecular: {
+          npc: 'Obsidian',
+          verdict: 'positive',
+          text: 'At the molecular level, its tissues likely produce protective compounds such as osmoprotectants or heat-shock proteins, enabling cellular function under extreme dehydration and high UV exposure—key requirements for desert survival.'
+        },
+        aesthetic: {
+          npc: 'Bloom',
+          verdict: 'neutral',
+          text: 'Visually, the plant\'s vivid metallic sheen and unusual geometry create striking contrast against sandy landscapes, which could enhance ecological art installations or tourism appeal. However, aesthetic value alone doesn\'t determine ecological suitability—it neither confirms benefit nor implies harm to native systems.'
+        }
+      }
     },
     {
       id: 2,
-      name: "Glowmoss Petal-Leaf",
-      description: "Half-plant, half-fungus; glows softly at night and clings to old pipes.",
+      name: "LEAF 2",
       image: '/desert/Mission/leaf2.png',
-      initialVotes: ['unhealthy', 'unhealthy', 'uncertain'], // Two agree on unhealthy
-      correctAnswer: 'unhealthy',
-      needsDiscussion: false
+      modelPath: '/desert/Mission/leaf2.html',
+      correctVerdict: 'threat',
+      needsDiscussion: false,
+      round1: {
+        structure: {
+          npc: 'Prickle',
+          verdict: 'threat',
+          text: 'Its rapid, vine-like growth and dense foliage suggest strong invasive potential, likely outcompeting native desert species for light, water, and space. The plant\'s novel biology may lack natural controls in this ecosystem, raising the risk of uncontrolled spread.'
+        },
+        molecular: {
+          npc: 'Obsidian',
+          verdict: 'positive',
+          text: 'Its vibrant, painterly appearance adds striking visual interest to arid landscapes, boosting ecological art and public engagement. As a low-water ornamental, it could support sustainable desert design—if carefully contained.'
+        },
+        aesthetic: {
+          npc: 'Bloom',
+          verdict: 'threat',
+          text: 'Soft, fuzzy stems and broad leaves appear poorly adapted to desert conditions like intense heat, drought, or sand abrasion. If it dies off en masse, it could even alter soil composition or fire regimes unpredictably.'
+        }
+      }
     },
     {
       id: 3,
-      name: "Crystal Thornleaf",
-      description: "Said to sense emotions—its leaves vibrate faintly with sound waves.",
+      name: "LEAF 3",
       image: '/desert/Mission/leaf3.png',
-      initialVotes: ['unhealthy', 'healthy', 'uncertain'], // All disagree
-      afterDiscussionVotes: ['healthy', 'healthy', 'uncertain'], // After discussion: two agree on healthy
-      correctAnswer: 'healthy',
-      needsDiscussion: true
+      modelPath: '/desert/Mission/leaf3.html',
+      correctVerdict: 'positive',
+      needsDiscussion: true,
+      round1: {
+        structure: {
+          npc: 'Prickle',
+          verdict: 'threat',
+          text: 'Its broad, fleshy leaves and weak stem structure are poorly adapted to desert winds and sand abrasion. Rather than conserving water, its form suggests high transpiration risk—likely leading to rapid die-off or resource waste.'
+        },
+        molecular: {
+          npc: 'Obsidian',
+          verdict: 'positive',
+          text: 'Molecular analysis reveals protective osmolytes and heat-shock proteins that stabilize cells under extreme dehydration. These adaptations could enhance resilience in arid restoration projects or inspire drought-tolerant crop engineering.'
+        },
+        aesthetic: {
+          npc: 'Bloom',
+          verdict: 'neutral',
+          text: 'The plant\'s iridescent petals create stunning visual contrast against desert sands, attracting attention and curiosity. However, aesthetic appeal alone doesn\'t translate to ecological function—neither harmful nor beneficial in ecosystem terms.'
+        }
+      },
+      round2: {
+        structure: {
+          npc: 'Prickle',
+          verdict: 'positive',
+          text: 'Its compact, rosette-shaped growth hugs the ground, minimizing wind exposure and trapping moisture near the roots. The waxy cuticle and reduced leaf surface drastically lower water loss—ideal for long-term desert survival.'
+        },
+        molecular: {
+          npc: 'Obsidian',
+          verdict: 'positive',
+          text: 'It expresses specialized aquaporin proteins that optimize water uptake even from dry soil. Metabolomic profiling shows accumulation of trehalose—a sugar that protects cellular integrity during extreme dehydration.'
+        },
+        aesthetic: {
+          npc: 'Bloom',
+          verdict: 'neutral',
+          text: 'While its silver-blue foliage blends elegantly with dune landscapes, it lacks seasonal variation or flowering drama. Visually harmonious but unremarkable—unlikely to drive tourism or cultural adoption, though not distracting either.'
+        }
+      }
     },
     {
       id: 4,
-      name: "Whisper Vine Leaf",
-      description: "Grows in castle cracks; metallic crystals make it shimmer in sunlight.",
+      name: "LEAF 4",
       image: '/desert/Mission/leaf4.png',
-      initialVotes: ['unhealthy', 'healthy', 'uncertain'], // All disagree
-      afterDiscussionVotes: ['unhealthy', 'unhealthy', 'uncertain'], // After discussion: two agree on unhealthy
-      correctAnswer: 'unhealthy',
-      needsDiscussion: true
+      modelPath: '/desert/Mission/leaf4.html',
+      correctVerdict: 'threat',
+      needsDiscussion: true,
+      round1: {
+        structure: {
+          npc: 'Prickle',
+          verdict: 'threat',
+          text: 'Its large, heart-shaped leaves and rapid vertical growth suggest aggressive canopy dominance, potentially shading out native understory plants. The stem\'s spiny texture may deter herbivores but could also injure animals or humans in dense forest zones.'
+        },
+        molecular: {
+          npc: 'Obsidian',
+          verdict: 'positive',
+          text: 'Bioluminescent compounds in its stem emit visible light without heat—ideal for sustainable night-time navigation in low-light ecosystems. These molecules may be bioengineered to enhance plant resilience or serve as natural sensors for environmental stress.'
+        },
+        aesthetic: {
+          npc: 'Bloom',
+          verdict: 'neutral',
+          text: 'While visually striking with glowing veins and vibrant petals, it offers no known ecological function beyond appearance. Its beauty is compelling, but not sufficient to justify introduction without further study.'
+        }
+      },
+      round2: {
+        structure: {
+          npc: 'Prickle',
+          verdict: 'threat',
+          text: 'The plant\'s fast growth rate and dense root system could destabilize soil structure, increasing erosion risks in fragile jungle terrains. It may form monocultures by outcompeting slower-growing native species, reducing biodiversity.'
+        },
+        molecular: {
+          npc: 'Obsidian',
+          verdict: 'threat',
+          text: 'The bioluminescent proteins may leak into soil or water, disrupting microbial communities and altering nutrient cycles. There\'s concern that these novel compounds could be toxic to local fauna or trigger unexpected ecological feedback loops.'
+        },
+        aesthetic: {
+          npc: 'Bloom',
+          verdict: 'neutral',
+          text: 'Though visually enchanting, its aesthetic value doesn\'t outweigh the unknowns of long-term ecological integration. No immediate harm observed, but insufficient data to support either approval or rejection.'
+        }
+      }
     }
   ]
   
@@ -553,7 +653,6 @@ const DesertMap = ({ onExit }) => {
       if (desertProgress) {
         // Restore basic states
         setCurrentSegment(desertProgress.currentSegment || SEGMENTS.SEGMENT_1)
-        setCurrentView(desertProgress.currentView || 'desert')
         
         // Fix data inconsistency: if phase2Completed is true but capturedObjects is empty,
         // it means Mission 1 was completed, so restore capturedObjects to 11
@@ -568,10 +667,65 @@ const DesertMap = ({ onExit }) => {
         }
         setCapturedObjects(capturedObjectsData)
         
-        // Restore mission started state
+        // Determine mission completion states
         const mission1Done = capturedObjectsData.length >= 11
-        if (desertProgress.missionStarted || mission1Done) {
+        const mission2Done = desertProgress.phase2Completed
+        const mission3Done = desertProgress.colorMode
+        const mission4Done = desertProgress.mission4Complete
+        
+        console.log('Mission states:', { mission1Done, mission2Done, mission3Done, mission4Done })
+        
+        // CRITICAL: Determine the correct view based on mission progress
+        let correctView = 'desert' // Default
+        
+        console.log('Checking view logic with states:', {
+          mission4Started: desertProgress.mission4Started,
+          mission4Done,
+          mission3Done,
+          mission2Done,
+          mission1Done
+        })
+        
+        if (desertProgress.mission4Started === true) {
+          // User is in the middle of Mission 4
+          correctView = 'gate'
+          console.log('View logic: Mission 4 in progress → gate')
+        } else if (mission4Done) {
+          // Mission 4 complete, show gate with NPC7
+          correctView = 'gate'
+          console.log('View logic: Mission 4 complete → gate')
+        } else if (mission3Done) {
+          // Mission 3 done, user is in color mode, stay in desert
+          correctView = 'desert'
+          console.log('View logic: Mission 3 complete (color mode) → desert')
+        } else if (mission1Done && !mission3Done) {
+          // Mission 1 done (regardless of Mission 2 status), user should be at castle
+          // This covers both: Mission 1 done + Mission 2 not done, AND Mission 1+2 done + Mission 3 not done
+          correctView = 'castle'
+          console.log('View logic: Mission 1 complete, Mission 3 not complete → castle (for Mission 2 or 3)')
+        } else {
+          // Mission 1 not done or just starting, stay in desert
+          correctView = 'desert'
+          console.log('View logic: Mission 1 not complete → desert')
+        }
+        
+        // CRITICAL FIX: Always use calculated view, ignore saved view if it's wrong
+        const viewToUse = correctView
+        console.log('View decision:', { 
+          savedView: desertProgress.currentView, 
+          calculatedView: correctView, 
+          finalView: viewToUse,
+          missionStates: { mission1Done, mission2Done, mission3Done, mission4Done }
+        })
+        setCurrentView(viewToUse)
+        
+        // CRITICAL FIX: Only set missionStarted to true if Mission 1 is NOT completed yet
+        // This prevents showing the photo collection UI when missions are already done
+        if (!mission1Done && desertProgress.missionStarted) {
           setMissionStarted(true)
+        } else if (mission1Done) {
+          // Mission 1 is done, don't show photo collection interface
+          setMissionStarted(false)
         }
         
         // Restore mission states
@@ -600,14 +754,11 @@ const DesertMap = ({ onExit }) => {
         
         console.log('Loaded Desert progress:', desertProgress)
         console.log('Restored capturedObjects count:', capturedObjectsData.length)
+        console.log('missionStarted set to:', !mission1Done && desertProgress.missionStarted)
         
         // If we fixed the data, immediately save it back to localStorage
         if (needsFixing) {
           console.log('Saving fixed data to localStorage...')
-          const mission1Done = capturedObjectsData.length >= 11
-          const mission2Done = desertProgress.phase2Completed
-          const mission3Done = desertProgress.colorMode
-          const mission4Done = desertProgress.mission4Complete
           
           userData.desertProgress = {
             ...desertProgress,
@@ -616,6 +767,8 @@ const DesertMap = ({ onExit }) => {
             mission2Completed: mission2Done,
             mission3Completed: mission3Done,
             mission4Completed: mission4Done,
+            missionStarted: !mission1Done, // Reset missionStarted if mission 1 is done
+            currentView: viewToUse, // Save the correct view
             lastSaved: Date.now()
           }
           localStorage.setItem('aiJourneyUser', JSON.stringify(userData))
@@ -629,10 +782,22 @@ const DesertMap = ({ onExit }) => {
       .then(response => response.json())
       .then(data => setObjectDescriptions(data.objects))
       .catch(error => console.error('Failed to load object descriptions:', error))
+    
+    // Mark data as loaded after a short delay to ensure all state updates are complete
+    setTimeout(() => {
+      setDataLoaded(true)
+      console.log('Data loading complete, saving enabled')
+    }, 100)
   }, [])
 
   // Save progress when segment, view, or mission state changes
   useEffect(() => {
+    // CRITICAL: Don't save until data is loaded from localStorage
+    if (!dataLoaded) {
+      console.log('Save blocked: data not loaded yet')
+      return
+    }
+    
     const savedUser = localStorage.getItem('aiJourneyUser')
     if (savedUser) {
       const userData = JSON.parse(savedUser)
@@ -652,10 +817,14 @@ const DesertMap = ({ onExit }) => {
         capturedObjectsToSave = Array.from({ length: 11 }, (_, i) => `object_${i + 1}`)
       }
       
+      // CRITICAL: missionStarted should be false if Mission 1 is completed
+      // This prevents showing photo collection UI when returning to desert
+      const shouldShowMissionUI = missionStarted && !mission1Done
+      
       userData.desertProgress = {
         currentSegment,
         currentView,
-        missionStarted,
+        missionStarted: shouldShowMissionUI, // Only true if mission 1 not done yet
         capturedObjects: capturedObjectsToSave,
         phase2Completed,
         colorMode,
@@ -673,12 +842,13 @@ const DesertMap = ({ onExit }) => {
         mission2Completed: mission2Done,
         mission3Completed: mission3Done,
         mission4Completed: mission4Done,
+        missionStarted: shouldShowMissionUI,
         colorMode,
         mission4Complete,
         capturedObjectsCount: capturedObjectsToSave.length
       })
     }
-  }, [currentSegment, currentView, missionStarted, capturedObjects, phase2Completed, colorMode, mission4Started, mission4Complete])
+  }, [currentSegment, currentView, missionStarted, capturedObjects, phase2Completed, colorMode, mission4Started, mission4Complete, dataLoaded]) // Added dataLoaded
 
   // Typing effect with auto-progression for multi-part dialogues
   useEffect(() => {
@@ -746,13 +916,47 @@ const DesertMap = ({ onExit }) => {
       colorMode,
       currentView,
       showAlphaDialogue,
-      currentSegment
+      currentSegment,
+      phase2Completed,
+      mission4Complete,
+      capturedObjectsCount: capturedObjects.length,
+      dataLoaded
     })
     
-    // Don't auto-show during missions, in castle/gate views, or when showing Alpha dialogue
-    if (missionStarted || colorMode || currentView !== 'desert' || showAlphaDialogue) {
+    // Don't run until data is loaded
+    if (!dataLoaded) {
+      console.log('Auto-show dialogue: BLOCKED (data not loaded)')
+      return
+    }
+    
+    // CRITICAL: Don't auto-show if Mission 1 is completed (11 photos collected)
+    // This prevents showing Phase 1 NPC dialogues during Phase 2
+    if (capturedObjects.length >= 11) {
+      console.log('Auto-show dialogue: BLOCKED (Mission 1 completed, in Phase 2)')
+      return
+    }
+    
+    // Don't auto-show if any missions are completed or in progress
+    // This prevents showing initial NPC dialogues when user has already progressed
+    if (phase2Completed || colorMode || mission4Complete) {
+      console.log('Auto-show dialogue: BLOCKED (missions completed)', {
+        phase2Completed,
+        colorMode,
+        mission4Complete
+      })
+      return
+    }
+    
+    // CRITICAL: Only auto-show in desert view, never in castle or gate
+    if (currentView !== 'desert') {
+      console.log('Auto-show dialogue: BLOCKED (not in desert view, current:', currentView, ')')
+      return
+    }
+    
+    // Don't auto-show during missions or when showing Alpha dialogue
+    if (missionStarted || showAlphaDialogue) {
       console.log('Auto-show dialogue: BLOCKED', {
-        reason: missionStarted ? 'missionStarted' : colorMode ? 'colorMode' : currentView !== 'desert' ? 'not desert view' : 'showAlphaDialogue'
+        reason: missionStarted ? 'missionStarted' : 'showAlphaDialogue'
       })
       return
     }
@@ -779,7 +983,7 @@ const DesertMap = ({ onExit }) => {
       console.log('Auto-showing NPC2 dialogue')
       setTimeout(() => handleNpcClick('npc2'), 300) // Show NPC2 dialogue
     }
-  }, [currentSegment, missionStarted, currentView, showAlphaDialogue, colorMode]) // Added colorMode to dependencies
+  }, [currentSegment, missionStarted, currentView, showAlphaDialogue, colorMode, phase2Completed, mission4Complete, capturedObjects.length, dataLoaded]) // Added capturedObjects.length
   
   // Separate effect to close dialogue when entering color mode
   useEffect(() => {
@@ -4314,7 +4518,7 @@ const DesertMap = ({ onExit }) => {
 
           {/* NPCs based on current segment - different NPCs for color mode */}
           {colorMode ? (
-            // Post-Mission 3 NPCs (Color mode)
+            // Post-Mission 4 NPCs (Color mode) - only show after Mission 4 is complete
             <>
               {currentSegment === SEGMENTS.SEGMENT_1 && (
                 <div 
@@ -4377,9 +4581,12 @@ const DesertMap = ({ onExit }) => {
               )}
             </>
           ) : (
-            // Original NPCs (Pre-Mission 3)
+            // Original NPCs (Phase 1 only - before Mission 1 is complete)
+            // Phase 2: No NPCs in desert/gate, user should be in castle
+            // Only show Phase 1 NPCs if Mission 1 is NOT completed yet
+            // Mission 1 is completed when capturedObjects.length >= 11 OR phase2Completed is true
             <>
-              {!missionStarted && currentSegment === SEGMENTS.SEGMENT_1 && (
+              {capturedObjects.length < 11 && !phase2Completed && currentSegment === SEGMENTS.SEGMENT_1 && (
                 <div 
                   style={{...styles.npc, ...styles.npc1}}
                   onClick={() => handleNpcClick('npc1')}
@@ -4390,7 +4597,7 @@ const DesertMap = ({ onExit }) => {
                 </div>
               )}
 
-              {!missionStarted && currentSegment === SEGMENTS.SEGMENT_2 && (
+              {capturedObjects.length < 11 && !phase2Completed && currentSegment === SEGMENTS.SEGMENT_2 && (
                 <div 
                   style={{...styles.npc, ...styles.gatekeeper}}
                   onClick={() => handleNpcClick('gatekeeper')}
@@ -4401,7 +4608,7 @@ const DesertMap = ({ onExit }) => {
                 </div>
               )}
 
-              {!missionStarted && currentSegment === SEGMENTS.SEGMENT_3 && (
+              {capturedObjects.length < 11 && !phase2Completed && currentSegment === SEGMENTS.SEGMENT_3 && (
                 <div 
                   style={{...styles.npc, ...styles.npc2}}
                   onClick={() => handleNpcClick('npc2')}
@@ -4414,7 +4621,7 @@ const DesertMap = ({ onExit }) => {
             </>
           )}
 
-          {/* Zoom button - always show in SEGMENT_2 */}
+          {/* Zoom button - always show in SEGMENT_2 (except during color mode) */}
           {currentSegment === SEGMENTS.SEGMENT_2 && !colorMode && (
             <button style={styles.zoomButton} onClick={handleZoomClick}>
               <img src="/desert/icon/zoom.png" alt="Zoom" style={styles.zoomImage} />
@@ -4458,321 +4665,16 @@ const DesertMap = ({ onExit }) => {
         </>
       )}
 
-      {/* Mission 4: Expert Voting Interface in Gate View - Outside desert view block */}
+      {/* Mission 4: XENO-LAB Interface in Gate View */}
       {mission4Started && currentView === 'gate' && (
-        <>
-          {/* Three Biologist NPCs - Horizontally aligned at bottom */}
-          {biologists.map((biologist, index) => {
-            const currentLeaf = mission4Leaves[mission4LeafIndex]
-            const votes = mission4DiscussionUsed[mission4LeafIndex] && currentLeaf.afterDiscussionVotes 
-              ? currentLeaf.afterDiscussionVotes 
-              : currentLeaf.initialVotes
-            const vote = votes[index]
-            
-            // Calculate position for equal spacing
-            const totalWidth = window.innerWidth
-            const spacing = totalWidth / 4
-            const leftPosition = spacing * (index + 1) - 125 // Center each NPC
-            
-            return (
-              <div
-                key={biologist.id}
-                style={{
-                  position: 'absolute',
-                  left: `${leftPosition}px`,
-                  bottom: '150px', // Increased from 80px to 150px for more spacing
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  zIndex: 30,
-                }}
-              >
-                {/* Vote badge in dialogue bubble - only show after typing completes */}
-                {mission4VotesVisible && !mission4LeafInfoTyping && (
-                  <div style={{
-                    position: 'relative',
-                    marginBottom: '10px',
-                    animation: 'fadeIn 0.5s ease-in-out',
-                  }}>
-                    <img 
-                      src="/desert/icon/dialogue.png"
-                      alt="Dialogue"
-                      style={{
-                        width: '100px',
-                        height: '80px',
-                      }}
-                    />
-                    <img 
-                      src={`/desert/icon/${vote}.svg`}
-                      alt={vote}
-                      style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '50px',
-                        height: '50px',
-                      }}
-                    />
-                  </div>
-                )}
-                
-                {/* NPC Image Container with relative positioning */}
-                <div style={{
-                  position: 'relative',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  {/* NPC Image */}
-                  <img 
-                    src={`/desert/npc/${biologist.npc}.png`}
-                    alt={biologist.name}
-                    style={{
-                      height: '250px',
-                      width: 'auto',
-                    }}
-                  />
-                  
-                  {/* NPC Name - Overlapping on NPC image */}
-                  <div style={{
-                    position: 'absolute',
-                    bottom: '20px',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    padding: '8px 16px',
-                    background: 'rgba(101, 67, 33, 0.9)', // Deep brown with transparency
-                    color: 'white',
-                    borderRadius: '8px',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    textAlign: 'center',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
-                  }}>
-                    BIOLOGIST{biologist.id}<br/>
-                    {biologist.name}
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-          
-          {/* Top Card with Leaf Info and Discussion Button */}
-          <div style={{
-            position: 'absolute',
-            left: '50%',
-            top: '40px',
-            transform: 'translateX(-50%)',
-            background: 'rgba(255, 255, 255, 0.5)',
-            borderRadius: '20px',
-            padding: '25px',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
-            zIndex: 100,
-            width: '800px',
-            display: 'flex',
-            gap: '20px',
-            alignItems: 'center',
-          }}>
-            {/* Left: Leaf Image */}
-            <div style={{
-              flex: '0 0 150px',
-            }}>
-              <img 
-                src={mission4Leaves[mission4LeafIndex].image}
-                alt="Leaf"
-                style={{
-                  width: '150px',
-                  height: '150px',
-                  objectFit: 'contain',
-                }}
-              />
-            </div>
-            
-            {/* Vertical divider line */}
-            <div style={{
-              width: '2px',
-              height: '120px',
-              background: 'rgba(0, 0, 0, 0.2)',
-              borderRadius: '1px',
-            }} />
-            
-            {/* Middle: Leaf Info with Typing Effect */}
-            <div style={{
-              flex: 1,
-            }}>
-              <div style={{
-                fontSize: '16px',
-                color: '#333',
-                lineHeight: '1.6',
-                whiteSpace: 'pre-wrap',
-                fontFamily: "'Coming Soon', cursive",
-              }}>
-                {mission4LeafInfoText}
-                {mission4LeafInfoTyping && <span style={{
-                  animation: 'blink 1s infinite',
-                  marginLeft: '2px',
-                }}>|</span>}
-              </div>
-            </div>
-            
-            {/* Right: Discussion Button */}
-            <div style={{
-              flex: '0 0 auto',
-            }}>
-              <button
-                onClick={handleMission4Discussion}
-                disabled={mission4DiscussionUsed[mission4LeafIndex] || mission4LeafInfoTyping}
-                style={{
-                  padding: '15px 25px',
-                  background: (mission4DiscussionUsed[mission4LeafIndex] || mission4LeafInfoTyping) ? '#ccc' : 'white',
-                  border: 'none',
-                  borderRadius: '12px',
-                  fontSize: '16px',
-                  fontWeight: 'bold',
-                  cursor: (mission4DiscussionUsed[mission4LeafIndex] || mission4LeafInfoTyping) ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  transition: 'transform 0.2s',
-                  opacity: (mission4DiscussionUsed[mission4LeafIndex] || mission4LeafInfoTyping) ? 0.6 : 1,
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                }}
-                onMouseOver={(e) => {
-                  if (!mission4DiscussionUsed[mission4LeafIndex] && !mission4LeafInfoTyping) {
-                    e.currentTarget.style.transform = 'scale(1.05)'
-                  }
-                }}
-                onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
-              >
-                <img src="/desert/icon/discussion.png" alt="Discussion" style={{width: '30px', height: '30px'}} />
-                Discussion
-              </button>
-            </div>
-          </div>
-          
-          {/* Bottom: Status Buttons with 3D Effect */}
-          <div style={{
-            position: 'absolute',
-            left: '50%',
-            bottom: '20px',
-            transform: 'translateX(-50%)',
-            display: 'flex',
-            gap: '30px',
-            zIndex: 100,
-          }}>
-            {/* Healthy Status Button */}
-            <div style={{position: 'relative'}}>
-              {/* Green shadow layer */}
-              <div style={{
-                position: 'absolute',
-                top: '8px',
-                left: '0',
-                right: '0',
-                height: '100%',
-                background: '#4CAF50',
-                borderRadius: '15px',
-                zIndex: 1,
-              }} />
-              {/* White button layer */}
-              <button
-                onClick={() => handleMission4Vote('healthy')}
-                disabled={mission4LeafInfoTyping}
-                style={{
-                  position: 'relative',
-                  zIndex: 2,
-                  padding: '18px 40px',
-                  background: 'white',
-                  border: 'none',
-                  borderRadius: '15px',
-                  fontSize: '20px',
-                  fontWeight: 'bold',
-                  cursor: mission4LeafInfoTyping ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-                  transition: 'transform 0.2s',
-                  opacity: mission4LeafInfoTyping ? 0.6 : 1,
-                }}
-                onMouseOver={(e) => {
-                  if (!mission4LeafInfoTyping) {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                  }
-                }}
-                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-              >
-                <img src="/desert/icon/healthy.svg" alt="Healthy" style={{width: '35px', height: '35px'}} />
-                Healthy Status
-              </button>
-            </div>
-            
-            {/* Unhealthy Status Button */}
-            <div style={{position: 'relative'}}>
-              {/* Red shadow layer */}
-              <div style={{
-                position: 'absolute',
-                top: '8px',
-                left: '0',
-                right: '0',
-                height: '100%',
-                background: '#F44336',
-                borderRadius: '15px',
-                zIndex: 1,
-              }} />
-              {/* White button layer */}
-              <button
-                onClick={() => handleMission4Vote('unhealthy')}
-                disabled={mission4LeafInfoTyping}
-                style={{
-                  position: 'relative',
-                  zIndex: 2,
-                  padding: '18px 40px',
-                  background: 'white',
-                  border: 'none',
-                  borderRadius: '15px',
-                  fontSize: '20px',
-                  fontWeight: 'bold',
-                  cursor: mission4LeafInfoTyping ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-                  transition: 'transform 0.2s',
-                  opacity: mission4LeafInfoTyping ? 0.6 : 1,
-                }}
-                onMouseOver={(e) => {
-                  if (!mission4LeafInfoTyping) {
-                    e.currentTarget.style.transform = 'translateY(-2px)'
-                  }
-                }}
-                onMouseOut={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-              >
-                <img src="/desert/icon/unhealthy.svg" alt="Unhealthy" style={{width: '35px', height: '35px'}} />
-                Unhealthy Status
-              </button>
-            </div>
-          </div>
-          
-          {/* Discussion Animation */}
-          {showMission4Discussion && (
-            <div style={{
-              position: 'absolute',
-              left: '50%',
-              top: '50%',
-              transform: 'translate(-50%, -50%)',
-              background: 'rgba(0, 0, 0, 0.8)',
-              color: 'white',
-              padding: '30px 50px',
-              borderRadius: '15px',
-              fontSize: '24px',
-              fontWeight: 'bold',
-              zIndex: 200,
-              animation: 'fadeIn 0.3s ease-in-out',
-            }}>
-              Experts are discussing...
-            </div>
-          )}
-        </>
+        <XenoLabInterface
+          leafData={mission4Leaves}
+          onComplete={handleMission4Complete}
+          onClose={() => {
+            setMission4Started(false)
+            setCurrentView('gate')
+          }}
+        />
       )}
       
       {/* NPC7 for Mission 4 Completion - Show in gate view */}
