@@ -9964,37 +9964,76 @@ const GlacierMap = ({ onExit }) => {
                       
                       {/* Text Content with Highlighting */}
                       <div style={{whiteSpace: 'pre-line', position: 'relative'}}>
-                        {privacyDocuments[privacyTaskDocument - 1].content.split('\n').map((line, i) => {
-                          const foundItem = privacyDocuments[privacyTaskDocument - 1].items.find(item => 
-                            !item.isImage && privacyFoundItems.includes(item.id) && (
-                              line.includes(item.hint || item.text)
-                            )
+                        {privacyDocuments[privacyTaskDocument - 1].content.split('\n').map((line, lineIndex) => {
+                          // Find all items that should be blacked out in this line
+                          const foundItemsInLine = privacyDocuments[privacyTaskDocument - 1].items.filter(item => 
+                            !item.isImage && privacyFoundItems.includes(item.id) && line.includes(item.hint || item.text)
                           )
                           
-                          if (foundItem) {
-                            const textToBlack = foundItem.text
-                            const index = line.indexOf(textToBlack)
-                            
-                            if (index !== -1) {
-                              return (
-                                <div key={i} style={{marginBottom: '5px'}}>
-                                  {line.substring(0, index)}
-                                  <span style={{
-                                    background: '#000',
-                                    color: '#000',
-                                    padding: '2px 4px',
-                                    borderRadius: '4px',
-                                    userSelect: 'none',
-                                  }}>
-                                    {textToBlack}
-                                  </span>
-                                  {line.substring(index + textToBlack.length)}
-                                </div>
-                              )
-                            }
+                          if (foundItemsInLine.length === 0) {
+                            return <div key={lineIndex} style={{marginBottom: '5px'}}>{line}</div>
                           }
                           
-                          return <div key={i} style={{marginBottom: '5px'}}>{line}</div>
+                          // Build line with multiple blackouts
+                          let result = []
+                          let remainingLine = line
+                          let currentIndex = 0
+                          
+                          // Sort items by their position in the line to process them in order
+                          const sortedItems = foundItemsInLine
+                            .map(item => ({
+                              item,
+                              text: item.text,
+                              index: line.indexOf(item.text)
+                            }))
+                            .filter(x => x.index !== -1)
+                            .sort((a, b) => a.index - b.index)
+                          
+                          sortedItems.forEach((itemData, idx) => {
+                            const { text, index } = itemData
+                            
+                            // Add text before this item
+                            if (index > currentIndex) {
+                              result.push(
+                                <span key={`text-${lineIndex}-${idx}`}>
+                                  {line.substring(currentIndex, index)}
+                                </span>
+                              )
+                            }
+                            
+                            // Add blacked out item
+                            result.push(
+                              <span 
+                                key={`black-${lineIndex}-${idx}`}
+                                style={{
+                                  background: '#000',
+                                  color: '#000',
+                                  padding: '2px 4px',
+                                  borderRadius: '4px',
+                                  userSelect: 'none',
+                                }}
+                              >
+                                {text}
+                              </span>
+                            )
+                            
+                            currentIndex = index + text.length
+                          })
+                          
+                          // Add remaining text after last item
+                          if (currentIndex < line.length) {
+                            result.push(
+                              <span key={`text-${lineIndex}-end`}>
+                                {line.substring(currentIndex)}
+                              </span>
+                            )
+                          }
+                          
+                          return (
+                            <div key={lineIndex} style={{marginBottom: '5px'}}>
+                              {result}
+                            </div>
+                          )
                         })}
                       </div>
                     </div>
