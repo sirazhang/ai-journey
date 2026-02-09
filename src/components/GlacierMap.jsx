@@ -918,6 +918,11 @@ const GlacierMap = ({ onExit }) => {
   
   const savedProgress = loadProgress()
   
+  // Debug log for loaded progress
+  if (savedProgress?.rooftopCompletedTasks) {
+    console.log('Loaded rooftop completed tasks:', savedProgress.rooftopCompletedTasks.length, savedProgress.rooftopCompletedTasks)
+  }
+  
   const [currentScene, setCurrentScene] = useState(savedProgress?.currentScene || 'hallway') // hallway, outside, inside, court, rooftop, reloading, complete
   const [showDialogue, setShowDialogue] = useState(!savedProgress || savedProgress.currentScene === 'hallway')
   const [currentDialogueIndex, setCurrentDialogueIndex] = useState(0)
@@ -976,7 +981,7 @@ const GlacierMap = ({ onExit }) => {
   const [npc5Response, setNpc5Response] = useState('') // NPC5 AI response
   const [isNpc5Generating, setIsNpc5Generating] = useState(false) // Track if generating response
   const [npc5Completed, setNpc5Completed] = useState(false) // Track if NPC5 puzzles are completed
-  const [rooftopCompletedTasks, setRooftopCompletedTasks] = useState([]) // Track completed rooftop tasks (npc5, npc6, npc7)
+  const [rooftopCompletedTasks, setRooftopCompletedTasks] = useState(savedProgress?.rooftopCompletedTasks || []) // Track completed rooftop tasks (npc5, npc6, npc9)
   
   // Exercise states (for underline errors)
   const [showExercise, setShowExercise] = useState(false)
@@ -1152,8 +1157,16 @@ const GlacierMap = ({ onExit }) => {
 
   // Auto-trigger rooftop quiz when returning to inside with all tasks complete
   useEffect(() => {
+    console.log('Checking rooftop quiz trigger:', {
+      currentScene,
+      rooftopTasksCount: rooftopCompletedTasks.length,
+      rooftopTasks: rooftopCompletedTasks,
+      courtSummaryCompleted,
+      showRooftopQuiz
+    })
+    
     if (currentScene === 'inside' && rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showRooftopQuiz) {
-      console.log('Auto-triggering rooftop quiz - all 7 tasks completed')
+      console.log('✅ Auto-triggering rooftop quiz - all 7 tasks completed!')
       setTimeout(() => {
         setShowRooftopQuiz(true)
         setRooftopQuizStep('intro')
