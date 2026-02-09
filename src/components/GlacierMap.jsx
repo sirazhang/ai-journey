@@ -1158,13 +1158,32 @@ const GlacierMap = ({ onExit }) => {
 
   // Auto-trigger rooftop quiz when returning to inside with all tasks complete
   useEffect(() => {
-    console.log('Checking rooftop quiz trigger:', {
+    const debugInfo = {
       currentScene,
       rooftopTasksCount: rooftopCompletedTasks.length,
       rooftopTasks: rooftopCompletedTasks,
       courtSummaryCompleted,
-      showRooftopQuiz
-    })
+      showRooftopQuiz,
+      allConditionsMet: currentScene === 'inside' && rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showRooftopQuiz
+    }
+    
+    console.log('Checking rooftop quiz trigger:', debugInfo)
+    
+    if (!courtSummaryCompleted) {
+      console.log('❌ Court summary not completed yet - need to complete court tasks first')
+    }
+    
+    if (rooftopCompletedTasks.length !== 7) {
+      console.log(`❌ Need 7 tasks, currently have ${rooftopCompletedTasks.length}`)
+    }
+    
+    if (currentScene !== 'inside') {
+      console.log(`❌ Need to be in 'inside' scene, currently in '${currentScene}'`)
+    }
+    
+    if (showRooftopQuiz) {
+      console.log('❌ Quiz already showing')
+    }
     
     if (currentScene === 'inside' && rooftopCompletedTasks.length === 7 && courtSummaryCompleted && !showRooftopQuiz) {
       console.log('✅ Auto-triggering rooftop quiz - all 7 tasks completed!')
